@@ -1,0 +1,11 @@
+﻿.tag-item {
+    float: left;
+    text-align: center;
+    border-radius: 8px;
+    padding: 3px;
+    margin: 1px 3px;
+    font-size: 14px;
+    background-color: rgba(53, 160, 215, 0.2);
+    border-color: rgba(53, 160, 215, 0.2);
+    color: #35a0d7;
+}

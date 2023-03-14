@@ -1,0 +1,308 @@
+﻿@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+
+<AuthorizeView Policy="@(FunctionPolicy.ApiWrite.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isEditable = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isEditable = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+<RadzenCard>
+    <div class="d-flex align-items-center" style="display:none">
+        <RadzenCheckBox Name="ControllerIsOptimisticConcurrency" TValue="bool" @bind-Value="ResourceHeader.Controller.IsOptimisticConcurrency" Disabled="@(!_isEditable)" style="display:none"></RadzenCheckBox>
+        <RadzenLabel class="mx-2" Component="ControllerIsOptimisticConcurrency" Text="楽観排他を使用する" style="display:none"></RadzenLabel>
+    </div>
+    <div class="d-flex align-items-center mt-2" style="display:none">
+        <RadzenCheckBox Name="ControllerContainerDynamicSeparation" TValue="bool" Disabled="!IsNewResource" @bind-Value="ResourceHeader.Controller.IsContainerDynamicSeparation" style="display:none"></RadzenCheckBox>
+        <RadzenLabel class="mx-2" Component="ControllerContainerDynamicSeparation" Text="動的コンテナ分離を使用する" style="display:none"></RadzenLabel>
+    </div>
+    <AuthorizeView Context="BlobCache" Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+        <div class="d-flex align-items-center mt-2">
+            <RadzenCheckBox Name="ControllerBlobCache" TValue="bool" @bind-Value="ResourceHeader.Controller.IsUseBlobCache"></RadzenCheckBox>
+            <RadzenLabel class="mx-2" Component="ControllerBlobCache" Text="BlobCacheを使用する"></RadzenLabel>
+        </div>
+    </AuthorizeView>
+    <div class="mt-2">
+        <RadzenCheckBox Name="ControllerIpFilter" TValue="bool" @bind-Value="ResourceHeader.Controller.IsEnableIpFilter" Disabled="@(!_isEditable)"></RadzenCheckBox>
+        <RadzenLabel class="mx-2" Component="ControllerIpFilter" Text="IPフィルタを使用する"></RadzenLabel>
+        <div class="mt-2" hidden="@(ResourceHeader.Controller.IsEnableIpFilter==false)">
+            <div class="row mb-2">
+                <div class="col">
+                    <div class="p-2 border">
+                        <RadzenLabel Text="IPフィルタグループ一覧"></RadzenLabel>
+                        <AuthorizeView Context="IpFilterGroup" Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+                            <Authorized>
+                                <RadzenDataGrid class="grid-resource-ip-filter-group" @ref="_ipFilterGroupGrid" Data="@ResourceHeader.Controller.ControllerCommonIpFilterGroupList" TItem="ApiResourceCommonIpFilterGroupModel" EditMode="DataGridEditMode.Single" RowCreate="OnCreateIpFilterGroup" RowUpdate="OnUpdateIpFilterGroup">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="ApiResourceCommonIpFilterGroupModel" Property="IsActive" Title="有効" Sortable="false">
+                                            <Template Context="ipFilterGroup">
+                                                <RadzenCheckBox TValue="bool" @bind-Value="ipFilterGroup.IsActive"></RadzenCheckBox>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="ApiResourceCommonIpFilterGroupModel" Property="CommonIpFilterGroupName" Title="IPフィルタグループ名" Sortable="false"></RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </Authorized>
+                            <NotAuthorized>
+                                <RadzenDataGrid class="grid-resource-ip-filter-group" @ref="_ipFilterGroupGrid" Data="@ResourceHeader.Controller.ControllerCommonIpFilterGroupList" TItem="ApiResourceCommonIpFilterGroupModel" EditMode="DataGridEditMode.Single" RowCreate="OnCreateIpFilterGroup" RowUpdate="OnUpdateIpFilterGroup">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="ApiResourceCommonIpFilterGroupModel" Property="IsActive" Title="有効" Sortable="false">
+                                            <Template Context="ipFilterGroup">
+                                                <RadzenCheckBox TValue="bool" @bind-Value="ipFilterGroup.IsActive" Disabled="true"></RadzenCheckBox>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="ApiResourceCommonIpFilterGroupModel" Property="CommonIpFilterGroupName" Title="IPフィルタグループ名" Sortable="false"></RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </NotAuthorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col">
+                    <div class="p-2 border">
+                        <div class="row my-2 justify-content-between">
+                            <RadzenLabel Text="IPフィルタ一覧" class="col-auto d-flex align-items-center"></RadzenLabel>
+                            @if (_isEditable)
+                            {
+                                <div class="col-auto">
+                                    <RadzenButton class="px-2" ButtonStyle="ButtonStyle.Secondary" Style="width:120px;" Text="IPフィルタ追加" Click="AddIpFilter" Size="ButtonSize.Small" Disabled="@(!_isEditable)"></RadzenButton>
+                                </div>
+                            }
+                        </div>
+                        <ValidationMessage For="@(() => ResourceHeader.Controller.ControllerIpFilterList)" />
+                        <RadzenDataGrid class="grid-resource-ip-filter" @ref="_ipFilterGrid" Data="@ResourceHeader.Controller.ControllerIpFilterList" TItem="ApiResourceIpFilterModel" EditMode="DataGridEditMode.Single" RowCreate="OnCreateIpFilter">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="ApiResourceIpFilterModel" Property="IsEnable" Title="有効" Sortable="false">
+                                    <Template Context="ipFilter">
+                                        <RadzenCheckBox @bind-Value="ipFilter.IsEnable" TValue="bool" Disabled="true"></RadzenCheckBox>
+                                    </Template>
+                                    <EditTemplate Context="ipFilter">
+                                        <RadzenCheckBox @bind-Value="ipFilter.IsEnable" TValue="bool" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="ApiResourceIpFilterModel" Property="IpAddress" Title="IPアドレス" Sortable="false">
+                                    <EditTemplate Context="ipFilter">
+                                        <RadzenTextBox @bind-Value="ipFilter.IpAddress" Disabled="@(!_isEditable)"></RadzenTextBox>
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="ApiResourceIpFilterModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                    <Template Context="ipFilter">
+                                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditIpFilter(ipFilter))" Disabled="@(!_isEditable)" />
+                                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => RemoveIpFilter(ipFilter))" Disabled="@(!_isEditable)" />
+                                    </Template>
+                                    <EditTemplate Context="ipFilter">
+                                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdateIpFilter(ipFilter))" Disabled="@(!_isEditable)" />
+                                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditIpFilter(ipFilter))" Disabled="@(!_isEditable)" />
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                        @foreach (var ipFilter in ResourceHeader.Controller.ControllerIpFilterList)
+                        {
+                            <ValidationMessage For="@(() => ipFilter.IpAddress)" />
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</RadzenCard>
+<RadzenCard style="display:none">
+    <div class="p-2 border" style="display:none">
+        <RadzenPanel AllowCollapse="true" Style="padding: 0;display:none" Collapsed="true">
+            <HeaderTemplate>
+                <RadzenLabel Text="OpenID認証局設定" class="me-1 align-middle"></RadzenLabel>
+            </HeaderTemplate>
+            <ChildContent>
+                <RadzenDataGrid class="grid-resource-open-id-ca" @ref="_openIdCaGrid" Data="@ResourceHeader.Controller.OpenIdCaList" TItem="OpenIdCaViewModel" EditMode="DataGridEditMode.Single" style="display:none">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="OpenIdCaViewModel" Property="ApplicationName" Title="認証局" Sortable="false">
+                            <Template Context="openIdCa">
+                                @openIdCa.ApplicationName
+                            </Template>
+                            <EditTemplate Context="openIdCa">
+                                @openIdCa.ApplicationName
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="OpenIdCaViewModel" Property="AccessControl" Title="アクセス制御" Sortable="false">
+                            <Template Context="openIdCa">
+                                @s_AccessControls[openIdCa.AccessControl]
+                            </Template>
+                            <EditTemplate Context="openIdCa">
+                                <RadzenDropDown Data="s_AccessControls" @bind-Value="openIdCa.AccessControl" ValueProperty="Key" TextProperty="Value"></RadzenDropDown>
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="OpenIdCaViewModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                            <Template Context="openIdCa">
+                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                            </Template>
+                            <EditTemplate Context="openIdCa">
+                                <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdateOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </ChildContent>
+        </RadzenPanel>
+    </div>
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public ApiResourceHeaderModel ResourceHeader { get; set; }
+
+    [Parameter]
+    public bool IsNewResource { get; set; }
+
+    private RadzenDataGrid<OpenIdCaViewModel> _openIdCaGrid;
+
+    private RadzenDataGrid<ApiResourceIpFilterModel> _ipFilterGrid;
+
+    private RadzenDataGrid<ApiResourceCommonIpFilterGroupModel> _ipFilterGroupGrid;
+
+    private ApiResourceIpFilterModel _editTargetIpFilter;
+
+    private OpenIdCaViewModel _editTargetOpenIdCa;
+
+    private static Dictionary<string, string> s_AccessControls = new()
+    {
+        { "alw", "許可" },
+        { "dny", "拒否" },
+        { "inh", "未設定" },
+    };
+
+    private bool _isEditable = false;
+
+    protected override void OnParametersSet()
+    {
+        if(ResourceHeader.Controller.OpenIdCaList == null || ResourceHeader.Controller.OpenIdCaList.Count == 0)
+        {
+            ResourceHeader.Controller.OpenIdCaList = ResourceHeader.OpenIdCaList.ToList();
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // モデル追加/編集から戻ったときにAuthorizeViewで設定した編集可否フラグが反映されないため明示的に再レンダリング
+            StateHasChanged();
+        }
+    }
+
+    #region OpenIdCA
+    private async Task EditOpenIdCa(OpenIdCaViewModel openIdCa)
+    {
+        _editTargetOpenIdCa = openIdCa.Clone();
+        await _openIdCaGrid.EditRow(openIdCa);
+    }
+
+    private async Task UpdateOpenIdCa(OpenIdCaViewModel openIdCa)
+    {
+        await _openIdCaGrid.UpdateRow(openIdCa);
+        _editTargetOpenIdCa = null;
+    }
+
+    private void CancelEditOpenIdCa(OpenIdCaViewModel openIdCa)
+    {
+        _openIdCaGrid.CancelEditRow(openIdCa);
+
+        // 編集前の状態に戻す
+        openIdCa.AccessControl = _editTargetOpenIdCa.AccessControl;
+
+        _editTargetOpenIdCa = null;
+    }
+    #endregion
+
+    #region IpFilter
+    private async Task AddIpFilter()
+    {
+        var filter = new ApiResourceIpFilterModel(){ 
+            ControllerId = ResourceHeader.Controller.ControllerId,
+            IsActive = true,
+            IsEnable = true
+        };
+        _editTargetIpFilter = filter.Clone();
+        await _ipFilterGrid.InsertRow(filter);
+    }
+
+    private void OnCreateIpFilter(ApiResourceIpFilterModel filter)
+    {
+        ResourceHeader.Controller.ApiIpFilterList.Add(filter);
+    }
+
+
+    private async Task EditIpFilter(ApiResourceIpFilterModel filter)
+    {
+        _editTargetIpFilter = filter.Clone();
+        await _ipFilterGrid.EditRow(filter);
+    }
+
+    private async Task UpdateIpFilter(ApiResourceIpFilterModel filter)
+    {
+        await _ipFilterGrid.UpdateRow(filter);
+        _editTargetIpFilter = null;
+    }
+
+    private async Task RemoveIpFilter(ApiResourceIpFilterModel filter)
+    {
+        ResourceHeader.Controller.ApiIpFilterList.Remove(filter);
+
+        await _ipFilterGrid.Reload();
+    }
+
+    private void CancelEditIpFilter(ApiResourceIpFilterModel filter)
+    {
+        // 追加時にCancelEditRowを呼び出すとDataGridの行削除も行われてしまうのでUpdateRowして編集前(初期値)に戻す
+        _ipFilterGrid.UpdateRow(filter);
+
+        // 編集前の状態に戻す
+        filter.IsEnable = _editTargetIpFilter.IsEnable;
+        filter.IpAddress = _editTargetIpFilter.IpAddress;
+
+        _editTargetIpFilter = null;
+    }
+    #endregion
+
+    #region IpFilterGroup
+    private void OnCreateIpFilterGroup(ApiResourceCommonIpFilterGroupModel filter)
+    {
+    }
+
+    private void OnUpdateIpFilterGroup(ApiResourceCommonIpFilterGroupModel filter)
+    {
+    }
+
+
+    private async Task EditIpFilterGroup(ApiResourceCommonIpFilterGroupModel filter)
+    {
+        await _ipFilterGroupGrid.EditRow(filter);
+    }
+
+    private async Task UpdateIpFilterGroup(ApiResourceCommonIpFilterGroupModel filter)
+    {
+        await _ipFilterGroupGrid.UpdateRow(filter);
+    }
+
+    private async Task RemoveIpFilterGroup(ApiResourceCommonIpFilterGroupModel filter)
+    {
+        await _ipFilterGroupGrid.Reload();
+    }
+
+    private void CancelEditIpFilterGroup(ApiResourceCommonIpFilterGroupModel filter)
+    {
+        _ipFilterGroupGrid.CancelEditRow(filter);
+    }
+    #endregion
+
+
+}

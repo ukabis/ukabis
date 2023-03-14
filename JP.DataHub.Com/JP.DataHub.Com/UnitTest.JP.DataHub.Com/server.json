@@ -1,0 +1,48 @@
+[
+  {
+    "ServerName": "test1",
+    "Type": "default_server",
+    "AuthenticationType": "vendor",
+    "EnvironmentList": [
+      {
+        "EnvironmentName": "AzureDotnet6開発",
+        "EnvironmentId": "",
+        "Url": "",
+        "Url2": "",
+        "ServerAuthenticationList": {
+          "OpenId": {
+            "Type": "OpenId",
+            "Url": "",
+            "Scope": "",
+            "ClientId": ""
+          },
+          "Vendor": {
+            "Type": "Vendor",
+            "Url": "",
+            "ClientId": "",
+            "ClientSecret": ""
+          }
+        }
+      },
+      {
+        "EnvironmentName": "開発",
+        "EnvironmentId": "",
+        "Url": "http://localhost:64059",
+        "ServerAuthenticationList": {
+          "OpenId": {
+            "Type": "OpenId",
+            "Url": "",
+            "Scope": "",
+            "ClientId": ""
+          },
+          "Vendor": {
+            "Type": "Vendor",
+            "Url": "http://localhost:64059/Token",
+            "ClientId": "",
+            "ClientSecret": ""
+          }
+        }
+      }
+    ]
+  }
+]

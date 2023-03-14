@@ -1,0 +1,82 @@
+{
+  "test1": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "test2": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "test3": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "dataofferonly": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "datauseonly": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "datanotaccess": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "termstest": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "userResourceShareA": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "userResourceShareB": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "userResourceShareC": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  }
+}

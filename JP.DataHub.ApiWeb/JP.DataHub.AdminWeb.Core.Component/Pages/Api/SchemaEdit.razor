@@ -1,0 +1,217 @@
+﻿@inherits AdminWebBasePage
+@using AutoMapper
+@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+@using JP.DataHub.AdminWeb.Core.Component.Component
+
+@attribute [Authorize(Policy = "Model")]
+
+<RadzenCard>
+    <h4>@(Schema.IsNew ? "モデル追加" : "モデル編集")</h4>
+    <AuthorizeView Policy="@(FunctionPolicy.ModelWrite.ToString())">
+        <Authorized>
+            @{
+                // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+                _isEditable = true;
+            }
+        </Authorized>
+        <NotAuthorized>
+            @{
+                _isEditable = false;
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+    <div>
+        <RadzenTemplateForm EditContext="SchemaEditContext" TItem="SchemaModel" Data="Schema" Submit="@(args => Save())">
+            <ObjectGraphDataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="row mt-2">
+                <div class="col-4">
+                    <RadzenLabel Component="Vendor" Text="ベンダー"></RadzenLabel>
+                </div>
+                <div class="col-8">
+                    <AuthorizeView Policy="@FunctionPolicy.SystemAdministrator.ToString()">
+                        <Authorized Context="User">
+                            <RadzenDropDown class="w-100" Name="Vendor" TValue="string" Data="Vendors" ValueProperty="VendorId" TextProperty="VendorName" @bind-Value="Schema.VendorId"></RadzenDropDown>
+                        </Authorized>
+                        <NotAuthorized Context="User">
+                            <RadzenTextBox class="w-100" Name="Vendor" Disabled="true" Value="@(Vendors.SingleOrDefault(v => v.VendorId == Schema.VendorId)?.VendorName)"></RadzenTextBox>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-4">
+                    <RadzenLabel Component="SchemaName" Text="モデル名"></RadzenLabel>
+                </div>
+                <div class="col-8">
+                    <RadzenTextBox class="w-100" Name="SchemaName" @bind-Value="Schema.SchemaName" Style="display: block;" Disabled="@(!_isEditable)"></RadzenTextBox>
+                    <ValidationMessage For="@(() => Schema.SchemaName)" />
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-4">
+                    <RadzenLabel Component="Description" Text="説明"></RadzenLabel>
+                </div>
+                <div class="col-8">
+                    <MarkdownEditor TextAreaCssClass="w-100 textarea-schema-description" TextAreaName="Description" @bind-Text="Schema.Description" Disabled="@(!_isEditable)"></MarkdownEditor>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-4">
+                    <RadzenLabel Component="JsonSchema" Text="データモデル"></RadzenLabel>
+                </div>
+                <div class="col-8">
+                    <RadzenTextArea class="w-100 textarea-json-schema" Name="JsonSchema" @bind-Value="Schema.JsonSchema" Style="display: block;" Disabled="@(!_isEditable)"></RadzenTextArea>
+                    <ValidationMessage For="@(() => Schema.JsonSchema)" />
+                    <div class="mt-1">
+                        <RadzenButton Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Schema.JsonSchema))"></RadzenButton>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center mt-5">
+                @if (AllowCancel)
+                {
+                    <div class="col-3">
+                        <RadzenButton Text="キャンセル" ButtonStyle="ButtonStyle.Light" Click="Cancel"></RadzenButton>
+                    </div>
+                }
+                @if (_isEditable)
+                {
+                    <div class="col-3">
+                        <RadzenButton Text="@(Schema.IsNew ? "作成" : "保存")" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit"></RadzenButton>
+                    </div>
+                    @if (AllowDelete && !Schema.IsNew)
+                    {
+                        <div class="col-3">
+                            <RadzenButton Text="削除" ButtonStyle="ButtonStyle.Danger" Click="Delete"></RadzenButton>
+                        </div>
+                    }
+                }
+            </div>
+        </RadzenTemplateForm>
+    </div>
+</RadzenCard>
+
+@code {
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public SchemaModel Schema { get; set; }
+
+    [Parameter]
+    public List<VendorSimpleModel> Vendors { get; set; } = new();
+
+    [Parameter]
+    public bool AllowCancel { get; set; }
+
+    [Parameter]
+    public bool AllowDelete { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancle { get; set; }
+
+
+    [Inject]
+    protected IAdminApiService Service { get; set; }
+
+    [Inject]
+    protected IJSRuntime JS { get; set; }
+
+    private EditContext SchemaEditContext;
+
+    private bool _isEditable = false;
+
+    /// <summary>
+    /// 編集前のスキーマ名。スキーマ名の変更検知に利用。
+    /// </summary>
+    private string _initialSchemaName = string.Empty;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        SchemaEditContext = new EditContext(Schema);
+        await base.OnInitializedAsync();
+
+        _initialSchemaName = Schema.SchemaName;
+    }
+
+    private async Task Save()
+    {
+        if (!SchemaEditContext.Validate()) return;
+
+        var confirmResult = await Layout.ShowConfirmDialog("モデル保存", "モデルの保存を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        try 
+        {
+            Schema.SchemaId = (await Service.RegisterSchemaAsync(Schema)).Throw(x => !x.IsSuccessStatusCode, x => "スキーマの保存に失敗しました。")
+                                                                         .Result
+                                                                         .SchemaId;
+            Schema.IsCreatedOrRenamed = Schema.IsNew || (_initialSchemaName != Schema.SchemaName);
+            _initialSchemaName = Schema.SchemaName;
+            Schema.IsNew = false;
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("モデル保存失敗", "モデルの保存に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "モデルを保存しました。");
+
+        await OnChange.InvokeAsync(Schema.SchemaId);
+    }
+
+    private async Task Delete()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("モデル削除", "モデルの削除を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        try 
+        {
+            (await Service.DeleteSchemaAsync(Schema.SchemaId)).Throw(x => !x.IsSuccessStatusCode, x => "モデルの削除に失敗しました。");
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("モデル削除失敗", "モデルの削除に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "モデルを削除しました。");
+
+        await OnDelete.InvokeAsync();
+    }
+
+    private async Task Cancel()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("モデル編集", "モデルの編集をキャンセルします。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        await OnCancle.InvokeAsync();
+    }
+}

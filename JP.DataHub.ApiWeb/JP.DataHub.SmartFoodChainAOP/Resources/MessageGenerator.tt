@@ -1,0 +1,287 @@
+﻿<#@ template hostspecific="True" #>
+<#@ assembly name="EnvDTE" #>
+<#@ assembly name="System.Core.dll" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="System.Data.Entity.Design" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Configuration" #>
+<#@ assembly name="System.Windows.Forms" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="System.Data.SqlClient" #>
+<#@ import namespace="System.Data.Common" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Configuration" #>
+<#@ import namespace="System.Windows.Forms" #>
+<#@ import namespace="System.Net" #>
+<#
+	// Settings
+    Namespace = "JP.DataHub.SmartFoodChainAOP.ErrorCode";
+	ClassPrefix = "DB_";
+    MessagePrefix = "SmartFoodChainAOPMessages";
+    COUNT = 4;
+#>
+using JP.DataHub.Com.Extensions;
+using JP.DataHub.Com.Helper;
+using JP.DataHub.Com.Resources;
+using JP.DataHub.Com.Unity;
+using JP.DataHub.Com.RFC7807;
+using JP.DataHub.Com.DataContainer;
+using JP.DataHub.SmartFoodChainAOP.Resources;
+using JP.DataHub.SmartFoodChainAOP.ErrorCode;
+using Newtonsoft.Json;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Text;
+using Unity;
+using Microsoft.Extensions.Configuration;
+
+// .NET6
+// この定義はMessageGenerator.ttから自動生成したものである
+// このクラスを直接変更するのではなく、TTテンプレートから自動生成を必ず行うこと
+namespace <#=Namespace #>
+{
+    public static partial class ErrorCodeMessage
+    {
+        private const string MEDIATYPE_JSON = "application/json";
+
+        public enum Code
+        {
+<#
+    int count = Def.Length / COUNT;
+    for (int i = 0; i < count; i++)
+    {
+#>
+            [MessageDefinition("<#=Def[i * COUNT+1]#>", "<#=Def[i * COUNT+2]#>", HttpStatusCode.<#=Def[i * COUNT+3]#>)]
+            <#=Def[i * COUNT+0]#>,
+<#
+    }
+#>
+        }
+
+        private static Lazy<System.Resources.ResourceManager> _resourceManager = new Lazy<System.Resources.ResourceManager>(() =>
+        {
+            var list = RuntimeReflectionExtensions.GetRuntimeProperties(typeof(<#=MessagePrefix#>)).ToList();
+            var prop = list?.Where(x => x.Name == "ResourceManager").FirstOrDefault();
+            var result = (System.Resources.ResourceManager)prop?.GetValue(null);
+            return result;
+        });
+
+        private static System.Resources.ResourceManager ResourceManager => _resourceManager.Value;
+
+        public static string GetString(string resourceName, CultureInfo cultureInfo)
+        {
+            IDataContainer dataContainer;
+            try
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>();
+            }
+            catch (ResolutionFailedException)
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>("multiThread");
+            }
+            return ResourceManager.GetString(resourceName, cultureInfo);
+        }
+
+        public static string GetString(string resourceName)
+        {
+            IDataContainer dataContainer;
+            try
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>();
+            }
+            catch (ResolutionFailedException)
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>("multiThread");
+            }
+            return ResourceManager.GetString(resourceName, dataContainer.CultureInfo);
+        }
+
+        public static RFC7807ProblemDetailExtendErrors GetRFC7807(this Code errorCode, CultureInfo cultureInfo, string relativeUrl = null)
+        {
+            // エラーの変換が定義されていればエラーコードを変換する
+            var newcodestring = UnityCore.Resolve<IConfiguration>().GetValue<string>($"Rfc7807ErrorMap:{errorCode}.To");
+            if (!string.IsNullOrEmpty(newcodestring) && newcodestring.TryParse<Code>(out var newcode))
+            {
+                errorCode = newcode;
+            }
+
+            var rpdc = new RFC7807ProblemDetailExtendErrors();
+            if (string.IsNullOrEmpty(relativeUrl) == false)
+            {
+                rpdc.Instance = new Uri(relativeUrl, UriKind.Relative);
+            }
+            rpdc.ErrorCode = errorCode.ToString();
+
+            var attr = errorCode.GetAttribute<MessageDefinitionAttribute>();
+            if (attr != null)
+            {
+                rpdc.Title = GetString(attr.Message, cultureInfo);
+                rpdc.Detail = GetString(attr.Detail, cultureInfo);
+                rpdc.Status = (int)attr.HttpStatusCode;
+            }
+            return rpdc;
+        }
+
+        public static RFC7807ProblemDetailExtendErrors GetRFC7807(this Code errorCode, string relativeUrl = null)
+        {
+            // エラーの変換が定義されていればエラーコードを変換する
+            var newcodestring = UnityCore.Resolve<IConfiguration>().GetValue<string>($"Rfc7807ErrorMap:{errorCode}.To");
+            if (!string.IsNullOrEmpty(newcodestring) && newcodestring.TryParse<Code>(out var newcode))
+            {
+                errorCode = newcode;
+            }
+
+            var rpdc = new RFC7807ProblemDetailExtendErrors();
+            if (string.IsNullOrEmpty(relativeUrl) == false)
+            {
+                rpdc.Instance = new Uri(relativeUrl, UriKind.Relative);
+            }
+            rpdc.ErrorCode = errorCode.ToString();
+
+            var attr = errorCode.GetAttribute<MessageDefinitionAttribute>();
+            if (attr != null)
+            {
+                rpdc.Title = GetString(attr.Message);
+                rpdc.Detail = GetString(attr.Detail);
+                rpdc.Status = (int)attr.HttpStatusCode;
+            }
+            return rpdc;
+        }
+
+        public static HttpResponseMessage GetRFC7807HttpResponseMessage(Code errorCode, CultureInfo cultureInfo, string relativeUrl = null, string title = null, string detail = null)
+        {
+            var error = GetRFC7807(errorCode, relativeUrl);
+            return GetRFC7807HttpResponseMessage(error, relativeUrl, title, detail);
+        }
+
+        public static HttpResponseMessage GetRFC7807HttpResponseMessage(Code errorCode, string relativeUrl = null, string title = null, string detail = null)
+        {
+            var error = GetRFC7807(errorCode, relativeUrl);
+            return GetRFC7807HttpResponseMessage(error, relativeUrl, title, detail);
+        }
+
+        public static HttpResponseMessage GetRFC7807HttpResponseMessage(RFC7807ProblemDetailExtendErrors error, string relativeUrl = null, string title = null, string detail = null)
+        {
+            if (string.IsNullOrEmpty(relativeUrl) == false)
+            {
+                error.Instance = new Uri(relativeUrl, UriKind.Relative);
+            }
+
+            if (string.IsNullOrEmpty(title) == false)
+            {
+                error.Title = title;
+            }
+
+            if (string.IsNullOrEmpty(detail) == false)
+            {
+                error.Detail = detail;
+            }
+
+            return new HttpResponseMessage((HttpStatusCode)error.Status) { Content = new StringContent(JsonConvert.SerializeObject(error), Encoding.UTF8, MEDIATYPE_JSON) };
+        }
+    }
+}
+
+<#+
+string Namespace = "";
+string ClassPrefix = "";
+string ClassSuffix = "";
+string MessagePrefix = "";
+int COUNT = 0;
+
+        string[] Def = new string[] {
+
+"E100400","E100400_title","E100400_detail","Conflict",
+"E100401","E100401_title","E100401_detail","Conflict",
+"E100402","E100402_title","E100402_detail","NotFound",
+"E100403","E100403_title","E100403_detail","NotFound",
+"E100404","E100404_title","E100404_detail","Forbidden",
+"E100405","E100405_title","E100405_detail","BadRequest",
+"E100406","E100406_title","E100406_detail","Conflict",
+"E100407","E100407_title","E100407_detail","Conflict",
+"E100408","E100408_title","E100408_detail","BadRequest",
+"E100409","E100409_title","E100409_detail","BadRequest",
+"E100410","E100410_title","E100410_detail","Forbidden",
+"E100411","E100411_title","E100411_detail","BadRequest",
+"E100412","E100412_title","E100412_detail","BadRequest",
+"E101400","E101400_title","E101400_detail","BadRequest",
+"E101401","E101401_title","E101401_detail","BadRequest",
+"E101402","E101402_title","E101402_detail","BadRequest",
+"E101403","E101403_title","E101403_detail","BadRequest",
+"E101404","E101404_title","E101404_detail","BadRequest",
+"E101405","E101405_title","E101405_detail","BadRequest",
+"E101406","E101406_title","E101406_detail","BadRequest",
+"E101407","E101407_title","E101407_detail","BadRequest",
+"E101408","E101408_title","E101408_detail","NotFound",
+"E101501","E101501_title","E101501_detail","InternalServerError",
+"E102401","E102401_title","E102401_detail","BadRequest",
+"E102402","E102402_title","E102402_detail","BadRequest",
+"E102403","E102403_title","E102403_detail","BadRequest",
+"E102404","E102404_title","E102404_detail","BadRequest",
+"E102405","E102405_title","E102405_detail","BadRequest",
+"E102406","E102406_title","E102406_detail","BadRequest",
+"E102407","E102407_title","E102407_detail","BadRequest",
+"E102408","E102408_title","E102408_detail","BadRequest",
+"E102409","E102409_title","E102409_detail","NotFound",
+"E102410","E102410_title","E102410_detail","NotFound",
+"E102411","E102411_title","E102411_detail","NotFound",
+"E102412","E102412_title","E102412_detail","NotFound",
+"E102413","E102413_title","E102413_detail","NotFound",
+"E102414","E102414_title","E102414_detail","BadRequest",
+"E102415","E102415_title","E102415_detail","BadRequest",
+"E102416","E102416_title","E102416_detail","BadRequest",
+"E102417","E102417_title","E102417_detail","BadRequest",
+"E102418","E102418_title","E102418_detail","BadRequest",
+"E103400","E103400_title","E103400_detail","BadRequest",
+"E103401","E103401_title","E103401_detail","BadRequest",
+"E103402","E103402_title","E103402_detail","BadRequest",
+"E103403","E103403_title","E103403_detail","BadRequest",
+"E103404","E103404_title","E103404_detail","BadRequest",
+"E103405","E103405_title","E103405_detail","BadRequest",
+"E103406","E103406_title","E103406_detail","NotFound",
+"E103407","E103407_title","E103407_detail","NotFound",
+"E103408","E103408_title","E103408_detail","BadRequest",
+"E103409","E103409_title","E103409_detail","BadRequest",
+"E103410","E103410_title","E103410_detail","BadRequest",
+"E103411","E103411_title","E103411_detail","BadRequest",
+"E103501","E103501_title","E103501_detail","InternalServerError",
+"E103502","E103502_title","E103502_detail","InternalServerError",
+"E104400","E104400_title","E104400_detail","BadRequest",
+"E104401","E104401_title","E104401_detail","BadRequest",
+"E104402","E104402_title","E104402_detail","BadRequest",
+"E104403","E104403_title","E104403_detail","NotFound",
+"E104404","E104404_title","E104404_detail","BadRequest",
+"E104405","E104405_title","E104405_detail","BadRequest",
+"E104406","E104406_title","E104406_detail","BadRequest",
+"E104407","E104407_title","E104407_detail","BadRequest",
+"E104408","E104408_title","E104408_detail","BadRequest",
+"E104409","E104409_title","E104409_detail","NotFound",
+"E105400","E105400_title","E105400_detail","BadRequest",
+"E106501","E106501_title","E106501_detail","InternalServerError",
+"E106402","E106402_title","E106402_detail","BadRequest",
+"E106403","E106403_title","E106403_detail","BadRequest",
+"E106404","E106404_title","E106404_detail","BadRequest",
+"E106405","E106405_title","E106405_detail","BadRequest",
+"E106406","E106406_title","E106406_detail","BadRequest",
+"E106507","E106507_title","E106507_detail","InternalServerError",
+"E106408","E106408_title","E106408_detail","BadRequest",
+"E103412","E103412_title","E103412_detail","BadRequest",
+"E103413","E103413_title","E103413_detail","BadRequest",
+"E107401","E107401_title","E107401_detail","BadRequest",
+"E107402","E107402_title","E107402_detail","NotFound",
+"E107403","E107403_title","E107403_detail","BadRequest",
+"E107501","E107501_title","E107501_detail","InternalServerError",
+"E107502","E107502_title","E107502_detail","InternalServerError",
+
+        };
+#>

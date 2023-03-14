@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JP.DataHub.Com\JP.DataHub.Com.csproj" />
+    <ProjectReference Include="..\JP.DataHub.MVC\JP.DataHub.MVC.csproj" />
+  </ItemGroup>
+
+</Project>

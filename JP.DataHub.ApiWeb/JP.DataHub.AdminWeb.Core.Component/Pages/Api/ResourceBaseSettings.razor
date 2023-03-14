@@ -1,0 +1,215 @@
+﻿@inherits AdminWebBasePage
+@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+
+<div class="resource_base_settings_section">
+    <AuthorizeView Policy="@(FunctionPolicy.ApiWrite.ToString())">
+        <Authorized>
+            @{
+                // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+                _isEditable = true;
+            }
+        </Authorized>
+        <NotAuthorized>
+            @{
+                _isEditable = false;
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="Vendor" Text="ベンダー"></RadzenLabel>
+        </div>
+        <AuthorizeView Context="VendorName" Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+            <Authorized>
+                <div class="col-8">
+                    <RadzenDropDown class="w-100" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true" TValue="string" Data=@Vendors TextProperty="VendorName" ValueProperty="VendorId" @bind-Value="@ResourceHeader.Controller.VendorId" Change="ChangeVendor"></RadzenDropDown>
+                    <ValidationMessage For="@(() => ResourceHeader.Controller.VendorId)" />
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="col-8">
+                    <RadzenTextBox class="w-100" Name="Vendor" Disabled="true" Value="@(Vendors.SingleOrDefault(v => v.VendorId == ResourceHeader.Controller.VendorId)?.VendorName)"></RadzenTextBox>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="System" Text="システム"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenDropDown class="w-100" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true" TValue="string" Data=@(Vendors.SingleOrDefault(x => x.VendorId == ResourceHeader.Controller.VendorId)?.SystemList) TextProperty="SystemName" ValueProperty="SystemId" @bind-Value="@ResourceHeader.Controller.SystemId" Disabled="@(!_isEditable)"></RadzenDropDown>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.SystemId)" />
+        </div>
+    </div>
+    @if (!ResourceHeader.IsNew)
+    {
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="ApiId" Text="API ID"></RadzenLabel>
+            </div>
+            <div class="col-8 d-flex align-items-center">
+                <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ControllerId" Disabled="true"></RadzenTextBox>
+                <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(ResourceHeader.Controller.ControllerId))"></RadzenButton>
+            </div>
+        </div>
+    }
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="ApiName" Text="API名"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <div class="d-flex align-items-center">
+                <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ControllerName" Disabled="@(!_isEditable)"></RadzenTextBox>
+                <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(ResourceHeader.Controller.ControllerName))"></RadzenButton>
+            </div>
+            <div>
+                <ValidationMessage For="@(() => ResourceHeader.Controller.ControllerName)" />
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="URL" Text="URL"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <div class="d-flex align-items-center">
+                <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.Url" Disabled="@(!_isEditable)"></RadzenTextBox>
+                <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(ResourceHeader.Controller.Url))"></RadzenButton>
+            </div>
+            <div>
+                <ValidationMessage For="@(() => ResourceHeader.Controller.Url)" />
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2" style="display:none">
+        <div class="col-4" style="display:none">
+            <RadzenLabel Component="Description" Text="説明" style="display:none"></RadzenLabel>
+        </div>
+        <div class="col-8" style="display:none">
+            <RadzenTextArea class="w-100" @bind-Value="ResourceHeader.Controller.ControllerDescription" Disabled="@(!_isEditable)"></RadzenTextArea>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="dependency" Text="依存設定" Visible="IsDetailMode"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenRadioButtonList class="w-100" TValue="ApiResourceInformationModel.DependenctFlags" Value="ResourceHeader.Controller.Dependency" Change=@(arg => OnDepdencyChange(arg)) Visible="IsDetailMode" Disabled="@(!ResourceHeader.IsNew)">
+                <Items>
+                    <RadzenRadioButtonListItem Text="なし" Value="ApiResourceInformationModel.DependenctFlags.NonDependency"></RadzenRadioButtonListItem>
+                    <RadzenRadioButtonListItem Text="ベンダー依存" Value="ApiResourceInformationModel.DependenctFlags.IsVendor"></RadzenRadioButtonListItem>
+                    <RadzenRadioButtonListItem Text="個人ユーザー依存" Value="ApiResourceInformationModel.DependenctFlags.IsPerson"></RadzenRadioButtonListItem>
+                </Items>
+            </RadzenRadioButtonList>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="state" Text="状態" Visible="IsDetailMode"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="ResourceHeader.Controller.IsEnable" Visible="IsDetailMode" Disabled="@(!_isEditable)">
+                <Items>
+                    <RadzenRadioButtonListItem Text="有効" Value="true"></RadzenRadioButtonListItem>
+                    <RadzenRadioButtonListItem Text="無効" Value="false"></RadzenRadioButtonListItem>
+                </Items>
+            </RadzenRadioButtonList>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="Schema" Text="モデル" Visible="IsDetailMode"></RadzenLabel>
+        </div>
+        <div class="col-6 d-flex align-items-center">
+            <RadzenDropDown class="w-100" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true" AllowClear="true" TValue="string" Data="ResourceHeader.DataSchemaList" TextProperty="SchemaName" ValueProperty="SchemaId.ToLower()" @bind-Value="ResourceHeader.Controller.ControllerSchemaId" Visible="IsDetailMode" Disabled="@(!_isEditable)"></RadzenDropDown>
+        </div>
+        <div class="col-2 d-flex align-items-center px-0">
+            <RadzenButton class="me-1" Icon="add" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => AddSchema.InvokeAsync())" Visible="IsDetailMode" Disabled="@(!_isEditable)"></RadzenButton>
+            <RadzenButton Icon="open_in_new" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => EditSchema.InvokeAsync(ResourceHeader.Controller.ControllerSchemaId))" Visible="IsDetailMode && ResourceHeader.Controller.ControllerSchemaId != null"></RadzenButton>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="RepositoryKey" Text="リポジトリキー"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <div class="d-flex align-items-center">
+                <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.RepositoryKey" Disabled="@(!_isEditable)"></RadzenTextBox>
+                <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(ResourceHeader.Controller.RepositoryKey))"></RadzenButton>
+            </div>
+            <div>
+                <ValidationMessage For="@(() => ResourceHeader.Controller.RepositoryKey)" />
+            </div>
+        </div>
+    </div>
+    <div class="row mt-2" style="display:none">
+        <div class="col-4" style="display:none">
+            <RadzenLabel Component="PartitionKey" Text="パーティションキー" Visible="IsDetailMode" style="display:none"></RadzenLabel>
+        </div>
+        <div class="col-8" style="display:none">
+            <div class="d-flex align-items-center" style="display:none">
+                <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.PartitionKey" Visible="IsDetailMode" Disabled="@(!_isEditable)"></RadzenTextBox>
+                <RadzenButton class="ms-2" Visible="IsDetailMode" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(ResourceHeader.Controller.PartitionKey))"></RadzenButton>
+            </div>
+            <div style="display:none">
+                <ValidationMessage For="@(() => ResourceHeader.Controller.PartitionKey)" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ApiResourceHeaderModel ResourceHeader { get; set; }
+
+    [Parameter]
+    public List<VendorSimpleModel> Vendors { get; set; }
+
+    [Parameter]
+    public bool IsDetailMode { get; set; }
+
+    [Parameter]
+    public EventCallback AddSchema { get; set; }
+
+    [Parameter]
+    public EventCallback<string> EditSchema { get; set; }
+
+    private bool _isEditable = false;
+
+    /// <summary>
+    /// ベンダーを変更する
+    /// </summary>
+    private void ChangeVendor()
+    {
+            // 変更したベンダーの先頭のシステムをデフォルトでセットする
+            var system = Vendors.SingleOrDefault(x => x.VendorId == ResourceHeader.Controller.VendorId)?.SystemList.FirstOrDefault();
+            ResourceHeader.Controller.SystemId = system?.SystemId;
+    }
+
+    /// <summary>
+    /// 依存設定の変更イベント
+    /// </summary>
+    /// <param name="value"></param>
+    private void OnDepdencyChange(ApiResourceInformationModel.DependenctFlags value)
+    {
+        switch (value)
+        {
+            case ApiResourceInformationModel.DependenctFlags.NonDependency:
+                ResourceHeader.Controller.IsVendor = false;
+                ResourceHeader.Controller.IsPerson = false;
+                break;
+            case ApiResourceInformationModel.DependenctFlags.IsVendor:
+                ResourceHeader.Controller.IsVendor = true;
+                ResourceHeader.Controller.IsPerson = false;
+                break;
+            case ApiResourceInformationModel.DependenctFlags.IsPerson:
+                ResourceHeader.Controller.IsVendor = false;
+                ResourceHeader.Controller.IsPerson = true;
+                break;
+            default:
+                break;
+        }
+
+    }
+}

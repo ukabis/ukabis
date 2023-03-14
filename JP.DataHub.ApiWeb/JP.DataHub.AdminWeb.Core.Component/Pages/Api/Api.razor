@@ -1,0 +1,845 @@
+﻿@page "/api"
+
+@using Microsoft.AspNetCore.Authorization
+@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+@using JP.DataHub.AdminWeb.Core.Component.Pages.Common;
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+@using JP.DataHub.Com.Extensions;
+@using JP.DataHub.AdminWeb.Core.Component.Pages;
+
+@inherits AdminWebBasePage
+
+<div class="row h-100">
+    <div class="col-3 h-100" style="min-width: 350px; overflow-y: hidden;">
+        <div class="col-10 pl-2">
+            <div class="my-2">
+                <h4>API/メソッド/モデル</h4>
+            </div>
+        </div>
+        <!-- 一覧フィルター-->
+        <div class="row mx-1">
+            <RadzenLabel Component="Vendor" Text="ベンダー"></RadzenLabel>
+            <AuthorizeView Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+                <Authorized>
+                    <RadzenDropDown Name="Vendor" TValue="string" Data=@_treeVendors TextProperty="VendorName" ValueProperty="VendorId" @bind-Value="@_selectedVendor"></RadzenDropDown>
+                </Authorized>
+                <NotAuthorized>
+                    <RadzenTextBox Name="Vendor" Value="@_treeVendors.SingleOrDefault(v => v.VendorId == _selectedVendor)?.VendorName" Disabled="true"></RadzenTextBox>
+                </NotAuthorized>
+            </AuthorizeView>
+
+        </div>
+        <div class="row mt-2 mx-1">
+            <RadzenLabel Component="Type" Text="タイプ"></RadzenLabel>
+        </div>
+        <div class="mt-2 mx-1">
+            <RadzenCheckBox Name="IsResource" TValue="bool" @bind-Value="_isDisplayFlag.resource"></RadzenCheckBox>
+            <RadzenLabel Component="IsResource" Text="API" Style="vertical-align:middle;"></RadzenLabel>
+            <RadzenCheckBox Name="IsSchema" TValue="bool" @bind-Value="_isDisplayFlag.schema"></RadzenCheckBox>
+            <RadzenLabel Component="IsSchema" Text="モデル" Style="vertical-align:middle;"></RadzenLabel>
+            <RadzenCheckBox Name="IsTransparent" TValue="bool" @bind-Value="_isDisplayFlag.transparent" Change="@(args => TransparentCheckBoxChanged(args))"></RadzenCheckBox>
+            <RadzenLabel Component="IsTransparent" Text="透過" Style="vertical-align:middle;"></RadzenLabel>
+        </div>
+        <div class="row mt-2 mx-1">
+            <RadzenLabel Component="TextSearch" Text="URL/モデル名の検索"></RadzenLabel>
+            <RadzenTextBox @oninput="@(args => _filterText = args.Value.ToString())"></RadzenTextBox>
+        </div>
+        <!-- 一覧ツリー表示-->
+        <RadzenTree class="w-100 overflow-auto api-tree mt-2" @bind-Value="_selectedNode" Change="SelectNode">
+            @{
+                @*権限のフラグを設定*@
+                bool apiWrite = false;
+                bool methodWrite = false;
+                bool modelWrite = false;
+                <AuthorizeView Policy="@(FunctionPolicy.ModelWrite.ToString())">
+                    @{
+                        modelWrite = true;
+                    }
+                </AuthorizeView>
+                <AuthorizeView Policy="@(FunctionPolicy.MethodWrite.ToString())">
+                    @{
+                        methodWrite = true;
+                    }
+                </AuthorizeView>
+                <AuthorizeView Policy="@(FunctionPolicy.ApiWrite.ToString())">
+                    @{
+                        apiWrite = true;
+                    }
+                </AuthorizeView>
+                @if (_isDisplayFlag.resource)
+                {
+                    var displayResources = _resources;
+                    if (string.IsNullOrWhiteSpace(_selectedVendor) == false)
+                    {
+                        displayResources = _resources.Where(x => x.VendorId == _selectedVendor).ToList();
+                    }
+
+                    <RadzenTreeItem Expanded="true">
+                        <Template Context="ApiTreeTitle">
+                            <span class="w-100 position-relative">
+                                <b class="treenode-label-text">API</b>
+                                <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                    <AuthorizeView Policy="@(FunctionPolicy.ApiWrite.ToString())">
+                                        @if (_expandedSettingId == GetNodeId(NodeType.Resource, "", ""))
+                                        {
+                                            <RadzenButton Icon="comments" Size="ButtonSize.Small" @onclick:stopPropagation="true" Click="@(args => AddResourceWizard())"></RadzenButton>
+                                            <RadzenButton Icon="add" Size="ButtonSize.Small" @onclick:stopPropagation="true" Click="@(args => AddResource())"></RadzenButton>
+                                            <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Resource, "", ""))" @onclick:stopPropagation="true"></RadzenButton>
+                                        }
+                                        else
+                                        {
+                                            <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Resource, "", ""))" @onclick:stopPropagation="true"></RadzenButton>
+                                        }
+                                    </AuthorizeView>
+                                </span>
+                            </span>
+                        </Template>
+                        <ChildContent>
+                            @foreach (var resource in displayResources)
+                            {
+                                @if (string.IsNullOrEmpty(_filterText) || resource.RelativeUrl.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <RadzenTreeItem Text="ResourceItem" Value="resource" Selected=@(_selectedResourceHeader?.Controller?.ControllerId == resource.ApiId)>
+                                        <Template Context="ApiTree">
+                                            <span class="w-100 position-relative">
+                                                <RadzenIcon Icon="api" Style="vertical-align: middle;"></RadzenIcon>
+                                                <b class="w-75 treenode-label-text">@resource.RelativeUrl</b>
+                                                <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                                    @if (_expandedSettingId == GetNodeId(NodeType.Resource, resource.VendorId, resource.ApiId))
+                                                    {
+                                                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" @onclick:stopPropagation="true" Click="@(args => DeleteResource(resource))" Visible="apiWrite"></RadzenButton>
+                                                        <RadzenButton Icon="add" Size="ButtonSize.Small" @onclick:stopPropagation="true" Click="@(args => AddMethod(resource.ApiId))" Visible="methodWrite"></RadzenButton>
+                                                        <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Resource, resource.VendorId, resource.ApiId))" @onclick:stopPropagation="true" Visible="@(apiWrite || methodWrite)"></RadzenButton>
+                                                    }
+                                                    else
+                                                    {
+                                                        <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Resource, resource.VendorId, resource.ApiId))" @onclick:stopPropagation="true" Visible="@(apiWrite || methodWrite)"></RadzenButton>
+                                                    }
+                                                </span>
+                                            </span>
+                                        </Template>
+                                        <ChildContent>
+                                            @foreach (var method in resource.MethodList)
+                                            {
+                                                @if ((method.IsTransparent == false || _isDisplayFlag.transparent))
+                                                {
+                                                    <RadzenTreeItem Text="MethodItem" Value="method" Selected=@(_selectedMethod?.MethodId == method.MethodId)>
+                                                        <Template Context="MethodTree">
+                                                            <span class="w-100 position-relative">
+                                                                @switch (method.MethodType)
+                                                                {
+                                                                    case "GET":
+                                                                        <RadzenIcon Icon="download" Style="vertical-align: middle;"></RadzenIcon>
+                                                                        break;
+                                                                    case "POST":
+                                                                        <RadzenIcon Icon="edit" Style="vertical-align: middle;"></RadzenIcon>
+                                                                        break;
+                                                                    case "PUT":
+                                                                        <RadzenIcon Icon="upload" Style="vertical-align: middle;"></RadzenIcon>
+                                                                        break;
+                                                                    case "DELETE":
+                                                                        <RadzenIcon Icon="delete_sweep" Style="vertical-align: middle;"></RadzenIcon>
+                                                                        break;
+                                                                    case "PATCH":
+                                                                        <RadzenIcon Icon="edit" Style="vertical-align: middle;"></RadzenIcon>
+                                                                        break;
+                                                                }
+                                                                <b class="w-75 treenode-label-text">@method.MethodUrl</b>
+                                                                @if (!method.IsTransparent)
+                                                                {
+                                                                    <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                                                        @if (methodWrite)
+                                                                        {
+                                                                            @if (_expandedSettingId == GetNodeId(NodeType.Method, resource.VendorId, method.MethodId))
+                                                                            {
+                                                                                <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" @onclick:stopPropagation="true" Click="@(args => DeleteMethod(method.MethodId))"></RadzenButton>
+                                                                                <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Method, resource.VendorId, method.MethodId))" @onclick:stopPropagation="true"></RadzenButton>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Method, resource.VendorId, method.MethodId))" @onclick:stopPropagation="true"></RadzenButton>
+                                                                            }
+                                                                        }
+                                                                    </span>
+                                                                }
+                                                            </span>
+                                                        </Template>
+                                                    </RadzenTreeItem>
+                                                }
+                                            }
+                                        </ChildContent>
+                                    </RadzenTreeItem>
+                                }
+                            }
+                        </ChildContent>
+                    </RadzenTreeItem>
+                }
+                @if (_isDisplayFlag.schema)
+                {
+                    var displaySchemas = _schemas;
+                    if (string.IsNullOrWhiteSpace(_selectedVendor) == false)
+                    {
+                        displaySchemas = _schemas.Where(x => x.VendorId == _selectedVendor).ToList();
+                    }
+                    <RadzenTreeItem Expanded="true">
+                        <Template Context="ModelTreeTitle">
+                            <span class="w-100 position-relative">
+                                <b class="treenode-label-text">モデル</b>
+                                <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                    <AuthorizeView Policy="@(FunctionPolicy.ModelWrite.ToString())">
+                                        @if (_expandedSettingId == GetNodeId(NodeType.Schema, "", ""))
+                                        {
+                                            <RadzenButton Icon="add" Size="ButtonSize.Small" @onclick:stopPropagation="true" Click="@(args => AddSchema())"></RadzenButton>
+                                            <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Schema, "", ""))" @onclick:stopPropagation="true"></RadzenButton>
+                                        }
+                                        else
+                                        {
+                                            <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Schema, "", ""))" @onclick:stopPropagation="true"></RadzenButton>
+                                        }
+                                    </AuthorizeView>
+                                </span>
+                            </span>
+                        </Template>
+                        <ChildContent>
+                            @foreach (var schema in displaySchemas)
+                            {
+                                @if (string.IsNullOrEmpty(_filterText) || schema.SchemaName.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <RadzenTreeItem Text="SchemaItem" Value="schema" Selected=@(_selectedSchema?.SchemaId == schema.SchemaId)>
+                                        <Template Context="ModelTree">
+                                            <div class="w-100">
+                                                <div class="position-relative">
+                                                    <RadzenIcon Icon="schema" Style="vertical-align: middle;"></RadzenIcon>
+                                                    <b class="w-75 treenode-label-text">@schema.SchemaName</b>
+                                                    <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                                        @if (modelWrite)
+                                                        {
+                                                            @if (_expandedSettingId == GetNodeId(NodeType.Schema, schema.VendorId, schema.SchemaId))
+                                                            {
+                                                                <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" @onclick:stopPropagation="true" Click="@(args => DeleteSchema(schema.SchemaId))"></RadzenButton>
+                                                                <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Schema, schema.VendorId, schema.SchemaId))" @onclick:stopPropagation="true"></RadzenButton>
+                                                            }
+                                                            else
+                                                            {
+                                                                <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="@(args => ToggleSettings(NodeType.Schema, schema.VendorId, schema.SchemaId))" @onclick:stopPropagation="true"></RadzenButton>
+                                                            }
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </Template>
+                                    </RadzenTreeItem>
+                                }
+                            }
+                        </ChildContent>
+                    </RadzenTreeItem>
+                }
+            }
+        </RadzenTree>
+    </div>
+    <div class="vr p-0"></div>
+    <div class="col h-100 overflow-auto pb-1" style="min-width: 500px;">
+        @if (_selectedResourceWizard != null && _selectedResourceHeader == null && _selectedMethod == null)
+        {
+            <ResourceWizardEdit Resource="_selectedResourceWizard" Vendors="_vendors" OnChange="@(args => OnChange(NodeType.ResourceWizard, args))"></ResourceWizardEdit>
+        }
+        @if (_selectedResourceHeader != null && _selectedMethod == null)
+        {
+            <ResourceEdit ResourceHeader="_selectedResourceHeader" Vendors="_vendors" OnChange="@(args => OnChange(NodeType.Resource, args.id, args.IsCreatedOrRenamed))" OnDelete="@((args) => OnDelete(NodeType.Resource, (string)args))"></ResourceEdit>
+        }
+        @if (_selectedMethod != null)
+        {
+            <MethodEdit Api="@_selectedMethod" VendorId="@(_resources.First(x => x.ApiId == _selectedMethod.ApiId).VendorId)" Vendors="_vendors" OnChange="@(args => OnChange(NodeType.Method, args))" OnDelete="@(() => OnDelete(NodeType.Method, _selectedMethod.MethodId))" />
+        }
+        @if (_selectedSchema != null)
+        {
+            <SchemaEdit Schema="_selectedSchema" Vendors="_vendors" OnChange="@(args => OnChange(NodeType.Schema, args))" OnDelete="@(() => OnDelete(NodeType.Schema, _selectedSchema.SchemaId))" AllowDelete="@(_selectedSchema.SchemaId != null)"></SchemaEdit>
+        }
+    </div>
+</div>
+
+
+@code {
+    private enum NodeType
+    {
+        Resource,
+        ResourceWizard,
+        Method,
+        Schema
+    }
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [CascadingParameter]
+    protected Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    [Inject]
+    protected IAdminApiService Service { get; set; }
+
+    [Inject]
+    protected IAdminVendorService VendorService {get;set;}
+
+    private object _selectedNode;
+
+    private List<ResourceApiSimpleModel> _resources = new();
+
+    private List<SchemaModel> _schemas = new();
+
+    private List<VendorSimpleModel> _vendors = new();
+
+    /// <summary>
+    /// ツリーのフィルタ用のベンダーリスト。先頭に「全て」が追加される。
+    /// </summary>
+    private List<VendorSimpleModel> _treeVendors = new();
+
+    private string _selectedVendor;
+
+    private ApiResourceHeaderModel _selectedResourceHeader;
+
+    private ResourceWizardModel _selectedResourceWizard;
+
+    private ApiSimpleModel _selectedMethod;
+
+    private SchemaModel _selectedSchema;
+
+    private (bool resource, bool schema, bool transparent) _isDisplayFlag = (true, true, false);
+
+    private bool _isTransparentApiLoaded = false;
+
+    private string _filterText;
+
+    private bool _resourceDeletedFromApiTree;
+    private bool _methodDeletedFromApiTree;
+    private bool _schemaDeletedFromApiTree;
+
+    /// <summary>
+    /// 展開している操作アイコンのID。IDは種別-ベンダーID-GUID({Resource/Method}-{VendorId}-{ApiId/MethodId})。
+    /// </summary>
+    private string _expandedSettingId;
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Layout.ToggleSpinner(true);
+        }
+    }
+
+    protected override async Task OnAfterInitializeAsync()
+    {
+        await Layout.ToggleSpinner(true);
+
+        // 所属ベンダーを選択
+        _selectedVendor = authenticationStateTask.Result.User.FindFirst(AdminClaimTypes.VendorIdentifier).Value;
+        var querystring = IsSystemAdministrator() ? null : $"vendorId={_selectedVendor}";
+
+        var taskGetApiResourceMethodSimpleList = Task.Run(() =>
+        {
+            var qs = $"isTransparent={_isDisplayFlag.transparent}{(querystring != null ? $"&{querystring}" : "")}";
+            _resources = Service.GetApiResourceMethodSimpleList(qs)
+                .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "リソース一覧の取得に失敗しました。")
+                .Result;
+            _isTransparentApiLoaded = _isDisplayFlag.transparent;
+        });
+
+        var taskGetSchemas = Task.Run(() =>
+        {
+            _schemas = Service.GetSchemas(querystring)
+                .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "スキーマ一覧の取得に失敗しました。")
+                .Result;
+        });
+
+        var taskGetVendor = Task.Run(() =>
+        {
+            _vendors = VendorService.GetVendorSimpleList()
+                .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "ベンダー一覧の取得に失敗しました。")
+                .Result;
+            _treeVendors = new List<VendorSimpleModel>(_vendors);
+            _treeVendors.Insert(0, new VendorSimpleModel() { VendorId = "", VendorName = "全て" });
+        });
+
+        await Task.WhenAll(taskGetApiResourceMethodSimpleList, taskGetSchemas, taskGetVendor);
+
+        await Layout.ToggleSpinner(false);
+    }
+
+    /// <summary>
+    /// ツリーのノード選択時の処理。
+    /// 選択されたリソースまたはAPI(メソッド)を取得し、各編集画面を表示する。
+    /// </summary>
+    /// <param name="args">選択されたノード。</param>
+    /// <returns></returns>
+    private async Task SelectNode(TreeEventArgs args)
+    {
+        switch (args.Value)
+        {
+            case ResourceApiSimpleModel:
+                _selectedMethod = null;
+                _selectedSchema = null;
+                var resource = args.Value as ResourceApiSimpleModel;
+                var apiId = resource.ApiId;
+                if (_selectedResourceHeader?.IsCreatedOrRenamed == true)
+                {
+                    // 新規追加やURL変更の場合はなぜか別のリソースに対してSelectNodeがコールされる。
+                    // そのため、argsは無視して_selectedResourceHeaderはそのままとする。
+                    apiId = _selectedResourceHeader.Controller.ControllerId;
+                    _selectedResourceHeader.IsCreatedOrRenamed = false;
+                }
+                else if (_selectedResourceHeader != null && _resourceDeletedFromApiTree)
+                {
+                    // 編集中のリソースより上に位置するリソースをAPIツリーから削除した場合はなぜか削除したリソースに対してSelectNodeがコールされる。
+                    // そのため、argsは無視して_selectedResourceHeaderはそのままとする。
+                    apiId = _selectedResourceHeader.Controller.ControllerId;
+                    _resourceDeletedFromApiTree = false;
+                }
+                else
+                {
+                    // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+                    // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+                    _selectedResourceHeader = null;
+                    await Layout.ToggleSpinner(true);
+                    GetResourceHeader(apiId);
+                    await Layout.ToggleSpinner(false);
+                }
+                break;
+
+            case ApiSimpleModel:
+                _selectedResourceHeader = null;
+                _selectedSchema = null;
+                if (_selectedMethod?.IsCreatedOrRenamed == true)
+                {
+                    // 新規追加やURL変更の場合はなぜか別のメソッドに対してSelectNodeがコールされる。
+                    // そのため、argsは無視して_selectedMethodを使用する。
+                    // 新規追加の場合は_selectedMethodのプロパティが欠損しているためリストから再取得する。
+                    _selectedMethod = _resources
+                        .FirstOrDefault(x => x.ApiId == _selectedMethod.ApiId)?.MethodList
+                        .FirstOrDefault(x => x.MethodId == _selectedMethod.MethodId);
+                    _selectedMethod.IsCreatedOrRenamed = false;
+                }
+                else if (_selectedMethod != null && _methodDeletedFromApiTree)
+                {
+                    // 編集中のメソッドより上に位置するメソッドをAPIツリーから削除した場合はなぜか削除したメソッドに対してSelectNodeがコールされる。
+                    // そのため、argsは無視して_selectedMethodはそのままとする。
+                    _methodDeletedFromApiTree = false;
+                }
+                else
+                {
+                    // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+                    // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+                    _selectedMethod = null;
+                    await Layout.ToggleSpinner(true);
+                    var api = args.Value as ApiSimpleModel;
+                    _selectedMethod = api;
+                    await Layout.ToggleSpinner(false);
+                }
+                break;
+
+            case SchemaModel:
+                _selectedResourceHeader = null;
+                _selectedMethod = null;
+                var schema = args.Value as SchemaModel;
+                var schemaId = schema.SchemaId;
+                if (_selectedSchema?.IsCreatedOrRenamed == true)
+                {
+                    // 新規追加や名称変更の場合はなぜか別のスキーマに対してSelectNodeがコールされる。
+                    // そのため、argsは無視して_selectedSchemaを使用する。
+                    schemaId = _selectedSchema.SchemaId;
+                    _selectedSchema.IsCreatedOrRenamed = false;
+                }
+                else if (_selectedSchema != null && _schemaDeletedFromApiTree)
+                {
+                    // 編集中のスキーマより上に位置するスキーマをAPIツリーから削除した場合はなぜか削除したスキーマに対してSelectNodeがコールされる。
+                    // そのため、argsは無視して_selectedSchemaを使用する。
+                    schemaId = _selectedSchema.SchemaId;
+                    _schemaDeletedFromApiTree = false;
+                }
+
+                // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+                // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+                _selectedSchema = null;
+                await Layout.ToggleSpinner(true);
+                _selectedSchema = Service.GetSchemaById(schemaId)
+                                         .Throw(x => !x.IsSuccessStatusCode, x => "スキーマの取得に失敗しました。")
+                                         .Result;
+                await Layout.ToggleSpinner(false);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /// <summary>
+    /// ツリーノードのIDを取得する。
+    /// IDはノードの表示状態や選択状態を管理する際のキーとして使用する。
+    /// </summary>
+    /// <param name="nodeType">ノード種別。</param>
+    /// <param name="vendorId">ベンダーID。</param>
+    /// <param name="id">ノードにバインドされたデータのID。ApiId、MethodId、SchemaIdのいずれか。</param>
+    /// <returns>ツリーのノードID。</returns>
+    private string GetNodeId(NodeType nodeType, string vendorId, string id)
+    {
+        return $"{nodeType.ToString()}-{vendorId}-{id}";
+    }
+
+    /// <summary>
+    /// 指定したノードの、ノード右側の設定アイコンの表示状態を変更する。
+    /// </summary>
+    /// <param name="nodeType">ノード種別。</param>
+    /// <param name="vendorId">ベンダーID。</param>
+    /// <param name="id">ノードにバインドされたデータのID。ApiId、MethodId、SchemaIdのいずれか。</param>
+    private void ToggleSettings(NodeType nodeType, string vendorId, string id)
+    {
+        var settingsId = GetNodeId(nodeType, vendorId, id);
+        // _expandedSettingIdと一致している場合(展開済みの場合)は縮小、未展開なら展開
+        _expandedSettingId = _expandedSettingId == settingsId ? null : settingsId;
+    }
+
+    private async Task AddResource()
+    {
+        _selectedMethod = null;
+        _selectedSchema = null;
+        _selectedResourceWizard = null;
+
+        // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+        // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+        _selectedResourceHeader = null;
+        await Layout.ToggleSpinner(true);
+        var resourceId = Guid.NewGuid().ToString();
+        GetResourceHeader(resourceId);
+        //デフォルト値設定
+        _selectedResourceHeader.Controller.IsEnable = true;
+        _selectedResourceHeader.Controller.IsVendor = true;
+        _selectedResourceHeader.Controller.IsPerson = false;
+        _selectedResourceHeader.Controller.IsData = true;
+        _selectedResourceHeader.Controller.IsBusinessLogic = false;
+
+        // ManageAPIはControllerIdが未指定なら同じURLのリソースを上書きする仕様となっているため、
+        // 新規の場合は管理画面側であらかじめControllerIdを発行しておく
+        _selectedResourceHeader.Controller.ControllerId = resourceId;
+        _selectedResourceHeader.IsNew = true;
+
+        _expandedSettingId = null;
+        _selectedNode = null;
+        await Layout.ToggleSpinner(false);
+    }
+
+    private async Task AddResourceWizard()
+    {
+        _selectedResourceHeader = null;
+        _selectedMethod = null;
+        _selectedSchema = null;
+
+        // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+        // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+        _selectedResourceWizard = null;
+        await Layout.ToggleSpinner(true);
+        _selectedResourceWizard = new ResourceWizardModel()
+        {
+            VendorId = (await authenticationStateTask).User.FindFirst(AdminClaimTypes.VendorIdentifier).Value,
+        };
+        await Layout.ToggleSpinner(false);
+
+        _expandedSettingId = null;
+        _selectedNode = null;
+    }
+
+    private async Task DeleteResource(ResourceApiSimpleModel api)
+    {
+        if ((await Layout.ShowConfirmDialog("API削除", "APIの削除を行います。よろしいですか？")) != true)
+        {
+            return;
+        }
+
+        _expandedSettingId = null;
+
+        try
+        {
+            await Layout.ToggleSpinner(true);
+            Service.DeleteApi(api.ApiId)
+                   .Throw(x => !x.IsSuccessStatusCode, x => "リソースの削除に失敗しました。");
+            // 削除対象リソースが編集中、または削除対象リソースのメソッドが編集中である場合は編集画面を閉じる
+            if (_selectedResourceHeader?.Controller.ApiId == api.ApiId)
+            {
+                _selectedResourceHeader = null;
+                _selectedNode = null;
+            }
+            if (_selectedMethod?.ApiId == api.ApiId)
+            {
+                _selectedMethod = null;
+                _selectedNode = null;
+            }
+            _resourceDeletedFromApiTree = true;
+        }
+        catch(Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("API削除失敗", "APIの削除に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "APIを削除しました。");
+
+        await RefreshTree();
+    }
+
+    private async Task AddMethod(string apiId)
+    {
+        _selectedResourceHeader = null;
+        _selectedResourceWizard = null;
+        _selectedSchema = null;
+
+        // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+        // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+        _selectedMethod = null;
+        await Layout.ToggleSpinner(true);
+        _selectedMethod = new()
+        {
+            ApiId = apiId,
+            // ManageAPIはMethodIdが未指定なら同じURLのAPIを上書きする仕様となっているため、
+            // 新規の場合は管理画面側であらかじめMethodIdを発行しておく
+            MethodId = Guid.NewGuid().ToString(),
+            IsNew = true
+        };
+        await Layout.ToggleSpinner(false);
+
+        _expandedSettingId = null;
+        _selectedNode = null;
+    }
+
+    private async Task DeleteMethod(string methodId)
+    {
+        if ((await Layout.ShowConfirmDialog("メソッド削除", "メソッドの削除を行います。よろしいですか？")) != true)
+        {
+            return;
+        }
+
+        _expandedSettingId = null;
+
+        try
+        {
+            await Layout.ToggleSpinner(true);
+            Service.DeleteMethod(methodId)
+                   .Throw(x => !x.IsSuccessStatusCode, x => "メソッドの削除に失敗しました。");
+            // 削除対象メソッドが編集中である場合は編集画面を閉じる
+            if (_selectedMethod?.MethodId == methodId)
+            {
+                _selectedMethod = null;
+                _selectedNode = null;
+            }
+            _methodDeletedFromApiTree = true;
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("メソッド削除失敗", "メソッドの削除に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "メソッドを削除しました。");
+
+        await RefreshTree();
+    }
+
+    private async Task AddSchema()
+    {
+        _selectedResourceHeader = null;
+        _selectedResourceWizard = null;
+        _selectedMethod = null;
+
+        // 画面選択を一旦クリアしてから再描画することによりコンポーネントのOnInitializedを実行させる。
+        // (OnInitializedでEditContextを初期化しないとバリデーションが正常に動作しないため)
+        _selectedSchema = null;
+        await Layout.ToggleSpinner(true);
+        _selectedSchema = new()
+        {
+            // ManageAPIはSchemaIdが未指定なら同じURLのAPIを上書きする仕様となっているため、
+            // 新規の場合は管理画面側であらかじめSchemaIdを発行しておく
+            SchemaId = Guid.NewGuid().ToString(),
+            VendorId = _selectedVendor,
+            IsNew = true
+        };
+        await Layout.ToggleSpinner(false);
+
+        _expandedSettingId = null;
+        _selectedNode = null;
+    }
+
+    private async Task DeleteSchema(string schemaId)
+    {
+        if ((await Layout.ShowConfirmDialog("モデル削除", "モデルの削除を行います。よろしいですか？")) != true)
+        {
+            return;
+        }
+
+        _expandedSettingId = null;
+
+        try
+        {
+            await Layout.ToggleSpinner(true);
+            Service.DeleteSchema(schemaId)
+                   .Throw(x => !x.IsSuccessStatusCode, x => "モデルの削除に失敗しました。");
+            // 削除対象スキーマが編集中である場合は編集画面を閉じる
+            if (_selectedSchema?.SchemaId == schemaId)
+            {
+                _selectedSchema = null;
+                _selectedNode = null;
+            }
+            _schemaDeletedFromApiTree = true;
+        }
+        catch(Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("モデル削除失敗", "モデルの削除に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "モデルを削除しました。");
+
+        await RefreshTree();
+    }
+
+    private async Task GetResourceHeader(string resourceId)
+    {
+        var ret = Service.GetApiResourceHeaderFromVendorIdApiId(_selectedVendor, resourceId)
+        .Action(x => !x.IsSuccessStatusCode, async y => 
+        {
+            var errorMsg = y.RawContentString.ToJson();
+            await InvokeAsync(() => Layout.ShowMessageDialog("リソース取得失敗", "リソースの取得に失敗しました。", "OK",  $"{errorMsg["Detail"]}"));
+        })
+        .Action(x => x.IsSuccessStatusCode, y => {
+            _selectedResourceHeader = y.Result;
+            _selectedResourceHeader.Controller ??= new ApiResourceInformationModel() { VendorId = _selectedVendor };
+            _selectedResourceHeader.Controller.AttachFileSettings = _selectedResourceHeader.AttachFileSettings;
+            _selectedResourceHeader.Controller.DocumentHistorySettings = _selectedResourceHeader.DocumentHistorySettings;
+            _selectedResourceHeader.Controller.ControllerTagInfoList = _selectedResourceHeader.ControllerTagInfoList;
+            _selectedResourceHeader.Controller.ControllerFieldInfoList = _selectedResourceHeader.ControllerFieldInfoList;
+            _selectedResourceHeader.Controller.CategoryList = _selectedResourceHeader.ControllerCategoryInfomationList;
+            _selectedResourceHeader.Controller.ControllerCommonIpFilterGroupList = _selectedResourceHeader.ControllerCommonIpFilterGroupList;
+            _selectedResourceHeader.DataSchemaList = Service.GetSchemas($"vendorId={_selectedVendor}").Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "スキーマ一覧の取得に失敗しました。").Result;
+            _selectedResourceHeader.EnableAdaptResourceSchema = _resources?.SingleOrDefault(x => x.ApiId == _selectedResourceHeader.Controller.ApiId)?.MethodList?.Any(x => x.MethodType == "POST") == true;
+        });
+    }
+
+    private async Task OnChange(NodeType nodeType, string id, bool isCreatedOrRenamed = false)
+    {
+        LoadApiTreeParameter param = null;
+        switch (nodeType)
+        {
+            case NodeType.Resource:
+                _selectedResourceHeader.IsCreatedOrRenamed = isCreatedOrRenamed;
+                _selectedResourceHeader.IsNew = isCreatedOrRenamed ? false : _selectedResourceHeader.IsNew;
+
+                break;
+            case NodeType.ResourceWizard:
+                await Layout.ToggleSpinner(true);
+                // ウィザード画面（_selectedResourceWizard）からAPI編集画面（_selectedResource）に変更するためAPI情報を取得する必要がある。
+                // 他はAPI・メソッド・モデル画面は変更しないので情報を取得する必要がない。
+                GetResourceHeader(id);
+                _selectedResourceHeader.IsCreatedOrRenamed = true;
+
+                // ウィザード画面のインスタンスを削除
+                _selectedResourceWizard = null;
+                await Layout.ToggleSpinner(false);
+                break;
+            case NodeType.Method:
+                _selectedMethod.MethodId ??= id;
+                break;
+            case NodeType.Schema:
+                _selectedSchema.SchemaId ??= id;
+                break;
+        }
+        await RefreshTree(param);
+    }
+
+    private async Task OnDelete(NodeType nodeType, string id)
+    {
+        switch (nodeType)
+        {
+            case NodeType.Resource:
+                if (_selectedResourceHeader?.Controller.ApiId == id)
+                {
+                    _selectedResourceHeader = null;
+                    _selectedNode = null;
+                }
+                if (_selectedMethod?.ApiId == id)
+                {
+                    _selectedMethod = null;
+                }
+                break;
+            case NodeType.Method:
+                if (_selectedMethod?.MethodId == id)
+                {
+                    _selectedMethod = null;
+                    _selectedNode = null;
+                }
+                break;
+            case NodeType.Schema:
+                if (_selectedSchema?.SchemaId == id)
+                {
+                    _selectedSchema = null;
+                    _selectedNode = null;
+                }
+                break;
+        }
+        await RefreshTree();
+    }
+
+    private async Task TransparentCheckBoxChanged(bool isChecked)
+    {
+        if (isChecked && !_isTransparentApiLoaded)
+        {
+            await RefreshTree();
+        }
+    }
+
+    private async Task RefreshTree(LoadApiTreeParameter parametas = null) 
+    {
+        await Layout.ToggleSpinner(true);
+
+        var Tasks = new List<Task>();
+
+        var filterText = _filterText ?? "";
+        var querystring = IsSystemAdministrator() ? null : $"vendorId={_selectedVendor}";
+
+        var taskGetApiResourceMethodSimpleList = Task.Run(() =>
+        {
+            var qs = $"isTransparent={_isDisplayFlag.transparent}{(querystring != null ? $"&{querystring}" : "")}";
+            _resources = Service.GetApiResourceMethodSimpleList(qs)
+                .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "リソース一覧の取得に失敗しました。")
+                .Result;
+            _isTransparentApiLoaded = _isDisplayFlag.transparent;
+        });
+        Tasks.Add(taskGetApiResourceMethodSimpleList);
+
+        var taskGetSchemas = Task.Run(() =>
+        {
+            _schemas = Service.GetSchemas(querystring)
+                .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "スキーマ一覧の取得に失敗しました。")
+                .Result;
+        });
+        Tasks.Add(taskGetSchemas);
+
+        if(parametas != null && !string.IsNullOrEmpty(parametas.ResourceId))
+        {
+            var taskGetResourceHeader = Task.Run(async () => 
+              {
+                  _selectedResourceHeader = null;
+                  await InvokeAsync(StateHasChanged);
+                  GetResourceHeader(parametas.ResourceId);
+              }
+            );
+            Tasks.Add(taskGetResourceHeader);
+        }
+
+        await Task.WhenAll(Tasks);
+
+        await Layout.ToggleSpinner(false);
+    }
+}

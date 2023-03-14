@@ -1,0 +1,306 @@
+﻿@inherits AdminWebBasePage
+
+<AuthorizeView Policy="@(FunctionPolicy.RepositoryGroupWrite.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isEditable = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isEditable = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+<RadzenCard>
+    <h4>@(string.IsNullOrEmpty(RepositoryGroup.RepositoryGroupId) ? "リポジトリグループ追加" : "リポジトリグループ編集")</h4>
+    <RadzenTemplateForm TItem="RepositoryGroupModel" Data="RepositoryGroup" EditContext="RepositoryGroupEditContext" Submit="SaveRepositoryGroup">
+        <ObjectGraphDataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="RepositoryGroupName" Text="リポジトリグループ名"></RadzenLabel>
+            </div>
+            <div class="col-8">
+                <RadzenTextBox class="w-100" Name="RepositoryGroupName" @bind-Value="@RepositoryGroup.RepositoryGroupName"></RadzenTextBox>
+                <ValidationMessage For="@(() => RepositoryGroup.RepositoryGroupName)" />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="RepositoryType" Text="リポジトリタイプ"></RadzenLabel>
+            </div>
+            <div class="col-8">
+                <RadzenDropDown class="w-100" Name="RepositoryGroupType" TValue="string" Data=@RepositoryTypes TextProperty="RepositoryTypeName" ValueProperty="RepositoryTypeCd" @bind-Value="@RepositoryGroup.RepositoryTypeCd"></RadzenDropDown>
+                <ValidationMessage For="@(() => RepositoryGroup.RepositoryTypeCd)" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-4">
+                <RadzenLabel Component="SortNo" Text="表示順"></RadzenLabel>
+            </div>
+            <div class="col-8">
+                <RadzenNumeric class="w-100" Name="SortNo" TValue="int" @bind-Value="@RepositoryGroup.SortNo"></RadzenNumeric>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="default" Text="デフォルト"></RadzenLabel>
+            </div>
+            <div class="col">
+                <RadzenCheckBox Name="DefaultRepository" @bind-Value=@RepositoryGroup.IsDefault TValue="bool"></RadzenCheckBox>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="state" Text="状態"></RadzenLabel>
+            </div>
+            <div class="col-8">
+                <RadzenRadioButtonList @bind-Value=@RepositoryGroup.IsEnable TValue="bool">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="有効" TValue="bool" Value="true" />
+                        <RadzenRadioButtonListItem Text="無効" TValue="bool" Value="false" />
+                    </Items>
+                </RadzenRadioButtonList>
+            </div>
+        </div>
+        <div class="row my-2">
+            <div class="col">
+                <div class="p-2 border">
+                    <div class="row mb-2 justify-content-between">
+                        <RadzenLabel Text="フィジカルリポジトリ一覧" class="col-auto d-flex align-items-center"></RadzenLabel>
+                        @if (_isEditable)
+                        {
+                            <div class="col-auto">
+                                <RadzenButton Text="フィジカルリポジトリ追加" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => AddPhyscalRepository())" Size="ButtonSize.Small" class="px-2"></RadzenButton>
+                            </div>
+                        }
+                    </div>
+                    <RadzenDataGrid @ref="_physicalRepositoryGrid" Data="@RepositoryGroup.PhysicalRepositoryList.Where(x => x.IsActive)" TItem="PhysicalRepositoryModel" EditMode="DataGridEditMode.Single">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="PhysicalRepositoryModel" Property="ConnectionString" Title="接続文字列" Sortable="false">
+                                <EditTemplate Context="physcalRepository">
+                                    <RadzenTextBox @bind-Value="@physcalRepository.ConnectionString" Disabled="@(!_isEditable)" Style="width:100%;"></RadzenTextBox>
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="PhysicalRepositoryModel" Property="IsFull" Title="フル" Sortable="false" TextAlign="TextAlign.Center" Width="60px">
+                                <Template Context="physcalRepository">
+                                    <RadzenCheckBox TValue="bool" @bind-Value="@physcalRepository.IsFull" Disabled="true"></RadzenCheckBox>
+                                </Template>
+                                <EditTemplate Context="physcalRepository">
+                                    <RadzenCheckBox TValue="bool" @bind-Value="@physcalRepository.IsFull" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="PhysicalRepositoryModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                <Template Context="physcalRepository">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditPhyscalRepository(physcalRepository))" Disabled="@(!_isEditable)" />
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => RemovePhyscalRepository(physcalRepository))" Disabled="@(!_isEditable)" />
+                                </Template>
+                                <EditTemplate Context="physcalRepository">
+                                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdatePhyscalRepository(physcalRepository))" Disabled="@(!_isEditable)" />
+                                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditPhyscalRepository(physcalRepository))" Disabled="@(!_isEditable)" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                    @foreach (var physcalRepository in RepositoryGroup.PhysicalRepositoryList.Where(x => x.IsActive))
+                    {
+                        <ValidationMessage For="@(() => physcalRepository.ConnectionString)" />
+                    }
+                </div>
+            </div>
+        </div>
+        @if (_isEditable)
+        {
+            <div class="row justify-content-center m-3">
+                <div class="col-3">
+                    <RadzenButton ButtonStyle="ButtonStyle.Primary" Text="@(string.IsNullOrEmpty(RepositoryGroup.RepositoryGroupId) ? "作成" : "保存")" ButtonType="ButtonType.Submit" />
+                </div>
+                <!-- 新規登録時は表示しない -->
+                @if (RepositoryGroup.RepositoryGroupId != null)
+                {
+                    <div class="col-3">
+                        <RadzenButton ButtonStyle="ButtonStyle.Danger" Text="削除" Click="@(args=>DeleteRepositoryGroup())" />
+                    </div>
+                }
+            </div>
+        }
+    </RadzenTemplateForm>
+</RadzenCard>
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public RepositoryGroupModel RepositoryGroup { get; set; }
+    [Parameter]
+    public List<RepositoryTypeModel> RepositoryTypes { get; set; }
+    [Parameter]
+    public EventCallback<bool> OnRefreshCallback { get; set; }
+
+    private PhysicalRepositoryModel _editTargetphysicalRepository;
+
+    private EditContext RepositoryGroupEditContext;
+
+    [Inject]
+    protected IAdminRepositoryGroupService ReposiotryGroupService { get; set; }
+
+    private RadzenDataGrid<PhysicalRepositoryModel> _physicalRepositoryGrid;
+
+    /// <summary>
+    /// 追加したフィジカルリポジトリ
+    /// </summary>
+    private List<PhysicalRepositoryModel> _newPhysicalRepositoryList = new();
+
+    private bool _isEditable = false;
+
+
+    protected override void OnInitialized()
+    {
+        RepositoryGroupEditContext = new(RepositoryGroup);
+    }
+
+    /// <summary>
+    /// リポジトリグループ保存・更新
+    /// </summary>
+    private async Task SaveRepositoryGroup()
+    {
+        if (!RepositoryGroupEditContext.Validate()) return;
+
+        var confirmResult = await Layout.ShowConfirmDialog("リポジトリグループ保存", "リポジトリグループの保存を行います。よろしいですか？");
+        if (confirmResult != true)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        try
+        {
+            RepositoryGroup.RepositoryGroupId = ReposiotryGroupService.RegisterRepositoryGroup(RepositoryGroup)
+                                                                      .Throw(x => !x.IsSuccessStatusCode, x => "リポジトリグループの保存に失敗しました。")
+                                                                      .Result
+                                                                      .RepositoryGroupId;
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("リポジトリグループ保存失敗", "リポジトリグループの保存に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "リポジトリグループを保存しました。");
+
+        await OnRefreshCallback.InvokeAsync();
+
+    }
+
+    /// <summary>
+    /// リポジトリグループ削除
+    /// </summary>
+    private async Task DeleteRepositoryGroup()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("リポジトリグループ削除", "リポジトリグループの削除を行います。よろしいですか？");
+        if (confirmResult != true)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        try
+        {
+            ReposiotryGroupService.DeleteRepositoryGroup(RepositoryGroup.RepositoryGroupId)
+                                  .Throw(x => !x.IsSuccessStatusCode, x => "リポジトリグループの削除に失敗しました。");
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("リポジトリグループ削除失敗", "リポジトリグループの保存に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "リポジトリグループを削除しました。");
+
+        await OnRefreshCallback.InvokeAsync(true);
+    }
+
+    /// <summary>
+    /// フィジカルリポジトリ追加
+    /// </summary>
+    /// <returns></returns>
+    private async Task AddPhyscalRepository()
+    {
+        var physicalRepository = new PhysicalRepositoryModel() { PhysicalRepositoryId = Guid.NewGuid().ToString(), IsActive = true };
+        _newPhysicalRepositoryList.Add(physicalRepository);
+        RepositoryGroup.PhysicalRepositoryList.Add(physicalRepository);
+        _editTargetphysicalRepository = physicalRepository.Clone();
+        await _physicalRepositoryGrid.InsertRow(physicalRepository);
+    }
+
+    /// <summary>
+    /// フィジカルリポジトリ編集
+    /// </summary>
+    /// <param name="physicalRepository"></param>
+    /// <returns></returns>
+    private async Task EditPhyscalRepository(PhysicalRepositoryModel physicalRepository)
+    {
+        _editTargetphysicalRepository = physicalRepository.Clone();
+        await _physicalRepositoryGrid.EditRow(physicalRepository);
+    }
+
+    /// <summary>
+    /// フィジカルリポジトリ更新
+    /// </summary>
+    /// <param name="physicalRepository"></param>
+    /// <returns></returns>
+    private async Task UpdatePhyscalRepository(PhysicalRepositoryModel physicalRepository)
+    {
+        await _physicalRepositoryGrid.UpdateRow(physicalRepository);
+        _editTargetphysicalRepository = null;
+    }
+
+    /// <summary>
+    /// フィジカルリポジトリ削除
+    /// </summary>
+    /// <param name="physicalRepository"></param>
+    /// <returns></returns>
+    private async Task RemovePhyscalRepository(PhysicalRepositoryModel physicalRepository)
+    {
+        if (physicalRepository?.PhysicalRepositoryId != null)
+        {
+            if (_newPhysicalRepositoryList.Any(x => x.PhysicalRepositoryId == physicalRepository.PhysicalRepositoryId))
+            {
+                // DB未登録の場合はリストから削除
+                _newPhysicalRepositoryList.Remove(physicalRepository);
+                RepositoryGroup.PhysicalRepositoryList.Remove(physicalRepository);
+            }
+            else
+            {
+                // DB登録済の場合は論理削除を行うためリストに残しておく
+                RepositoryGroup.PhysicalRepositoryList.Where(x => x.PhysicalRepositoryId == physicalRepository.PhysicalRepositoryId).First().IsActive = false;
+            }
+        }
+        await _physicalRepositoryGrid.Reload();
+    }
+
+    /// <summary>
+    /// フィジカルリポジトリ編集キャンセル
+    /// </summary>
+    /// <param name="physicalRepository"></param>
+    private async Task CancelEditPhyscalRepository(PhysicalRepositoryModel physicalRepository)
+    {
+        // 追加時にCancelEditRowを呼び出すとDataGridの行削除も行われてしまうのでUpdateRowして編集前(初期値)に戻す
+        _physicalRepositoryGrid.UpdateRow(physicalRepository);
+
+        // 編集前の状態に戻す
+        physicalRepository.ConnectionString = _editTargetphysicalRepository.ConnectionString;
+        physicalRepository.IsFull = _editTargetphysicalRepository.IsFull;
+
+        _editTargetphysicalRepository = null;
+    }
+}

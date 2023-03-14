@@ -1,0 +1,1772 @@
+﻿@inherits AdminWebBasePage
+@using JP.DataHub.Com.Cache
+@using JP.DataHub.AdminWeb.Core.Component.Component
+@using JP.DataHub.AdminWeb.Core.Component.Models
+@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+@using System.Text.RegularExpressions
+
+@attribute [Authorize(Policy = "Method")]
+
+<AuthorizeView Policy="@(FunctionPolicy.MethodWrite.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isEditable = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isEditable = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+@if (ShowSpinner)
+{
+    <div class="overlay">
+        <div class="spinner"></div>
+    </div>
+}
+
+@if (_editTargetSchema != null)
+{
+    <SchemaEdit Schema="_editTargetSchema" Vendors="Vendors" OnChange="OnChangeSchema" OnCancle="OnCancelEditSchema" AllowCancel="true" AllowDelete="@(_editTargetSchema.SchemaId != null)"></SchemaEdit>
+}
+else
+{
+    <RadzenCard>
+        <div class="row mt-2">
+            <div class="col-4 d-flex align-items-center">
+                <h4>@(Api.IsNew ? "メソッド追加" : "メソッド編集")</h4>
+            </div>
+            <div class="col-8 align-items-center" hidden="@(!Api.IsNew)">
+                <RadzenCheckBox Name="IsDetailModeCheckbox" TValue="bool" @bind-Value="@IsDetailMode" Change="(args => OnChangeDetailModeCheck(args))"></RadzenCheckBox>
+                <RadzenLabel Component="IsDetailModeCheckbox" Text="詳細モード"></RadzenLabel>
+            </div>
+        </div>
+        <div class="method-settings_section">
+            <RadzenTemplateForm EditContext="MethodEditContext" TItem="ApiModel" Data="Method" Submit="@(args => Save())">
+                <ObjectGraphDataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="row mt-2">
+                    <div class="col-4 d-flex align-items-center">
+                        <RadzenLabel Component="ApiUrl" Text="API URL"></RadzenLabel>
+                    </div>
+                    <div class="col-8 d-flex align-items-center">
+                        <RadzenTextBox class="w-100" Value="@Resource.RelativeUrl" Disabled="true"></RadzenTextBox>
+                        <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Resource.RelativeUrl))"></RadzenButton>
+                    </div>
+                </div>
+                @if (!Api.IsNew)
+                {
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex align-items-center">
+                            <RadzenLabel Component="MethodId" Text="メソッドID"></RadzenLabel>
+                        </div>
+                        <div class="col-8 d-flex align-items-center">
+                            <RadzenTextBox class="w-100" Value="@Method.MethodId" Disabled="true"></RadzenTextBox>
+                            <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Method.MethodId))"></RadzenButton>
+                        </div>
+                    </div>
+                }
+                @if (!Method.IsTransparent)
+                {
+                    <div class="row mt-2">
+                        <div class="col-4 d-flex align-items-center">
+                            <RadzenLabel Component="ActionType" Text="アクションタイプ"></RadzenLabel>
+                        </div>
+                        <div class="col-8">
+                            <div class="d-flex align-items-center">
+                                <RadzenDropDown class="w-100" TValue="string" Data=@_actionTypes TextProperty="ActionTypeName" ValueProperty="ActionTypeCd" @bind-Value="@Method.ActionTypeCd" Disabled="@(!_isEditable)"></RadzenDropDown>
+                            </div>
+                            <ValidationMessage For="@(() => Method.ActionTypeCd)" />
+                        </div>
+                    </div>
+                }
+                <div class="row mt-2">
+                    <div class="col-4 d-flex align-items-center">
+                        <RadzenLabel Component="HttpMethodType" Text="HTTPメソッドタイプ"></RadzenLabel>
+                    </div>
+                    <div class="col-8">
+                        <div class="d-flex align-items-center">
+                            <RadzenDropDown class="w-100" TValue="string" Data=@_httpMethodTypes TextProperty="HttpMethodTypeCode" ValueProperty="HttpMethodTypeCode" @bind-Value="@Method.MethodType" Change="@(args => SetDefaultSchema(args))" Disabled="@(!_isEditable ? true : Method.IsTransparent)"></RadzenDropDown>
+                        </div>
+                        <ValidationMessage For="@(() => Method.MethodType)" />
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-4 d-flex align-items-center">
+                        <RadzenLabel Component="MethodUrl" Text="URL"></RadzenLabel>
+                    </div>
+                    <div class="col-8">
+                        <div class="d-flex align-items-center">
+                            <RadzenTextBox class="w-100" Name="MethodUrl" @bind-Value="Method.MethodUrl" Disabled="@(!_isEditable ? true : Method.IsTransparent)"></RadzenTextBox>
+                            <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Method.MethodUrl))"></RadzenButton>
+                        </div>
+                        <ValidationMessage For="@(() => Method.MethodUrl)" />
+                    </div>
+                </div>
+                @if (!Method.IsTransparent)
+                {
+                    <div class="row mt-2">
+                        <div class="col-4">
+                            <RadzenLabel Component="MethodDescription" Text="説明"></RadzenLabel>
+                        </div>
+                        <div class="col-8">
+                            <MarkdownEditor TextAreaCssClass="w-100 textarea-method-description" TextAreaName="MethodDescription" @bind-Text="Method.MethodDescription" MaxLength="4000" Disabled="@(!_isEditable)"></MarkdownEditor>
+                        </div>
+                    </div>
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex align-items-center">
+                            <div>
+                                <RadzenLabel Component="UriSchema" Text="URIモデル"></RadzenLabel>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex align-items-center">
+                            <RadzenDropDown class="w-100" TValue="string" Data="Schemas" TextProperty="SchemaName" ValueProperty="SchemaId" @bind-Value="Method.UrlSchemaId" AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Disabled="@(!_isEditable)"></RadzenDropDown>
+                        </div>
+                        <div class="col-2 d-flex align-items-center px-0">
+                            <RadzenButton class="me-1" Icon="add" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => AddSchema(SchemaType.Url))" Disabled="@(!_isEditable)"></RadzenButton>
+                            <RadzenButton Icon="open_in_new" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => EditSchema(Method.UrlSchemaId, SchemaType.Url))" Visible="@(!string.IsNullOrEmpty(Method.UrlSchemaId))"></RadzenButton>
+                        </div>
+                    </div>
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex align-items-center">
+                            <RadzenLabel Component="RequestSchema" Text="リクエストモデル"></RadzenLabel>
+                        </div>
+                        <div class="col-6 d-flex align-items-center">
+                            <RadzenDropDown class="w-100" TValue="string" Data="Schemas" TextProperty="SchemaName" ValueProperty="SchemaId" @bind-Value="Method.RequestSchemaId" AllowClear="true" Disabled="@(!_isEditable ? true : Method.MethodType?.ToUpper() == "GET")" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"></RadzenDropDown>
+                        </div>
+                        <div class="col-2 d-flex align-items-center px-0">
+                            <RadzenButton class="me-1" Icon="add" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => AddSchema(SchemaType.Request))" Disabled="@(!_isEditable ? true : Method.MethodType?.ToUpper() == "GET")"></RadzenButton>
+                            <RadzenButton Icon="open_in_new" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => EditSchema(Method.RequestSchemaId, SchemaType.Request))" Visible="@(!string.IsNullOrEmpty(Method.RequestSchemaId))" Disabled="@(Method.MethodType?.ToUpper() == "GET")"></RadzenButton>
+                        </div>
+                    </div>
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex align-items-center">
+                            <RadzenLabel Component="ResponseSchema" Text="レスポンスモデル"></RadzenLabel>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <RadzenDropDown class="w-100" Name="ResponseSchema" TValue="string" Data="Schemas" TextProperty="SchemaName" ValueProperty="SchemaId" @bind-Value="Method.ResponseSchemaId" AllowClear="true" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" Disabled="@(!_isEditable)"></RadzenDropDown>
+                            </div>
+                            <div>
+                                <RadzenRequiredValidator Component="ResponseSchema" Text="@ValidationMessageExtensions.RequiredValidationMessage" Visible="@(_methodRepositoryGroups.Any(r => (r.IsPrimary || r.IsSecondary) && r.IsDataLakeStore) && Method.ActionTypeCd == "quy")" Style="display:block; font-size:16px; color:red;" />
+                            </div>
+                        </div>
+                        <div class="col-2 d-flex align-items-center px-0">
+                            <RadzenButton class="me-1" Icon="add" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => AddSchema(SchemaType.Response))" Disabled="@(!_isEditable)"></RadzenButton>
+                            <RadzenButton Icon="open_in_new" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => EditSchema(Method.ResponseSchemaId, SchemaType.Response))" Visible="@(!string.IsNullOrEmpty(Method.ResponseSchemaId))"></RadzenButton>
+                        </div>
+                    </div>
+                }
+                <div class="row mt-2" hidden="@(!IsDetailMode)">
+                    <div class="col-4">
+                        <RadzenLabel Component="ResponseSchema" Text="状態設定"></RadzenLabel>
+                    </div>
+                    <div class="col-8">
+                        <RadzenCard class="py-1 shadow-none">
+                            <div class="row">
+                                <div class="col-5">
+                                    <RadzenLabel class="align-middle" Component="IsEnable" Text="状態"></RadzenLabel>
+                                </div>
+                                <div class="col-7">
+                                    <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value=@Method.IsEnable Disabled="@(!_isEditable)">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="有効" Value="true"></RadzenRadioButtonListItem>
+                                            <RadzenRadioButtonListItem Text="無効" Value="false"></RadzenRadioButtonListItem>
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                </div>
+                            </div>
+                            @if (!Method.IsTransparent)
+                            {
+                                <div class="row mt-2"style="display:none">
+                                    <div class="col-5" style="display:none">
+                                        <RadzenLabel class="align-middle" Component="dependency" Text="ヘルプページ表示" style="display:none"></RadzenLabel>
+                                    </div>
+                                    <div class="col-7" style="display:none">
+                                        <RadzenRadioButtonList class="w-100" TValue="string" @bind-Value="@HelpPageVisible" Disabled="@(!_isEditable)" style="display:none">
+                                            <Items>
+                                                <RadzenRadioButtonListItem Text="表示" Value="@("visible")" style="display:none"></RadzenRadioButtonListItem>
+                                                <RadzenRadioButtonListItem Text="非表示" Value="@("hidden")" style="display:none"></RadzenRadioButtonListItem>
+                                                <RadzenRadioButtonListItem Text="サインインユーザーにのみ表示" Value="@("signinUserOnly")" style="display:none"></RadzenRadioButtonListItem>
+                                            </Items>
+                                        </RadzenRadioButtonList>
+                                    </div>
+                                </div>
+                            }
+                        </RadzenCard>
+                    </div>
+                </div>
+                <div class="row mt-2" hidden="@(!IsDetailMode)">
+                    <div class="col-4">
+                        <RadzenLabel Component="AuthorizationSettings" Text="認証設定"></RadzenLabel>
+                    </div>
+                    <div class="col-8">
+                        <RadzenCard class="py-1 shadow-none">
+                            <div class="row">
+                                <div class="col-5">
+                                    <RadzenLabel class="align-middle" Component="VendorSystemAuthentication" Text="ベンダーシステム認証"></RadzenLabel>
+                                </div>
+                                <div class="col-7">
+                                    <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsHeaderAuthentication" Disabled="@(!_isEditable)">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                            <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                    <RadzenCheckBox Name="IsVendorSystemAuthenticationAllowNull" TValue="bool" @bind-Value="Method.IsVendorSystemAuthenticationAllowNull" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                    <RadzenLabel class="align-middle" Component="IsVendorSystemAuthenticationAllowNull" Text="省略を許可する"></RadzenLabel>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-5">
+                                    <RadzenLabel class="align-middle" Component="OpenIdAuthentication" Text="OpenID認証"></RadzenLabel>
+                                </div>
+                                <div class="col-7">
+                                    <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsOpenIdAuthentication" Disabled="@(!_isEditable)">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                            <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-5">
+                                    <RadzenLabel class="align-middle" Component="AdminAuthentication" Text="管理者認証"></RadzenLabel>
+                                </div>
+                                <div class="col-7">
+                                    <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsAdminAuthentication" Disabled="@(!_isEditable)">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                            <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                </div>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                </div>
+                @if (Method.ActionTypeCd == "reg" || Method.ActionTypeCd == "upd")
+                {
+                    <div class="row mt-2" hidden="@(!IsDetailMode)" style="display:none">
+                        <div class="col-4 d-flex align-items-center" style="display:none">
+                            <RadzenLabel Component="RegisterDataSettings" Text="登録データ設定" style="display:none"></RadzenLabel>
+                        </div>
+                        <div class="col-8" style="display:none">
+                            <RadzenCard class="py-1 shadow-none" style="display:none">
+                                <div class="row" style="display:none">
+                                    <div class="col-5" style="display:none">
+                                        <RadzenLabel class="align-middle" Component="IsSkipJsonSchemaValidation" Text="登録時のデータチェックを無効にする"></RadzenLabel>
+                                    </div>
+                                    <div class="col-7" style="display:none">
+                                        <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsSkipJsonSchemaValidation" Disabled="@(!_isEditable)">
+                                            <Items>
+                                                <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                                <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                            </Items>
+                                        </RadzenRadioButtonList>
+                                    </div>
+                                </div>
+                            </RadzenCard>
+                        </div>
+                    </div>
+                }
+                <div class="row mt-2" hidden="@(!IsDetailMode)" style="display:none">
+                    <div class="col-4" style="display:none">
+                        <RadzenLabel Component="AccessSettings" Text="アクセス設定" style="display:none"></RadzenLabel>
+                    </div>
+                    <div class="col-8" style="display:none">
+                        <RadzenCard class="py-1 shadow-none" style="display:none">
+                            <div class="row" style="display:none">
+                                <div class="col-5" style="display:none">
+                                    <RadzenLabel class="align-middle" Component="IsInternalOnly" Text="外部からのアクセスを拒否する"></RadzenLabel>
+                                </div>
+                                <div class="col-7" style="display:none">
+                                    <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsInternalOnly" Disabled="@(!_isEditable)">
+                                        <Items>
+                                            <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                            <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                        </Items>
+                                    </RadzenRadioButtonList>
+                                </div>
+                            </div>
+                            <div class="row mt-2" style="display:none">
+                                <div class="col-5 d-flex align-items-center" style="display:none">
+                                    <RadzenLabel class="align-middle" Component="IsInternalOnlyKeyWord" Text="アクセス許可キー"></RadzenLabel>
+                                </div>
+                                <div class="col-7" style="display:none">
+                                    <div class="d-flex align-items-center" style="display:none">
+                                        <RadzenTextBox class="w-100" Name="InternalOnlyKeyword" @bind-Value="Method.InternalOnlyKeyword" Disabled="@(!_isEditable ? true : !Method.IsInternalOnly)"></RadzenTextBox>
+                                        <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Method.InternalOnlyKeyword))"></RadzenButton>
+                                    </div>
+                                    <ValidationMessage For="@(() => Method.InternalOnlyKeyword)" />
+                                </div>
+                            </div>
+                        </RadzenCard>
+                    </div>
+                </div>
+                @if (!Method.IsTransparent)
+                {
+                    if (Resource.IsVendor || Resource.IsPerson)
+                    {
+                        <div class="row mt-2" hidden="@(!IsDetailMode)">
+                            <div class="col-4 d-flex align-items-center">
+                                <RadzenLabel Component="SearchSettings" Text="検索設定"></RadzenLabel>
+                            </div>
+                            <div class="col-8">
+                                <RadzenCard class="py-1 shadow-none">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <RadzenLabel class="align-middle" Component="IsOverPartition" Text="領域越え"></RadzenLabel>
+                                        </div>
+                                        <div class="col-7">
+                                            <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsOverPartition" Disabled="@(!_isEditable)">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                                    <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </div>
+                                    </div>
+                                </RadzenCard>
+                            </div>
+                        </div>
+                    }
+                    if (Method.ActionTypeCd == "quy" || Method.ActionTypeCd == "reg" || Method.ActionTypeCd == "gtw" || Method.ActionTypeCd == "upd" || Method.ActionTypeCd == "del")
+                    {
+                        <div class="row mt-2" hidden="@(!IsDetailMode)">
+                            <div class="col-4">
+                                <RadzenLabel Component="CacheSettings" Text="キャッシュ設定"></RadzenLabel>
+                            </div>
+                            <div class="col-8">
+                                <RadzenCard class="py-1 shadow-none">
+                                    <div class="row">
+                                        <div class="col-5">
+                                            <RadzenLabel class="align-middle" Component="IsCache" Text="キャッシュ有無"></RadzenLabel>
+                                        </div>
+                                        <div class="col-7">
+                                            <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsCache" Disabled="@(!_isEditable)">
+                                                <Items>
+                                                    <RadzenRadioButtonListItem Text="あり" Value="true"></RadzenRadioButtonListItem>
+                                                    <RadzenRadioButtonListItem Text="なし" Value="false"></RadzenRadioButtonListItem>
+                                                </Items>
+                                            </RadzenRadioButtonList>
+                                        </div>
+                                    </div>
+                                    @if (Method.IsCache)
+                                    {
+                                        @if (Method.ActionTypeCd != "del")
+                                        {
+                                            <div class="row mt-2">
+                                                <div class="col-5">
+                                                    <RadzenLabel class="align-middle" Component="CacheMinute" Text="キャッシュ時間（分）"></RadzenLabel>
+                                                </div>
+                                                <div class="col-7">
+                                                    <RadzenNumeric class="w-100" Name="CacheMinute" Min="1" Max="@(int.MaxValue)" @bind-Value="Method.CacheMinute" Disabled="@(!_isEditable ? true : !Method.IsCache)" Style="display: block;"></RadzenNumeric>
+                                                    <ValidationMessage For="@(() => Method.CacheMinute)" />
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="row mt-2">
+                                            <div class="col-5 d-flex align-items-center">
+                                                <RadzenLabel class="align-middle" Component="CacheKey" Text="キャッシュキー"></RadzenLabel>
+                                            </div>
+                                            <div class="col-7">
+                                                <div class="d-flex align-items-center">
+                                                    <RadzenTextBox class="w-100" Name="CacheKey" @bind-Value="Method.CacheKey" Disabled="@(!_isEditable ? true : !Method.IsCache)"></RadzenTextBox>
+                                                    <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Method.CacheKey))"></RadzenButton>
+                                                </div>
+                                                    <ValidationMessage For="@(() => Method.CacheKey)" />
+                                            </div>
+                                        </div>
+                                    }
+                                </RadzenCard>
+                            </div>
+                        </div>
+                    }
+                }
+                @if (Method.ActionTypeCd != "gtw")
+                {
+                    @if (!Method.IsTransparent)
+                    {
+                        <div class="row mt-2" hidden="@(!IsDetailMode)">
+                            <div class="col-4 d-flex align-items-center">
+                                <RadzenLabel Text="データタイプ"></RadzenLabel>
+                            </div>
+                            <div class="col-8 d-flex align-items-center">
+                                <RadzenCheckBox Name="DataType" TValue="bool" @bind-Value="IsDataTypeArray" Disabled="@(!_isEditable ? true : (Method.MethodType?.ToUpper() == "PATCH"))"></RadzenCheckBox>
+                                <RadzenLabel class="ms-2 align-middle" Component="DataType" Text="配列"></RadzenLabel>
+                            </div>
+                        </div>
+                        @if (Method.ActionTypeCd == "reg")
+                        {
+                            <div class="row mt-2" hidden="@(!IsDetailMode)">
+                                <div class="col-4 d-flex align-items-center">
+                                    <RadzenLabel Component="IsAutomaticId" Text="ID自動割り振り"></RadzenLabel>
+                                </div>
+                                <div class="col-8 d-flex align-items-center">
+                                    <RadzenCheckBox TValue="bool" @bind-Value="IsAutomaticId" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                </div>
+                            </div>
+                        }
+                    }
+                    @if (_methodRepositoryGroups?.Any(r => r.IsRdbmsRepository) == true)
+                    {
+                        <div class="row mt-2" hidden="@(!IsDetailMode)">
+                            <div class="col-4 d-flex align-items-center">
+                                <RadzenLabel Component="IsOthersourceSqlAccess" Text="テーブル結合許可"></RadzenLabel>
+                            </div>
+                            <div class="col-8 d-flex align-items-center">
+                                <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="Method.IsOtherResourceSqlAccess" Disabled="@(!_isEditable)">
+                                    <Items>
+                                        <RadzenRadioButtonListItem Text="する" Value="true"></RadzenRadioButtonListItem>
+                                        <RadzenRadioButtonListItem Text="しない" Value="false"></RadzenRadioButtonListItem>
+                                    </Items>
+                                </RadzenRadioButtonList>
+                            </div>
+                        </div>
+                    }
+                    @if (!Method.IsTransparent)
+                    {
+                        <div class="row mt-2" hidden="@(!IsDetailMode)">
+                            <div class="col">
+                                <div class="p-2 border">
+                                    <div class="mb-2">
+                                        <RadzenLabel Text="リポジトリグループ一覧" class="me-1 align-middle"></RadzenLabel>
+                                    </div>
+
+                                    <RadzenDataGrid class="grid-repository-group" Data="@_methodRepositoryGroups" TItem="MethodRepositoryGroupViewModel">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="MethodRepositoryGroupViewModel" Property="RepositoryGroupName" Title="リポジトリグループ" Sortable="false" />
+                                            <RadzenDataGridColumn TItem="MethodRepositoryGroupViewModel" Property="IsEnable" Title="有効/無効" Sortable="false">
+                                                <Template Context="repositoryGroup">
+                                                    <span>@(repositoryGroup.IsEnable ? "有効" : "無効")</span>
+                                                </Template>
+                                            </RadzenDataGridColumn>
+                                            <RadzenDataGridColumn TItem="MethodRepositoryGroupViewModel" Property="IsPrimary" Title="プライマリ" Sortable="false">
+                                                <Template Context="repositoryGroup">
+                                                    <RadzenRadioButtonList TValue="bool" @bind-Value="repositoryGroup.IsPrimary" Change="@(args => SetPrimaryRepositoryGroup(repositoryGroup.RepositoryGroupId))" Disabled="@(!_isEditable)">
+                                                        <Items>
+                                                            <RadzenRadioButtonListItem Value="true"></RadzenRadioButtonListItem>
+                                                        </Items>
+                                                    </RadzenRadioButtonList>
+                                                </Template>
+                                            </RadzenDataGridColumn>
+                                            <RadzenDataGridColumn TItem="MethodRepositoryGroupViewModel" Property="IsSecondary" Title="セカンダリ" Sortable="false">
+                                                <Template Context="repositoryGroup">
+                                                    <RadzenCheckBox TValue="bool" @bind-Value="repositoryGroup.IsSecondary" Disabled="@(!_isEditable ? true : repositoryGroup.IsPrimary)"></RadzenCheckBox>
+                                                </Template>
+                                            </RadzenDataGridColumn>
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                    @*エラーのときに文字を出すためだけのテキストボックス。使わなくていいのであれば使いたくない*@
+                                    <RadzenTextBox Name="repositoryGroup" Visible=false Style="display: block;" @bind-Value="_dummy" />
+                                    <FunctionValidator Component="repositoryGroup" Func="ValidateRepositoryGroup" Text="@($"プライマリは{ValidationMessageExtensions.RequiredValidationMessage}")" Style="display:block; font-size:16px; color:red;"></FunctionValidator>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                @if (Method.ActionTypeCd == "gtw")
+                {
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex align-items-center">
+                            <RadzenLabel Component="GatewayUrl" Text="ゲートウェイURL"></RadzenLabel>
+                        </div>
+                        <div class="col-8">
+                            <div class="d-flex align-items-center">
+                                <RadzenTextBox class="w-100" Name="GatewayUrl" @bind-Value="Method.GatewayUrl" Style="display: block;" Disabled="@(!_isEditable)"></RadzenTextBox>
+                            </div>
+                            <ValidationMessage For="@(() => Method.CacheKey)" />
+                        </div>
+                    </div>
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex align-items-center">
+                            <RadzenLabel Component="GatewayCredential" Text="ゲートウェイ先認証情報"></RadzenLabel>
+                        </div>
+                        <div class="col-8">
+                            <RadzenCard class="py-1 shadow-none">
+                                <div class="row">
+                                    <div class="col-5">
+                                        <RadzenLabel class="align-middle" Component="GatewayCredentialUserName" Text="ユーザー名"></RadzenLabel>
+                                    </div>
+                                    <div class="col-7">
+                                        <RadzenTextBox class="w-100" Name="GatewayCredentialUserName" @bind-Value="Method.GatewayCredentialUserName" Style="display: block;" Disabled="@(!_isEditable)"></RadzenTextBox>
+                                        <ValidationMessage For="@(() => Method.GatewayCredentialUserName)" />
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-5">
+                                        <RadzenLabel class="align-middle" Component="GatewayCredentialPassword" Text="パスワード"></RadzenLabel>
+                                    </div>
+                                    <div class="col-7">
+                                        <RadzenTextBox class="w-100" Name="GatewayCredentialPassword" @bind-Value="Method.GatewayCredentialPassword" Style="display: block;" Disabled="@(!_isEditable)"></RadzenTextBox>
+                                        <ValidationMessage For="@(() => Method.GatewayCredentialPassword)" />
+                                    </div>
+                                </div>
+                            </RadzenCard>
+                        </div>
+                    </div>
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col-4 d-flex flex-column align-self-center">
+                            <RadzenLabel Component="GatewayRelayHeader" Text="ゲートウェイ中継ヘッダー"></RadzenLabel>
+                            <div>「,」区切りで複数指定</div>
+                        </div>
+                        <div class="col-8">
+                            <div class="d-flex align-items-center">
+                                <RadzenTextArea class="w-100 textarea-method-gateway-relay-header" Name="GatewayRelayHeader" @bind-Value="Method.GatewayRelayHeader" Disabled="@(!_isEditable)"></RadzenTextArea>
+                            </div>
+                            <ValidationMessage For="@(() => Method.GatewayCredentialPassword)" />
+                        </div>
+                    </div>
+                }
+                @if (!Method.IsTransparent)
+                {
+                    <div class="row mt-2" hidden="@(!IsDetailMode)">
+                        <div class="col">
+                            <RadzenTabs RenderMode="TabRenderMode.Client">
+                                <Tabs>
+                                    @if (Method.ActionTypeCd != "gtw")
+                                    {
+                                        <RadzenTabsItem Text="クエリ">
+                                            <div class="row">
+                                                <div class="col-2 d-flex align-items-center">
+                                                    <RadzenLabel Component="QueryType" Text="クエリタイプ"></RadzenLabel>
+                                                </div>
+                                                <div class="col-3 d-flex align-items-center">
+                                                    <RadzenDropDown class="w-100" TValue="string" Data=@_queryTypes TextProperty="QueryTypeName" ValueProperty="QueryTypeCd" @bind-Value="Method.QueryTypeCd" Disabled="@(!_isEditable)"></RadzenDropDown>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-2">
+                                                <div class="col">
+                                                    <div>
+                                                        <RadzenTextArea class="w-100 textarea-method-query" Name="Query" @bind-Value="Method.Query" Disabled="@(!_isEditable)"></RadzenTextArea>
+                                                        <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Method.Query))"></RadzenButton>
+                                                    </div>
+                                                    <ValidationMessage For="@(() => Method.Query)" />
+                                                </div>
+                                            </div>
+                                        </RadzenTabsItem>
+                                    }
+                                    <RadzenTabsItem Text="スクリプト">
+                                        <div class="row">
+                                            <div class="col-2 d-flex align-items-center">
+                                                <RadzenLabel Component="ScriptType" Text="スクリプトタイプ"></RadzenLabel>
+                                            </div>
+                                            <div class="col-3">
+                                                <div class="d-flex align-items-center">
+                                                    <RadzenDropDown class="w-100" TValue="string" Data=@_scriptTypes TextProperty="ScriptTypeName" ValueProperty="ScriptTypeCd" @bind-Value="Method.ScriptTypeCd" AllowClear="true" Disabled="@(!_isEditable)"></RadzenDropDown>
+                                                </div>
+                                                <ValidationMessage For="@(() => Method.ScriptTypeCd)" />
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col">
+                                                <RadzenTextArea class="w-100 textarea-method-script" @bind-Value="Method.Script" Disabled="@(!_isEditable)"></RadzenTextArea>
+                                                <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Method.Script))"></RadzenButton>
+                                                <RadzenButton class="ms-2" Text="構文チェック" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CheckScriptSyntax())"></RadzenButton>
+                                                <RadzenLabel class="ms-2" Text="@_scriptSyntaxResult" hidden="@(string.IsNullOrEmpty(_scriptSyntaxResult))" Style="@(_scriptSyntaxResult == "OK" ? "color:blue;" : "color:crimson;")"></RadzenLabel>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2" hidden="@(string.IsNullOrEmpty(_scriptSyntaxErrorMessage))">
+                                            <div class="col">
+                                                <RadzenTextArea class="w-100" Value="@_scriptSyntaxErrorMessage" Disabled="true" Style="color:crimson;"></RadzenTextArea>
+                                            </div>
+                                        </div>
+                                    </RadzenTabsItem>
+                                    <RadzenTabsItem Text="サンプルコード">
+                                        <div class="row">
+                                            <div class="col-2 d-flex align-items-center">
+                                                <RadzenLabel Component="Language" Text="種別"></RadzenLabel>
+                                            </div>
+                                            <div class="col-3 d-flex align-items-center">
+                                                <RadzenDropDown class="w-100" TValue="LanguageModel" Data=@_sampleCodeLanguages TextProperty="LanguageName" @bind-Value="_selectedSampleCodeLanguage" Disabled="@(!_isEditable)"></RadzenDropDown>
+                                            </div>
+                                            <div class="col-4 d-flex align-items-center">
+                                                <RadzenButton class="me-2 px-2 align-middle button-method-sample-code" Text="サンプルコード追加" ButtonStyle="ButtonStyle.Secondary" Click="@(args => AddSampleCode())" Size="ButtonSize.Small" Disabled="@(!_isEditable)"></RadzenButton>
+                                                <RadzenButton class="px-2 align-middle button-method-sample-code" Text="サンプルコード削除" ButtonStyle="ButtonStyle.Secondary" Click="@(args => RemoveSampleCode())" Size="ButtonSize.Small" Disabled="@(!_isEditable ? true : !Method.SampleCodeList.Any())"></RadzenButton>
+                                            </div>
+                                        </div>
+                                        <div class="row mt-2">
+                                            <div class="col">
+                                                @if (Method.SampleCodeList.Any())
+                                                {
+                                                    <RadzenTabs RenderMode="TabRenderMode.Client" @bind-SelectedIndex="_selectedSampleCodeTabIndex">
+                                                        <Tabs>
+                                                            @foreach (var sampleCode in Method.SampleCodeList)
+                                                            {
+                                                                <RadzenTabsItem Text="@sampleCode.Language">
+                                                                    <MarkdownEditor TextAreaCssClass="w-100 textarea-method-sample-code" @bind-Text="sampleCode.Code" Disabled="@(!_isEditable)"></MarkdownEditor>
+                                                                </RadzenTabsItem>
+                                                            }
+                                                        </Tabs>
+                                                    </RadzenTabs>
+                                                }
+                                                else
+                                                {
+                                                    <div class="w-100 textarea-method-sample-code"></div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </RadzenTabsItem>
+                                </Tabs>
+                            </RadzenTabs>
+                        </div>
+                    </div>
+                }
+                @if (!Method.IsTransparent)
+                {
+                    <div class="row mt-2" hidden="@(!IsDetailMode)" style="display:none">
+                        <div class="col" style="display:none">
+                            <div class="p-2 border" style="display:none">
+                                <div class="row mb-2 justify-content-between" style="display:none">
+                                    <RadzenLabel class="col-auto d-flex align-items-center" Text="リンク一覧"></RadzenLabel>
+                                    @if (_isEditable)
+                                    {
+                                        <div class="col-auto" style="display:none">
+                                            <RadzenButton class="px-2 align-middle" Text="リンク追加" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => EditMethodLink(null))" Size="ButtonSize.Small" Style="width:120px;" Disabled="@(!_isEditable)"></RadzenButton>
+                                        </div>
+                                    }
+                                </div>
+                                <RadzenDataGrid @ref="_methodLinkGrid" Data="@Method.MethodLinkList" TItem="ApiModel.MethodLinkModel" style="display:none">
+                                    <Columns>
+                                        <RadzenDataGridColumn TItem="ApiModel.MethodLinkModel" Property="Title" Title="タイトル" Sortable="false" />
+                                        <RadzenDataGridColumn TItem="ApiModel.MethodLinkModel" Property="Url" Title="URL" Sortable="false" />
+                                        <RadzenDataGridColumn TItem="ApiModel.MethodLinkModel" Property="Detail" Title="説明" Sortable="false" />
+                                        <RadzenDataGridColumn TItem="ApiModel.MethodLinkModel" Property="IsVisivle" Title="表示" Sortable="false">
+                                            <Template Context="link">
+                                                <span>@(link.IsVisivle ? "表示" : "非表示")</span>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                        <RadzenDataGridColumn TItem="ApiModel.MethodLinkModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                            <Template Context="link">
+                                                <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditMethodLink(link))" Disabled="@(!_isEditable)"></RadzenButton>
+                                                <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => RemoveMethodLink(link))" Disabled="@(!_isEditable)"></RadzenButton>
+                                            </Template>
+                                        </RadzenDataGridColumn>
+                                    </Columns>
+                                </RadzenDataGrid>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <div class="row mt-2" hidden="@(!IsDetailMode)">
+                    <div class="col">
+                        <div class="p-2 border">
+                            <div>
+                                <RadzenCheckBox Name="AccessControl" TValue="bool" @bind-Value="IsAccessKey" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                <RadzenLabel class="align-middle" Component="AccessControl" Text="アクセスコントロール"></RadzenLabel>
+                            </div>
+                            @if (IsAccessKey)
+                            {
+                                <div class="mt-2">
+                                    <div class="ms-2 mb-3">
+                                        <div class="mb-2">
+                                            <RadzenCheckBox Name="SelfVendorAccessEnable" TValue="bool" @bind-Value="_selfVendorAccessEnable" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                            <RadzenLabel class="align-middle" Component="SelfVendorAccessEnable" Text="自ベンダーを含む"></RadzenLabel>
+                                        </div>
+                                        @if (_selfVendorAccessEnable)
+                                        {
+                                            <RadzenDataGrid class="grid-access-control" Data="_selfVendors" TItem="ApiModel.AccessVendorModel">
+                                                <Columns>
+                                                    <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="IsEnable" Title="有効">
+                                                        <Template Context="vendor">
+                                                            <RadzenCheckBox TValue="bool" @bind-Value="vendor.IsEnable" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                                        </Template>
+                                                    </RadzenDataGridColumn>
+                                                    <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="VendorName" Title="ベンダー"></RadzenDataGridColumn>
+                                                    <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="SystemName" Title="システム"></RadzenDataGridColumn>
+                                                    <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="AccessKey" Title="アクセスキー">
+                                                        <Template Context="vendor">
+                                                            <RadzenCheckBox TValue="bool" Value="@(!string.IsNullOrEmpty(vendor.AccessKey))" Change="@(args => OnChangeVendorAccessKey(vendor, args))" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                                            <RadzenTextBox Value="@vendor.AccessKey" Disabled="true" Visible="@(!string.IsNullOrEmpty(vendor.AccessKey))"></RadzenTextBox>
+                                                            <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(vendor.AccessKey))" Visible="@(!string.IsNullOrEmpty(vendor.AccessKey))" Disabled="@(!_isEditable)"></RadzenButton>
+                                                        </Template>
+                                                    </RadzenDataGridColumn>
+                                                </Columns>
+                                            </RadzenDataGrid>
+                                        }
+                                    </div>
+                                    <div class="ms-2">
+                                        <RadzenLabel class="align-middle mb-2" Component="OtherVendors" Text="ベンダー一覧"></RadzenLabel>
+                                        <RadzenDataGrid class="grid-access-control" Data="_otherVendors" TItem="ApiModel.AccessVendorModel" AllowFiltering="true" FilterMode="FilterMode.Simple" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive">
+                                            <Columns>
+                                                <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="IsEnable" Title="有効" Filterable="false">
+                                                    <Template Context="vendor">
+                                                        <RadzenCheckBox TValue="bool" @bind-Value="vendor.IsEnable" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                                    </Template>
+                                                </RadzenDataGridColumn>
+                                                <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="VendorName" Title="ベンダー"></RadzenDataGridColumn>
+                                                <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="SystemName" Title="システム"></RadzenDataGridColumn>
+                                                <RadzenDataGridColumn TItem="ApiModel.AccessVendorModel" Property="AccessKey" Title="アクセスキー" Filterable="false">
+                                                    <Template Context="vendor">
+                                                        <RadzenCheckBox TValue="bool" Value="@(!string.IsNullOrEmpty(vendor.AccessKey))" Change="@(args => OnChangeVendorAccessKey(vendor, args))" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                                                        <RadzenTextBox Value="@vendor.AccessKey" Disabled="true" Visible="@(!string.IsNullOrEmpty(vendor.AccessKey))"></RadzenTextBox>
+                                                        <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(vendor.AccessKey))" Visible="@(!string.IsNullOrEmpty(vendor.AccessKey))" Disabled="@(!_isEditable)"></RadzenButton>
+                                                    </Template>
+                                                </RadzenDataGridColumn>
+                                            </Columns>
+                                        </RadzenDataGrid>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2" hidden="@(!IsDetailMode)" style="display:none">
+                    <div class="col" style="display:none">
+                        <div class="p-2 border" style="display:none">
+                            <RadzenPanel AllowCollapse="true" Style="padding: 0;display:none" Collapsed="true">
+                                <HeaderTemplate>
+                                    <RadzenLabel Text="OpenID認証局設定" class="me-1 align-middle" />
+                                </HeaderTemplate>
+                                <ChildContent>
+                                    <RadzenDataGrid @ref="_openIdCaGrid" Data="@Method.MethodOpenIdCAList" TItem="ApiModel.MethodOpenIdCaModel" RowUpdate="OnUpdateOpenIdCa" EditMode="DataGridEditMode.Single" style="display:none">
+                                        <Columns>
+                                            <RadzenDataGridColumn TItem="ApiModel.MethodOpenIdCaModel" Property="ApplicationName" Title="認証局" Sortable="false">
+                                                <Template Context="openIdCa">
+                                                    @openIdCa.ApplicationName
+                                                </Template>
+                                                <EditTemplate Context="openIdCa">
+                                                    @openIdCa.ApplicationName
+                                                </EditTemplate>
+                                            </RadzenDataGridColumn>
+                                            <RadzenDataGridColumn TItem="ApiModel.MethodOpenIdCaModel" Property="AccessControl" Title="アクセス制御" Sortable="false">
+                                                <Template Context="openIdCa">
+                                                    @s_AccessControls[openIdCa.AccessControl]
+                                                </Template>
+                                                <EditTemplate Context="openIdCa">
+                                                    <RadzenDropDown Data="s_AccessControls" @bind-Value="openIdCa.AccessControl" ValueProperty="Key" TextProperty="Value" />
+                                                </EditTemplate>
+                                            </RadzenDataGridColumn>
+                                            <RadzenDataGridColumn TItem="ApiModel.MethodOpenIdCaModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                                <Template Context="openIdCa">
+                                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                                </Template>
+                                                <EditTemplate Context="openIdCa">
+                                                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdateOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                                </EditTemplate>
+                                            </RadzenDataGridColumn>
+                                        </Columns>
+                                    </RadzenDataGrid>
+                                </ChildContent>
+                            </RadzenPanel>
+                        </div>
+                    </div>
+                </div>
+                @if (_isEditable)
+                {
+                    <div class="row justify-content-center mt-5">
+                        <div class="col-3">
+                            <RadzenButton Text="@(Api.IsNew ? "作成" : "保存")" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit"></RadzenButton>
+                        </div>
+                        @if (!Api.IsNew && !Method.IsTransparent)
+                        {
+                            <div class="col-3">
+                                <RadzenButton Text="削除" ButtonStyle="ButtonStyle.Danger" Click="Delete"></RadzenButton>
+                            </div>
+                        }
+                    </div>
+                }
+            </RadzenTemplateForm>
+        </div>
+    </RadzenCard>
+}
+
+@code {
+    private const string CacheKeyActionType = "AdminWeb:ActionType";
+    private const string CacheKeyHttpMethodType = "AdminWeb:HttpMethodType";
+    private const string CacheKeyLanguage = "AdminWeb:Language";
+    private const string CacheKeyQueryType = "AdminWeb:QueryType";
+    private const string CacheKeyScriptType = "AdminWeb:ScriptType";
+    private const string CacheKeyOpenIdCa = "AdminWeb:OpenIdCa";
+
+    private enum SchemaType
+    {
+        Url,
+        Request,
+        Response
+    }
+
+    private const string MethodUrlPattern = @"^[^/|^\d](((?![/]{2,})[-/_.a-zA-Z\d])|(\{[-_a-zA-Z\d]+}))+[\?](((?![=]{2,})[-_=&\[\]\.a-zA-Z\d])|(\{[-_a-zA-Z0-9]+}))+$|^[^/|^\d](((?![/]{2,})[-/_.a-zA-Z\d])|(\{[-_.a-zA-Z\d]+}))+$";
+
+    private static Dictionary<string, string> s_AccessControls = new()
+    {
+        { "alw", "許可" },
+        { "dny", "拒否" },
+        { "inh", "未設定" },
+    };
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ApiSimpleModel Api { get; set; }
+
+    [Parameter]
+    public string VendorId { get; set; }
+
+    [Parameter]
+    public List<VendorSimpleModel> Vendors { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    [Inject]
+    protected IAdminApiService Service { get; set; }
+
+    [Inject]
+    protected ICommonAdminService CommonAdminService { get; set; }
+
+    [Inject]
+    protected IAdminRepositoryGroupService ReposiotryGroupService { get; set; }
+
+    [Inject]
+    protected ICache Cache { get; set; }
+
+    private List<ActionTypeModel> _actionTypes;
+
+    private List<HttpMethodTypeModel> _httpMethodTypes;
+
+    private List<LanguageModel> _sampleCodeLanguages;
+
+    private List<QueryTypeModel> _queryTypes;
+
+    private List<ScriptTypeModel> _scriptTypes;
+
+    private List<OpenIdCaModel> _openIdCas;
+
+    private ApiResourceLightModel Resource { get; set; } = new();
+
+    private EditContext MethodEditContext;
+
+    private ValidationMessageStore _validationMessageStore;
+
+    private ApiModel Method { get; set; } = new()
+    {
+        SecondaryRepositoryMapList = new(),
+        SampleCodeList = new(),
+        MethodLinkList = new(),
+        AccessVendorList = new(),
+        MethodOpenIdCAList = new(),
+    };
+
+    private List<SchemaModel> Schemas { get; set; } = new();
+
+    private bool ShowSpinner { get; set; } = false;
+
+    private SchemaModel _editTargetSchema;
+
+    private SchemaType _editTargetSchemaType;
+
+    private bool _isInitialized = false;
+
+    private bool _isEditable = false;
+
+    private string _scriptSyntaxErrorMessage = string.Empty;
+
+    private string _scriptSyntaxResult = string.Empty;
+
+    /// <summary>
+    /// 編集前のURL。URLの変更検知に利用。
+    /// </summary>
+    private string _initialMethodUrl = string.Empty;
+
+    /// <summary>
+    /// ヘルプページへの表示フラグ。
+    /// IsHiddenとIsVisibleSigninUserOnlyの値をget/setする必要があるため、コンポーネントにはこのプロパティをバインドする。
+    /// </summary>
+    private string HelpPageVisible
+    {
+        get => Method.IsHidden ? "hidden" : Method.IsVisibleSigninUserOnly ? "signinUserOnly" : "visible";
+        set
+        {
+            switch (value)
+            {
+                case "hidden":
+                    Method.IsHidden = true;
+                    Method.IsVisibleSigninUserOnly = false;
+                    break;
+                case "signinUserOnly":
+                    Method.IsHidden = false;
+                    Method.IsVisibleSigninUserOnly = true;
+                    break;
+                case "visible":
+                    Method.IsHidden = false;
+                    Method.IsVisibleSigninUserOnly = false;
+                    break;
+            }
+        }
+    }
+
+    private bool IsDataTypeArray
+    {
+        get => this.Method.PostDataType == "array";
+        set => this.Method.PostDataType = value ? "array" :  null;
+    }
+
+    private bool IsAutomaticId 
+    {
+        get => this.Method.Automatic == "True";
+        set => this.Method.Automatic = value.ToString();
+    }
+
+    private List<WebAPI.Models.RepositoryGroupModel> _vendorRepositoryGroups = new();
+    private List<MethodRepositoryGroupViewModel> _methodRepositoryGroups = new();
+
+    private LanguageModel _selectedSampleCodeLanguage;
+
+    private int _selectedSampleCodeTabIndex;
+
+    private List<string> _removedSampleCodeIds;
+
+    private RadzenDataGrid<ApiModel.MethodLinkModel> _methodLinkGrid;
+
+    private bool IsAccessKey
+    {
+        get => this.Method.AccessKey == "True";
+        set => this.Method.AccessKey = value.ToString();
+    }
+
+    private bool _selfVendorAccessEnable;
+
+    private List<ApiModel.AccessVendorModel> _selfVendors = new();
+
+    private List<ApiModel.AccessVendorModel> _otherVendors = new();
+
+    private RadzenDataGrid<ApiModel.MethodOpenIdCaModel> _openIdCaGrid;
+
+    private ApiModel.MethodOpenIdCaModel _editTargetOpenIdCa;
+
+    private string _dummy = null;
+
+    private bool IsDetailMode = true;
+    private List<ActionTypeModel> _actionTypesBackup = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        await this.ToggleSpinner(true);
+        try
+        {
+            await GetMasterData();
+
+            var taskGetApiResource = Task.Run(() =>
+            {
+                Resource = Service.GetApiResourceLight(Api.ApiId).Throw(x => !x.IsSuccessStatusCode, x => "リソースの取得に失敗しました。").Result;
+            });
+            var taskGetMethod = Task.Run(() =>
+            {
+                if (Api.IsNew)
+                {
+                    // メソッド作成時
+                    Method = new()
+                    {
+                        ApiId = Api.ApiId,
+                        MethodId = Api.MethodId,
+                        ActionTypeCd = _actionTypes.First().ActionTypeCd,
+                        MethodType = _httpMethodTypes.First().HttpMethodTypeCode,
+                        QueryTypeCd = _queryTypes.First().QueryTypeCd,
+                        ScriptTypeCd = _scriptTypes.First().ScriptTypeCd,
+                        IsEnable = true,
+                        IsHidden = true,
+                        IsHeaderAuthentication = true,
+                        IsOpenIdAuthentication = true,
+                        SecondaryRepositoryMapList = new(),
+                        SampleCodeList = new(),
+                        MethodLinkList = new(),
+                        AccessVendorList = new(),
+                        MethodOpenIdCAList = _openIdCas.Select(ca => new ApiModel.MethodOpenIdCaModel()
+                        {
+                            MethodOpenIdCaId = Guid.NewGuid().ToString(),
+                            ApplicationId = ca.ApplicationId.ToString(),
+                            ApplicationName = ca.ApplicationName,
+                            AccessControl = "inh",
+                        }).ToList()
+                    };
+                    SetDefaultSchema(Method.MethodType);
+                    IsDetailMode = false;
+                }
+                else
+                {
+                    Method = Service.GetApiMethod(Api.MethodId).Throw(x => !x.IsSuccessStatusCode, x => "メソッドの取得に失敗しました。").Result;
+                    _initialMethodUrl = Method.MethodUrl;
+                    IsDetailMode = true;
+                }
+            });
+            var taskGetSchemas = Task.Run(() =>
+            {
+                Schemas = Service.GetSchemas($"vendorId={VendorId}")
+                                 .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "スキーマ一覧の取得に失敗しました。").Result;
+            });
+            var taskRepositoryGroup = Task.Run(() => 
+            {
+                _vendorRepositoryGroups = GetVendorRepositoryGroups();
+            });
+            await Task.WhenAll(taskGetApiResource, taskGetMethod, taskGetSchemas, taskRepositoryGroup);
+
+            SetMethodRepositoryGroups();
+            OnChangeDetailModeCheck(IsDetailMode);
+
+            // アクセスコントロール用のプロパティを設定
+            _selfVendors = new();
+            _otherVendors = new();
+            Vendors.ForEach(v =>
+            {
+                if (v.VendorId == Resource.VendorId)
+                {
+                    v.SystemList?.ForEach(s =>
+                    {
+                        var accessVendorModel = CreateAccessVendorModel(v, s);
+                        // メソッド作成時は自ベンダーのアクセスを有効にしておく(アクセスコントロールはfalseなのでただの初期値)
+                        accessVendorModel.IsEnable |= Api.IsNew;
+                        _selfVendors.Add(accessVendorModel);
+                    });
+                }
+                else
+                {
+                    v.SystemList?.ForEach(s =>
+                    {
+                        _otherVendors.Add(CreateAccessVendorModel(v, s));
+                    });
+                }
+            });
+            _selfVendorAccessEnable = _selfVendors.Any(v => v.IsEnable);
+
+            // サンプルコード用の変数を初期化
+            _selectedSampleCodeLanguage = _sampleCodeLanguages.First();
+            _selectedSampleCodeTabIndex = 0;
+            _removedSampleCodeIds = new List<string>();
+
+            MethodEditContext = new EditContext(Method);
+            _validationMessageStore = new ValidationMessageStore(MethodEditContext);
+            MethodEditContext.OnFieldChanged += (sender, args) =>
+            {
+                // URL、アクションタイプ、メソッドタイプが変更されるたびにチェックするのは厳しいので
+                // 変更時はエラーメッセージのクリアだけしておく(登録/更新実行時にチェックする)
+                if (args.FieldIdentifier.FieldName == "ActionTypeCd" || args.FieldIdentifier.FieldName == "MethodType")
+                {
+                    var id = MethodEditContext.Field("ActionTypeCd");
+                    _validationMessageStore.Clear(id);
+                }
+                else if (args.FieldIdentifier.FieldName == "MethodUrl")
+                {
+                    var id = MethodEditContext.Field("MethodUrl");
+                    _validationMessageStore.Clear(id);
+                }
+            };
+        }
+        catch (Exception e)
+        {
+            await this.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("メソッド", "エラーが発生しました。", errorDetail: e.ToString());
+        }
+        await this.ToggleSpinner(false);
+    }
+
+    private async Task ToggleSpinner(bool visible)
+    {
+        await Task.Yield();
+        this.ShowSpinner = visible;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// マスターデータを取得する。
+    /// </summary>
+    /// <returns></returns>
+    private async Task GetMasterData() 
+    {
+        if (_isInitialized) 
+        {
+            return;
+        }
+        _isInitialized = true;
+
+        // マスター系の取得
+        var taskGetActionTypes = Task.Run(() =>
+        {
+            _actionTypes = Cache.Get<List<ActionTypeModel>>(CacheKeyActionType, () =>
+                Service.GetActionTypes().Throw(x => !x.IsSuccessStatusCode, x => "アクションタイプ一覧の取得に失敗しました。")
+                    .Result.Where(t => t.IsVisible).ToList());
+            _actionTypes?.Insert(0, new ActionTypeModel() { ActionTypeCd = null, ActionTypeName = "　", IsVisible = true });
+
+            // 簡易モード用
+            _actionTypesBackup = new(_actionTypes);
+        });
+        var taskGetHttpMethods = Task.Run(() =>
+        {
+            _httpMethodTypes = Cache.Get<List<HttpMethodTypeModel>>(CacheKeyHttpMethodType, () =>
+                Service.GetHttpMethods().Throw(x => !x.IsSuccessStatusCode, x => "HTTPメソッドタイプ一覧の取得に失敗しました。")
+                    .Result);
+        });
+        var taskGetLanguageList = Task.Run(() =>
+        {
+            _sampleCodeLanguages = Cache.Get<List<LanguageModel>>(CacheKeyLanguage, () =>
+                Service.GetLanguageList().Throw(x => !x.IsSuccessStatusCode, x => "言語一覧の取得に失敗しました。")
+                    .Result);
+        });
+        var taskGetQueryTypeList = Task.Run(() =>
+        {
+            _queryTypes = Cache.Get<List<QueryTypeModel>>(CacheKeyQueryType, () =>
+                Service.GetQueryTypeList().Throw(x => !x.IsSuccessStatusCode, x => "クエリタイプ一覧の取得に失敗しました。")
+                    .Result);
+        });
+        var taskGetScriptTypeList = Task.Run(() =>
+        {
+            _scriptTypes = Cache.Get<List<ScriptTypeModel>>(CacheKeyScriptType, () =>
+                Service.GetScriptTypeList().Throw(x => !x.IsSuccessStatusCode, x => "スクリプトタイプ一覧の取得に失敗しました。")
+                    .Result.Where(x => x.ScriptTypeCd == "rss").ToList());
+            _scriptTypes?.Insert(0, new ScriptTypeModel() { ScriptTypeCd = null, ScriptTypeName = "　" });
+        });
+        var taskOpenIdCaList = Task.Run(() =>
+        {
+            _openIdCas = Cache.Get<List<OpenIdCaModel>>(CacheKeyOpenIdCa, () =>
+                CommonAdminService.GetOpenIdCaList().Throw(x => !x.IsSuccessStatusCode, x => "OpenId認証局一覧の取得に失敗しました。")
+                    .Result);
+        });
+        await Task.WhenAll(taskGetActionTypes, taskGetHttpMethods, taskGetLanguageList, taskGetQueryTypeList, taskGetScriptTypeList, taskOpenIdCaList);
+    }
+
+    /// <summary>
+    /// デフォルトのモデルを設定する。
+    /// </summary>
+    /// <param name="httpMethodTypeCode">メソッドタイプ</param>
+    private void SetDefaultSchema(object httpMethodTypeCode)
+    {
+        if (!Api.IsNew) 
+        {
+            // メソッド編集時は何もしない
+            return;
+        }
+
+        switch ((string)httpMethodTypeCode) 
+        {
+            case "GET":
+                if (Method.ResponseSchemaId == null)
+                {
+                    Method.ResponseSchemaId = Resource.ApiSchemaId;
+                }
+                break;
+            case "POST":
+            case "PUT":
+            case "PATCH":
+                if (Method.RequestSchemaId == null)
+                {
+                    Method.RequestSchemaId = Resource.ApiSchemaId;
+                }
+                if (Method.ResponseSchemaId == Resource.ApiSchemaId) 
+                {
+                    Method.ResponseSchemaId = null;
+                }
+                break;
+            case "DELETE":
+                if (Method.RequestSchemaId == Resource.ApiSchemaId)
+                {
+                    Method.RequestSchemaId = null;
+                }
+                if (Method.ResponseSchemaId == Resource.ApiSchemaId) 
+                {
+                    Method.ResponseSchemaId = null;
+                }
+                break;
+        }
+    }
+
+    private List<WebAPI.Models.RepositoryGroupModel> GetVendorRepositoryGroups()
+    {
+        return ReposiotryGroupService.GetRepositoryGroupList($"vendorId={VendorId}")
+            .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "リポジトリグループ一覧の取得に失敗しました。")
+            .Result;
+    }
+
+    private void SetMethodRepositoryGroups()
+    {
+        // リポジトリグループ一覧を設定
+        _methodRepositoryGroups = _vendorRepositoryGroups
+            .OrderBy(r => r.SortNo)
+            .Select(r => new MethodRepositoryGroupViewModel()
+            {
+                RepositoryGroupId = r.RepositoryGroupId,
+                RepositoryGroupName = r.RepositoryGroupName,
+                RepositoryTypeCd = r.RepositoryTypeCd,
+                IsEnable = r.IsEnable,
+                IsPrimary = r.RepositoryGroupId == Method.RepositoryGroupId,
+                IsSecondary = Method.SecondaryRepositoryMapList?.Any(secondary => secondary.RepositoryGroupId == r.RepositoryGroupId) == true,
+                IsDefault = r.IsDefault,
+            })
+            .Where(r => r.IsMethodDetailListVisible)
+            .ToList();
+
+        if (Api.IsNew) 
+        {
+            // メソッド作成時はデフォルトのリポジトリグループを設定
+            // (他のメソッドで参照しているリポジトリグループが単一である場合はそれを、そうでない場合はIsDefault=trueのものを設定)
+            if (Resource.RepositoryGroupId != null)
+            {
+                Method.RepositoryGroupId = Resource.RepositoryGroupId;
+                _methodRepositoryGroups.Single(r => r.RepositoryGroupId == Method.RepositoryGroupId).IsPrimary = true;
+            }
+            else
+            {
+                var defaultRepositoryGroup = _methodRepositoryGroups.Where(r => !r.IsAttachFileBlobStorage && r.IsEnable && r.IsDefault)
+                                                              .FirstOrDefault();
+                if (defaultRepositoryGroup != null)
+                {
+                    Method.RepositoryGroupId = defaultRepositoryGroup.RepositoryGroupId;
+                    defaultRepositoryGroup.IsPrimary = true;
+                }
+            }
+        }
+    }
+
+    private void RestoreDefaultSettingForSimpleMode()
+    {
+        var _method = new ApiModel()
+        {
+            ApiId = Api.ApiId,
+            QueryTypeCd = _queryTypes.First().QueryTypeCd,
+            ScriptTypeCd = _scriptTypes.First().ScriptTypeCd,
+            IsEnable = true,
+            IsHidden = true,
+            IsHeaderAuthentication = true,
+            IsOpenIdAuthentication = true,
+            SecondaryRepositoryMapList = new(),
+            SampleCodeList = new(),
+            MethodLinkList = new(),
+            AccessVendorList = new(),
+            MethodOpenIdCAList = _openIdCas.Select(ca => new ApiModel.MethodOpenIdCaModel()
+            {
+                MethodOpenIdCaId = Guid.NewGuid().ToString(),
+                ApplicationId = ca.ApplicationId.ToString(),
+                ApplicationName = ca.ApplicationName,
+                AccessControl = "inh",
+            }).ToList(),
+            // 簡易モードで入力されるアクションタイプ、メソッド、URL、説明は、設定されている値を反映する
+            ActionTypeCd = Method.ActionTypeCd,
+            MethodType = Method.MethodType,
+            MethodUrl = Method.MethodUrl,
+            MethodDescription = Method.MethodDescription
+        };
+        // アクションタイプ、メソッド、URL、説明以外はデフォルト値に戻す
+        Method = _method;
+        SetDefaultSchema(Method.MethodType);
+        SetMethodRepositoryGroups();
+    }
+
+    private static List<ActionTypeModel> _actionTypesSimpleMode = new List<ActionTypeModel>{
+        new ActionTypeModel()
+        {
+            ActionTypeCd = "quy",
+            ActionTypeName = "データを取得するAPI（Query）"
+        },
+        new ActionTypeModel()
+        {
+            ActionTypeCd = "reg",
+            ActionTypeName = "データを登録するAPI（Regist）"
+        },
+        new ActionTypeModel()
+        {
+            ActionTypeCd = "upd",
+            ActionTypeName = "データを更新するAPI（Update）"
+        },
+        new ActionTypeModel()
+        {
+            ActionTypeCd = "del",
+            ActionTypeName = "データを削除するAPI（DeleteData）"
+        }
+    };
+
+    private void OnChangeDetailModeCheck(bool? isDetailMode)
+    {
+        if(isDetailMode.HasValue)
+        {
+            if (isDetailMode.Value)
+            {
+                _actionTypes = new(_actionTypesBackup);
+            }
+            else
+            {
+                _actionTypesBackup = new(_actionTypes);
+                _actionTypes = new(_actionTypesSimpleMode);
+            }
+        }
+    }
+
+    private ApiModel.AccessVendorModel CreateAccessVendorModel(VendorSimpleModel vendor, VendorSimpleModel.SystemModel system)
+    {
+        var existingVendor = Method.AccessVendorList.SingleOrDefault(item => item.VendorId == vendor.VendorId && item.SystemId == system.SystemId);
+        return new ApiModel.AccessVendorModel()
+        {
+            AccessVendorId = existingVendor == null ? Guid.NewGuid().ToString() : existingVendor.AccessVendorId,
+            VendorId = vendor.VendorId,
+            VendorName = vendor.VendorName,
+            SystemId = system.SystemId,
+            SystemName = system.SystemName,
+            IsEnable = existingVendor?.IsEnable == true,
+            AccessKey = existingVendor?.AccessKey,
+        };
+    }
+
+    /// <summary>
+    /// メソッドを登録または更新する。
+    /// </summary>
+    /// <returns></returns>
+    private async Task Save()
+    {
+        if (!MethodEditContext.Validate())
+            return;
+
+        await this.ToggleSpinner(true);
+        if ((await Task.WhenAll(ValidateApiTypes(), ValidateUrl())).Any(r => !r))
+        {
+            await this.ToggleSpinner(false);
+            return;
+        }
+        await this.ToggleSpinner(false);
+
+        var confirmResult = await Layout.ShowConfirmDialog("メソッド保存", "メソッドの保存を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        await this.ToggleSpinner(true);
+
+        // 新規で、且つ簡易モードなら、設定をデフォルト設定に戻す
+        if(string.IsNullOrEmpty(Method.MethodId) && !IsDetailMode)
+        {
+            RestoreDefaultSettingForSimpleMode();
+        }
+
+        try
+        {
+            var model = new RegisterApiModel()
+            {
+                ApiId = Resource.ApiId,
+                MethodId = Method.MethodId,
+                Url = Method.MethodUrl,
+                ActionTypeCd = Method.ActionTypeCd,
+                HttpMethodTypeCd = Method.MethodType,
+                MethodDescriptiveText = Method.MethodDescription,
+                IsPostDataTypeArray = IsDataTypeArray,
+                IsAutomaticId = IsAutomaticId,
+                UrlModelId = Method.UrlSchemaId,
+                RequestModelId = Method.RequestSchemaId,
+                ResponseModelId = Method.ResponseSchemaId,
+                IsEnable = Method.IsEnable,
+                IsHidden = Method.IsHidden,
+                IsVisibleSigninuserOnly = Method.IsVisibleSigninUserOnly,
+                IsTransparentApi = Method.IsTransparent,
+                IsHeaderAuthentication = Method.IsHeaderAuthentication,
+                IsVendorSystemAuthenticationAllowNull = Method.IsVendorSystemAuthenticationAllowNull,
+                IsOpenIdAuthentication = Method.IsOpenIdAuthentication,
+                IsAdminAuthentication = Method.IsAdminAuthentication,
+                IsClientCertAuthentication = Method.IsClientCertAuthentication,
+                IsSkipJsonSchemaValidation = Method.IsSkipJsonSchemaValidation,
+                IsAccessKey = IsAccessKey,
+                ApiAccessVendorList = _selfVendors.Concat(_otherVendors).Select(v => new RegisterAccessVendorModel() { VendorId = v.VendorId, SystemId = v.SystemId, IsEnable = v.IsEnable, AccessKey = v.AccessKey }).ToList(),
+                IsInternalOnly = Method.IsInternalOnly,
+                InternalOnlyKeyword = Method.InternalOnlyKeyword,
+                IsOtherResourceSqlAccess = Method.IsOtherResourceSqlAccess,
+                IsOverPartition = Method.IsOverPartition,
+                IsCache = Method.IsCache,
+                CacheMinute = Method.CacheMinute.ToString(),
+                CacheKey = Method.CacheKey,
+                GatewayUrl = Method.GatewayUrl,
+                GatewayCredentialUserName = Method.GatewayCredentialUserName,
+                GatewayCredentialPassword = Method.GatewayCredentialPassword,
+                GatewayRelayHeader = Method.GatewayRelayHeader,
+                RepositoryGroupId = _methodRepositoryGroups.SingleOrDefault(r => r.IsPrimary)?.RepositoryGroupId,
+                SecondaryRepositoryGroupIds = _methodRepositoryGroups.Where(r => r.IsSecondary).Select(r => r.RepositoryGroupId).ToList(),
+                QueryType = Method.QueryTypeCd,
+                Query = Method.Query,
+                ScriptType = Method.ScriptTypeCd,
+                Script = Method.Script,
+                SampleCodeList = Method.SampleCodeList?.Select(c => new RegisterSampleCodeModel() { SampleCodeId = c.SampleCodeId, LanguageId = c.LanguageId, Code = c.Code, IsActive = !this._removedSampleCodeIds.Contains(c.SampleCodeId) }).ToList(),
+                ApiLinkList = Method.MethodLinkList?.Select(l => new RegisterApiLinkModel() { ApiLinkId = l.MethodLinkId, LinkTitle = l.Title, LinkDetail = l.Detail, LinkUrl = l.Url }).ToList(),
+                OpenIdCaList = Method.MethodOpenIdCAList?.Select(ca => new RegisterResourceOpenIdCaModel() { Id = ca.MethodOpenIdCaId, ApplicationId = ca.ApplicationId, AccessControl = ca.AccessControl, IsActive = true }).ToList()
+            };
+
+            Api.MethodId = (await Service.RegisterMethodAsync(model)).Throw(x => !x.IsSuccessStatusCode, x => "メソッドの保存に失敗しました。")
+                .Result
+                .MethodId;
+
+            IsDetailMode = true;
+            Api.IsCreatedOrRenamed = Api.IsNew || (_initialMethodUrl != Method.MethodUrl);
+            _initialMethodUrl = Method.MethodUrl;
+            Api.IsNew = false;
+        }
+        catch (Exception e)
+        {
+            await this.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("メソッド保存失敗", "メソッドの保存に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await this.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "メソッドを保存しました。");
+
+        await OnChange.InvokeAsync(Method.MethodId);
+    }
+
+    /// <summary>
+    /// メソッドを削除する。
+    /// </summary>
+    /// <returns></returns>
+    private async Task Delete()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("メソッド削除", "メソッドの削除を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        await this.ToggleSpinner(true);
+
+        try
+        {
+            (await Service.DeleteMethodAsync(Method.MethodId)).Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "メソッドの削除に失敗しました。");
+        }
+        catch (Exception e)
+        {
+            await this.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("メソッド削除失敗", "メソッドの削除に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await this.ToggleSpinner(false);
+
+        Layout.ShowNotifySuccess(message: "メソッドを削除しました。");
+
+        await OnDelete.InvokeAsync();
+    }
+
+    /// <summary>
+    /// モデル追加ボタンの処理。スキーマ編集画面を表示する。
+    /// </summary>
+    /// <param name="schemaType">追加したスキーマの設定先</param>
+    private void AddSchema(SchemaType schemaType) 
+    {
+        // ManageAPIはSchemaIdが未指定なら同じURLのAPIを上書きする仕様となっているため、
+        // 新規の場合は管理画面側であらかじめSchemaIdを発行しておく
+        _editTargetSchema = new()
+        {
+            SchemaId = Guid.NewGuid().ToString(),
+            VendorId = Resource.VendorId,
+            IsNew = true
+        };
+        _editTargetSchemaType = schemaType;
+    }
+
+    /// <summary>
+    /// モデル編集ボタンの処理。スキーマ編集画面を表示する。
+    /// </summary>
+    /// <param name="schemaId">編集対象のスキーマ</param>
+    /// <param name="schemaType">編集したスキーマの設定先</param>
+    private void EditSchema(string schemaId, SchemaType schemaType)
+    {
+        _editTargetSchema = Schemas.Single(s => s.SchemaId == schemaId);
+        _editTargetSchemaType = schemaType;
+    }
+
+    /// <summary>
+    /// スキーマ編集完了時の処理。
+    /// スキーマをモデルとして設定し、コールバックを呼び出す。
+    /// </summary>
+    /// <returns></returns>
+    private async Task OnChangeSchema()
+    {
+        await this.ToggleSpinner(true);
+        switch (_editTargetSchemaType)
+        {
+            case SchemaType.Url:
+                Method.UrlSchemaId = _editTargetSchema.SchemaId;
+                break;
+            case SchemaType.Request:
+                Method.RequestSchemaId = _editTargetSchema.SchemaId;
+                break;
+            case SchemaType.Response:
+                Method.ResponseSchemaId = _editTargetSchema.SchemaId;
+                break;
+        }
+
+        _editTargetSchema = null;
+        try
+        {
+            Schemas = (await Service.GetSchemasAsync($"vendorId={Resource.VendorId}")).Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "モデル一覧の取得に失敗しました。").Result;
+        }
+        catch (Exception e)
+        {
+            await this.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("モデル取得失敗", "モデルの取得に失敗しました。", errorDetail: e.ToString());
+        }
+
+        await this.ToggleSpinner(false);
+
+        await OnChange.InvokeAsync();
+    }
+
+    /// <summary>
+    /// スキーマ編集キャンセル時の処理。編集画面を閉じる。
+    /// </summary>
+    /// <returns></returns>
+    private async Task OnCancelEditSchema()
+    {
+        _editTargetSchema = null;
+    }
+
+    private void SetPrimaryRepositoryGroup(string repositoryGroupId)
+    {
+        foreach (var repositoryGroup in _methodRepositoryGroups)
+        {
+            repositoryGroup.IsPrimary = repositoryGroup.RepositoryGroupId == repositoryGroupId;
+            if (repositoryGroup.IsPrimary)
+            {
+                repositoryGroup.IsSecondary = false;
+            }
+        }
+    }
+
+    /// <summary>
+    /// サンプルコードを追加する。
+    /// </summary>
+    private void AddSampleCode()
+    {
+        this.Method.SampleCodeList.Add(new ApiModel.SampleCodeModel()
+        {
+            SampleCodeId = Guid.NewGuid().ToString(),
+            LanguageId = this._selectedSampleCodeLanguage.LanguageId,
+            Language = this._selectedSampleCodeLanguage.LanguageName
+        });
+        this._selectedSampleCodeTabIndex = this.Method.SampleCodeList.Count - 1;
+    }
+
+    /// <summary>
+    /// サンプルコードを削除する。
+    /// </summary>
+    private async Task RemoveSampleCode()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("サンプルコード削除", "サンプルコード情報の削除を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        this._removedSampleCodeIds.Add(this.Method.SampleCodeList[this._selectedSampleCodeTabIndex].SampleCodeId);
+        this.Method.SampleCodeList.RemoveAt(this._selectedSampleCodeTabIndex);
+        this._selectedSampleCodeTabIndex = Math.Max(0, this._selectedSampleCodeTabIndex - 1);
+    }
+
+    /// <summary>
+    /// リンクの追加または編集ボタンの処理。リンクダイアログを表示する。
+    /// </summary>
+    /// <param name="methodLink"></param>
+    /// <returns></returns>
+    private async Task EditMethodLink(ApiModel.MethodLinkModel methodLink = null)
+    {
+        var result = await DialogService.OpenAsync<MethodLinkDialog>(
+            "リンク", 
+            new Dictionary<string, object>()
+            {
+                { "MethodLink", methodLink?.Clone() ?? new ApiModel.MethodLinkModel() { MethodLinkId = Guid.NewGuid().ToString(), IsVisivle = true } },
+                { "IsNew", methodLink == null }
+            }
+        );
+
+        if (result != null)
+        {
+            if (methodLink == null)
+            {
+                // 新しいリンクの場合は追加
+                Method.MethodLinkList.Add(result);
+            }
+            else
+            {
+                // 既存リンクの場合は更新
+                var index = Method.MethodLinkList.FindIndex(link => link.MethodLinkId == methodLink.MethodLinkId);
+                Method.MethodLinkList[index] = result;
+            }
+            await _methodLinkGrid.Reload();
+        }
+    }
+
+    /// <summary>
+    /// リンクを削除する。
+    /// </summary>
+    /// <param name="methodLink">削除対象リンク</param>
+    /// <returns></returns>
+    private async Task RemoveMethodLink(ApiModel.MethodLinkModel methodLink)
+    {
+        var index = Method.MethodLinkList.FindIndex(link => link.MethodLinkId == methodLink.MethodLinkId);
+        Method.MethodLinkList.RemoveAt(index);
+        await _methodLinkGrid.Reload();
+    }
+
+    /// <summary>
+    /// アクセスコントロールのアクセスキーを変更する。
+    /// </summary>
+    /// <param name="vendor"></param>
+    /// <param name="enabled"></param>
+    private void OnChangeVendorAccessKey(ApiModel.AccessVendorModel vendor, bool enabled)
+    {
+        vendor.AccessKey = enabled ? Guid.NewGuid().ToString() : null;
+    }
+
+    /// <summary>
+    /// リポジトリグループを検証する。
+    /// </summary>
+    /// <returns>リポジトリグループの指定が妥当な場合はtrue、それ以外はfalse。</returns>
+    private bool ValidateRepositoryGroup() 
+    {
+        // 透過API以外かつGateway以外はプライマリリポジトリグループの選択必須
+        if (!Method.IsTransparent && Method.ActionTypeCd != "gtw")
+        {
+            return _methodRepositoryGroups.Any(r => r.IsPrimary);
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// アクションタイプとメソッドタイプの組み合わせをチェックする。
+    /// ManageAPIでチェックするので、属性ではなくここでチェックする。
+    /// </summary>
+    /// <returns>組み合わせが正しい(実行可能な組み合わせ)場合はtrue、それ以外はfalse。</returns>
+    private async Task<bool> ValidateApiTypes()
+    {
+        var id = MethodEditContext.Field("ActionTypeCd");
+        _validationMessageStore.Clear(id);
+        bool result = false;
+        try 
+        {
+            result = (await Service.IsExecutableApiMethodAsync(Method.ActionTypeCd, Method.MethodType, _methodRepositoryGroups.SingleOrDefault(r => r.IsPrimary)?.RepositoryGroupId))
+                .Throw(r => !r.IsSuccessStatusCode, "タイプの組み合わせ検証に失敗しました。")
+                .Result;
+            if (!result)
+            {
+                _validationMessageStore.Add(id, "アクションタイプとHTTPメソッドタイプの組み合わせが不正です。");
+            }
+        }
+        catch (Exception e)
+        {
+            _validationMessageStore.Add(id, "タイプの組み合わせ検証に失敗しました。");
+        }
+        MethodEditContext.NotifyValidationStateChanged();
+
+        return result;
+    }
+
+    /// <summary>
+    /// URLの重複をチェックする。
+    /// </summary>
+    /// <returns>URLが妥当な場合(重複していない場合)はtrue、それ以外はfalse。</returns>
+    private async Task<bool> ValidateUrl() 
+    {
+        var id = MethodEditContext.Field("MethodUrl");
+        _validationMessageStore.Clear(id);
+        bool result = true;
+        try 
+        {
+            var model = new IsDuplicateMethodModel() 
+            {
+                ActionType = Method.ActionTypeCd,
+                HttpMethodType = Method.MethodType,
+                ApiId = Method.ApiId,
+                MethodUrl = Method.MethodUrl,
+                MethodId = Api.IsNew ? null : Method.MethodId
+            };
+            result = (await Service.IsDuplicateMethodAsync(model))
+                .Throw(r => !r.IsSuccessStatusCode, "URLの検証に失敗しました。")
+                .Result;
+            if (result)
+            {
+                _validationMessageStore.Add(id, "既に存在するURLです。");
+            }
+        }
+        catch (Exception e)
+        {
+            _validationMessageStore.Add(id, "URLの検証に失敗しました。");
+        }
+        MethodEditContext.NotifyValidationStateChanged();
+
+        return !result;
+    }
+
+    private async Task CheckScriptSyntax()
+    {
+        if (string.IsNullOrEmpty(Method.ScriptTypeCd) || string.IsNullOrEmpty(Method.Script))
+        {
+            _scriptSyntaxErrorMessage = string.Empty;
+            _scriptSyntaxResult = "スクリプトタイプとスクリプトは必須です。";
+            return;
+        }
+
+        var model = new ScriptModel()
+        {
+            ScriptType = Method.ScriptTypeCd,
+            Script = Method.Script
+        };
+        await this.ToggleSpinner(true);
+        try
+        {
+            var result = Service.GetScriptSyntaxCheckMessage(model).Throw(r => !r.IsSuccessStatusCode, "構文が不適切です").Result;
+            if (string.IsNullOrEmpty(result.Message))
+            {
+                _scriptSyntaxErrorMessage = string.Empty;
+                _scriptSyntaxResult = "OK";
+            }
+            else
+            {
+                _scriptSyntaxErrorMessage = result.Message;
+                _scriptSyntaxResult = "NG";
+            }
+
+        }
+        catch (Exception e)
+        {
+            await this.ToggleSpinner(false);
+            _scriptSyntaxErrorMessage = e.Message;
+            _scriptSyntaxResult = "NG";
+        }
+
+        await this.ToggleSpinner(false);
+
+    }
+
+    private void OnUpdateOpenIdCa(ApiModel.MethodOpenIdCaModel openIdCa)
+    {
+        var index = Method.MethodOpenIdCAList.FindIndex(c => c.ApplicationId == openIdCa.ApplicationId);
+        Method.MethodOpenIdCAList[index] = openIdCa;
+    }
+
+    private async Task EditOpenIdCa(ApiModel.MethodOpenIdCaModel openIdCa)
+    {
+        _editTargetOpenIdCa = openIdCa.Clone();
+        await _openIdCaGrid.EditRow(openIdCa);
+    }
+
+    private async Task UpdateOpenIdCa(ApiModel.MethodOpenIdCaModel openIdCa)
+    {
+        await _openIdCaGrid.UpdateRow(openIdCa);
+        _editTargetOpenIdCa = null;
+    }
+
+    private void CancelEditOpenIdCa(ApiModel.MethodOpenIdCaModel openIdCa)
+    {
+        _openIdCaGrid.CancelEditRow(openIdCa);
+
+        // 編集前の状態に戻す
+        openIdCa.AccessControl = _editTargetOpenIdCa.AccessControl;
+
+        _editTargetOpenIdCa = null;
+    }
+}

@@ -1,0 +1,3 @@
+﻿::deep .textarea-api-description {
+    height: calc(8 * var(--textarea-line-height) + var(--textarea-y-padding));
+}

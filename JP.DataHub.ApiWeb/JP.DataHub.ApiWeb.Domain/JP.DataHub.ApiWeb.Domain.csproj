@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;LocalStaging</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>$(DefineConstants)TRACE; Oracle</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='LocalStaging|AnyCPU'">
+    <DefineConstants>$(DefineConstants)TRACE; Oracle</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>$(DefineConstants)TRACE; Oracle</DefineConstants>
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.13.1" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="6.17.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.17.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com.csproj" />
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Data.Oracle\JP.DataHub.Data.Oracle.csproj" />
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.MVC\JP.DataHub.MVC.csproj" />
+    <ProjectReference Include="..\..\JP.DataHub.OData\JP.DataHub.OData.Interface\JP.DataHub.OData.Interface.csproj" />
+    <ProjectReference Include="..\JP.DataHub.Aop\JP.DataHub.Aop.csproj" />
+    <ProjectReference Include="..\JP.DataHub.Api.Core\JP.DataHub.Api.Core.csproj" />
+    <ProjectReference Include="..\JP.DataHub.ApiWeb.Core\JP.DataHub.ApiWeb.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Repository\Model\" />
+  </ItemGroup>
+
+</Project>

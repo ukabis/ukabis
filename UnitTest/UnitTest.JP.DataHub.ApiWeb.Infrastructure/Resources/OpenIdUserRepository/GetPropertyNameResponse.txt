@@ -1,0 +1,31 @@
+﻿{
+  "odata.metadata": "https://graph.windows.net/datahubjp.onmicrosoft.com/$metadata#directoryObjects",
+  "value": [
+    {
+      "odata.type": "Microsoft.DirectoryServices.ExtensionProperty",
+      "objectType": "ExtensionProperty",
+      "objectId": "a02b8360-01d6-452b-b786-3b149b2475c8",
+      "deletionTimestamp": null,
+      "appDisplayName": "",
+      "name": "extension_12345678_SystemId",
+      "dataType": "String",
+      "isSyncedFromOnPremises": false,
+      "targetObjects": [
+        "User"
+      ]
+    },
+    {
+      "odata.type": "Microsoft.DirectoryServices.ExtensionProperty",
+      "objectType": "ExtensionProperty",
+      "objectId": "89ace5a3-913b-46ff-aca2-77b7f8746b6d",
+      "deletionTimestamp": null,
+      "appDisplayName": "",
+      "name": "extension_7861b5c5ab914a29b0d660f110e87a27_VendorId",
+      "dataType": "String",
+      "isSyncedFromOnPremises": false,
+      "targetObjects": [
+        "User"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;LocalStaging</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NVelocity" Version="1.2.0" />
+    <PackageReference Include="SendGrid" Version="9.28.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com.csproj" />
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Infrastructure.Core\JP.DataHub.Infrastructure.Core.csproj" />
+    <ProjectReference Include="..\JP.DataHub.Infrastructure.Database\JP.DataHub.Infrastructure.Database.csproj" />
+    <ProjectReference Include="..\JP.DataHub.ManageApi.Core\JP.DataHub.ManageApi.Core.csproj" />
+    <ProjectReference Include="..\JP.DataHub.ManageApi.Service\JP.DataHub.ManageApi.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\InfrastructureMessages.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>InfrastructureMessages.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\InfrastructureMessages.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>InfrastructureMessages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

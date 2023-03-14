@@ -1,0 +1,33 @@
+﻿@page "/"
+@using JP.DataHub.AdminWeb.Core.Component.Pages.Invitation
+@inject IHttpContextAccessor httpContextAccessor
+@inject NavigationManager navigationManager
+
+<AuthorizeView Policy="@(FunctionPolicy.Top.ToString())">
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    private bool _initialized = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Layout.ToggleSpinner(true);
+
+        if (httpContextAccessor.HttpContext?.Request.Cookies.TryGetValue(Registered.InviteIdCookieName, out var inviteId) == true)
+        {
+            navigationManager.NavigateTo($"/Invitation/Register?inviteId={inviteId}", true);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            return;
+        }
+        await Layout.ToggleSpinner(false);
+    }
+}

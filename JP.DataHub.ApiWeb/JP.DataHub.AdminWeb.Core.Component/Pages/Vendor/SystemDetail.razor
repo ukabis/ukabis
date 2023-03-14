@@ -1,0 +1,611 @@
+﻿@inherits AdminWebBasePage
+
+@using JP.DataHub.AdminWeb.Service.Interface
+@using JP.DataHub.AdminWeb.WebAPI.Models
+@using JP.DataHub.AdminWeb.WebAPI.Resources
+@using JP.DataHub.Com.Extensions;
+@using JP.DataHub.Com.Net.Http
+@using System.Net
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+
+@attribute [Authorize(Policy = "System")]
+
+@inject ICommonAdminService CommonService
+@inject IAdminVendorService VendorService
+@inject DialogService DialogService
+
+@inject IJSRuntime jsRuntime
+
+<AuthorizeView Policy="@(FunctionPolicy.SystemWrite.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isEditable = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isEditable = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+
+<RadzenCard>
+    <h4>@(IsNewSystem ? "システム追加" : "システム編集")</h4>
+    <EditForm EditContext="@SystemEditContext" OnValidSubmit="@Save">
+        <ValidationSummary />
+        <ObjectGraphDataAnnotationsValidator />
+        <div>
+            <div class="row mb-2">
+                <div class="col-4 d-flex align-items-center">
+                    <RadzenLabel Text="ベンダーID"></RadzenLabel>
+                </div>
+                <div class="col-8 d-flex align-items-center">
+                    <RadzenTextBox Value=@System.VendorId Class="w-100" Disabled="true"></RadzenTextBox>
+                    <RadzenButton Icon="content_copy" Click="((args)=>CopyToClipboard(System.VendorId))" class="ms-2" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" /> <!--コピー-->
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 d-flex align-items-center">
+                    <RadzenLabel Text="ベンダー名"></RadzenLabel>
+                </div>
+                <div class="col-8 d-flex align-items-center">
+                    <RadzenTextBox Value=@System.VendorName Class="w-100" Disabled="true"></RadzenTextBox>
+                    <RadzenButton Icon="content_copy" Click="((args)=>CopyToClipboard(System.VendorName))" class="ms-2" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" /> <!--コピー-->
+                </div>
+            </div>
+            @if (!IsNewSystem)
+            {
+                <div class="row mb-2">
+                    <div class="col-4 d-flex align-items-center">
+                        <RadzenLabel Text="システムID"></RadzenLabel>
+                    </div>
+                    <div class="col-8 d-flex align-items-center">
+                        <RadzenTextBox Value=@System.SystemId Class="w-100" Disabled="true"></RadzenTextBox>
+                        <RadzenButton Icon="content_copy" Click="((args)=>CopyToClipboard(System.SystemId))" class="ms-2" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" /> <!--コピー-->
+                    </div>
+                </div>
+            }
+            <div class="row mb-2">
+                <div class="col-4 d-flex align-items-center">
+                    <RadzenLabel Text="システム名"></RadzenLabel>
+                </div>
+                <div class="col-8">
+                    <div class="d-flex align-items-center">
+                        <RadzenTextBox @bind-Value=@System.SystemName Name="SystemName" class="w-100" Disabled="@(!_isEditable)"></RadzenTextBox>
+                    </div>
+                    <div>
+                        <ValidationMessage For="@(() => System.SystemName)" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 d-flex align-items-center">
+                    <RadzenLabel Text="代表メールアドレス"></RadzenLabel>
+                </div>
+                <div class="col">
+                    <div class="d-flex align-items-center">
+                        <RadzenTextBox @bind-Value=@System.RepresentativeMailAddress Name="RepresentativeMailAddress" Class="w-100" Disabled="@(!_isEditable)"></RadzenTextBox>
+                    </div>
+                    <div>
+                        <ValidationMessage For="@(() => System.RepresentativeMailAddress)" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4">
+                    <RadzenLabel Text="OpenID Connect"></RadzenLabel>
+                </div>
+                <div class="col-8">
+                    <RadzenCard class="py-1 shadow-none">
+                        <div class="row mb-2">
+                            <div class="col-4 d-flex align-items-center">
+                                <RadzenLabel Text="アプリケーションID"></RadzenLabel>
+                            </div>
+                            <div class="col-8">
+                                <div class="d-flex align-items-center">
+                                    <RadzenTextBox @bind-Value=@System.OpenIdApplicationId Name="OpenIdApplicationId" Class="w-100" Disabled="@(!_isEditable)"></RadzenTextBox>
+                                    <RadzenButton Icon="content_copy" class="ms-2" Click="((args)=>CopyToClipboard(System.OpenIdApplicationId))" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" /> <!--コピー-->
+                                </div>
+                                <div>
+                                    <ValidationMessage For="@(() => System.OpenIdApplicationId)" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4 d-flex align-items-center">
+                                <RadzenLabel Text="クライアントシークレット"></RadzenLabel>
+                            </div>
+                            <div class="col-8 d-flex align-items-center">
+                                <RadzenTextBox @bind-Value=@System.OpenIdClientSecret Class="w-100" Disabled="@(!_isEditable)"></RadzenTextBox>
+                            </div>
+                        </div>
+                    </RadzenCard>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-4 d-flex align-items-center">
+                    <RadzenLabel Text="状態"></RadzenLabel>
+                </div>
+                <div class="col-8 d-flex align-items-center">
+                    <RadzenRadioButtonList @bind-Value=@System.IsEnable TValue="bool" Disabled="@(!_isEditable)">
+                        <Items>
+                            <RadzenRadioButtonListItem Text="有効" Value="true" TValue="bool" />
+                            <RadzenRadioButtonListItem Text="無効" Value="false" TValue="bool" />
+                        </Items>
+                    </RadzenRadioButtonList>
+                </div>
+            </div>
+            <AuthorizeView Policy="@(FunctionPolicy.SystemAdmin.ToString())" Context="auth">
+                <div class="row mb-2">
+                    <div class="col-4 d-flex align-items-center">
+                        <RadzenLabel Text="Admin認証有効/無効"></RadzenLabel>
+                    </div>
+                    <div class="col-8 d-flex align-items-center">
+                        <RadzenRadioButtonList @bind-Value=@System.SystemAdmin.IsActive TValue="bool" Disabled="@(!_isEditable)">
+                            <Items>
+                                <RadzenRadioButtonListItem Text="有効" Value="true" TValue="bool" />
+                                <RadzenRadioButtonListItem Text="無効" Value="false" TValue="bool" />
+                            </Items>
+                        </RadzenRadioButtonList>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-4 d-flex align-items-center">
+                        <RadzenLabel Text="認証キー"></RadzenLabel>
+                    </div>
+                    <div class="col-8">
+                        <div class="d-flex align-items-center">
+                            <RadzenTextBox @bind-Value=@System.SystemAdmin.AdminSecret Class="w-100" Disabled="@(!_isEditable)"></RadzenTextBox>
+                        </div>
+                        <div>
+                            <ValidationMessage For="@(() => System.SystemAdmin.AdminSecret)" />
+                        </div>
+                    </div>
+                </div>
+            </AuthorizeView>
+            <div class="row mb-2">
+                <div class="col">
+                    <div class="p-2 border">
+                        <div class="row mb-2 justify-content-between">
+                            <RadzenLabel class="col-auto d-flex align-items-center" Text="ベンダーシステム認証"></RadzenLabel>
+                            @if (System.ClientList.Count == 0)
+                            {
+                                <div class="col-auto">
+                                    <RadzenButton Size="ButtonSize.Small" Text="認証追加" ButtonStyle="ButtonStyle.Secondary" Style="width:120px;" class="px-2" Click="@((args) => AddClient())"></RadzenButton>
+                                </div>
+                            }
+                        </div>
+                        <RadzenDataGrid @ref="_clientGrid" Data="@System.ClientList" TItem="ClientModel" EditMode="DataGridEditMode.Single">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="ClientModel" Property="ClientId" Title="クライアントID" Sortable="false">
+                                    <Template Context="client">
+                                        <RadzenTextBox Value="@client.ClientId" Disabled="true"></RadzenTextBox>
+                                        @if (!string.IsNullOrEmpty(client.ClientId))
+                                        {
+                                            <RadzenButton Icon="content_copy" Click="((args)=>CopyToClipboard(client.ClientId))" class="ms-2" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" />
+                                        }
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="ClientModel" Property="ClientSecret" Title="クライアントシークレット" Sortable="false">
+                                    <EditTemplate Context="client">
+                                        <RadzenTextBox @bind-Value="@client.ClientSecret" Placeholder=@((System.ClientList.Count != 0 && string.IsNullOrEmpty(System.ClientList[0].ClientId) ? "新規登録" : "変更") + "する場合に入力してください") Disabled="@(!_isEditable)"></RadzenTextBox>
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="ClientModel" Property="AccessTokenExpirationTimeSpan" Title="有効期限(時:分)" Sortable="false" Width="120px">
+                                    <EditTemplate Context="client">
+                                        <RadzenTextBox @bind-Value="client.AccessTokenExpirationTimeSpan" Name="AccessTokenExpirationTimeSpan" Disabled="@(!_isEditable)"></RadzenTextBox>
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="ClientModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                    <Template Context="client">
+                                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditClient(client))" Disabled="@(!_isEditable)" />
+                                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => DeleteClient(client))" Disabled="@(!_isEditable)" />
+                                    </Template>
+                                    <EditTemplate Context="client">
+                                        <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdateClient(client))" Disabled="@(!_isEditable)" />
+                                        <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditClient(client))" Disabled="@(!_isEditable)" />
+                                    </EditTemplate>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                        @foreach (var cl in System.ClientList)
+                        {
+                            <ValidationMessage For="@(() => cl.ClientSecret)" />
+                            <ValidationMessage For="@(() => cl.AccessTokenExpirationTimeSpan)" />
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-2" style="display:none">
+                <div class="col" style="display:none">
+                    <div class="p-2 border" style="display:none">
+                        <div class="row mb-2 justify-content-between" style="display:none">
+                            <RadzenLabel Text="リンク一覧" class="col-auto d-flex align-items-center"></RadzenLabel>
+                            @if (_isEditable)
+                            {
+                                <div class="col-auto" style="display:none">
+                                    <RadzenButton Text="リンク追加" ButtonStyle="ButtonStyle.Secondary" Style="width:120px;" Click="@((args) => EditSystemLink(null))" Size="ButtonSize.Small" class="px-2"></RadzenButton>
+                                </div>
+                            }
+                        </div>
+                        <RadzenDataGrid @ref="_systemLinkGrid" Data="@System.SystemLinkList" TItem="SystemLinkModel" style="display:none">
+                            <Columns>
+                                <RadzenDataGridColumn TItem="SystemLinkModel" Property="Title" Title="タイトル" Sortable="false" />
+                                <RadzenDataGridColumn TItem="SystemLinkModel" Property="Url" Title="URL" Sortable="false" />
+                                <RadzenDataGridColumn TItem="SystemLinkModel" Property="Detail" Title="説明" Sortable="false" />
+                                <RadzenDataGridColumn TItem="SystemLinkModel" Property="IsVisible" Title="表示" Sortable="false">
+                                    <Template Context="link">
+                                        <span>@(link.IsVisible ? "表示" : "非表示")</span>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="SystemLinkModel" Property="IsDefault" Title="デフォルト" Sortable="false">
+                                    <Template Context="link">
+                                        <span>@(link.IsDefault ? "有効" : "無効")</span>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                                <RadzenDataGridColumn TItem="SystemLinkModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                    <Template Context="link">
+                                        <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditSystemLink(link))" Disabled="@(!_isEditable)">
+                                        </RadzenButton>
+                                        <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => RemoveVendorLink(link))" Disabled="@(!_isEditable)">
+                                        </RadzenButton>
+                                    </Template>
+                                </RadzenDataGridColumn>
+                            </Columns>
+                        </RadzenDataGrid>
+                        <ValidationMessage For="@(() => System.SystemLinkList)" />
+                    </div>
+                </div>
+            </div>
+            @if (_isEditable)
+            {
+                <div class="row justify-content-center mt-5">
+                    @if (IsNewSystem)
+                    {
+                        <div class="col text-center">
+                            <RadzenButton Text="作成" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary"></RadzenButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-3">
+                            <RadzenButton Text="保存" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary"></RadzenButton>
+                        </div>
+                        <div class="col-3">
+                            <RadzenButton Text="削除" ButtonStyle="ButtonStyle.Danger" Click="Remove"></RadzenButton>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Inject]
+    protected Radzen.NotificationService NotificationService { get; set; }
+
+    [Parameter]
+    public string SystemId { get; set; }
+
+    [Parameter]
+    public bool IsNewSystem { get; set; }
+
+    [Parameter]
+    public SystemVendorModel SystemVendor { get; set; }
+
+    [Parameter]
+    public EventCallback<string[]> OnChangeSystem { get; set; }
+
+    private bool _isInvalid = false;
+
+    private List<string> _orgSystemLinkIdList = new();
+    private List<string> _deleteSystemLinkIdList = new();
+
+    private string _deleteClientId;
+
+    public SystemModel System { get; set; } = new()
+    {
+        ClientList = new(),
+        SystemLinkList = new(),
+        SystemAdmin = new()
+    };
+
+    private RadzenDataGrid<SystemLinkModel> _systemLinkGrid;
+
+    private RadzenDataGrid<ClientModel> _clientGrid;
+
+    private ClientModel _editTargetClient;
+
+    private bool _isEditable = false;
+
+    private EditContext SystemEditContext;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnAfterInitializeAsync();
+
+        try
+        {
+            if (IsNewSystem)
+            {
+                System = new SystemModel()
+                {
+                    VendorId = SystemVendor.VendorId,
+                    VendorName = SystemVendor.VendorName,
+                    ClientList = new(),
+                    SystemLinkList = new(),
+                    SystemAdmin = new(),
+                    IsEnable = true
+                };
+            }
+            else
+            {
+                GetSystem(SystemId);
+            }
+        }
+        catch (Exception e)
+        {
+            InvokeAsync(() => ShowError("システム", e));
+        }
+
+        SystemEditContext = new EditContext(System);
+    }
+
+    private void GetSystem(string id)
+    {
+        var taskSystem = VendorService.GetSystemAsync(Guid.Parse(id));
+        var taskClientList = VendorService.GetClientListAsync(Guid.Parse(id));
+        var taskSystemLinkList = VendorService.GetSystemLinkListAsync(Guid.Parse(id));
+        var taskSystemAdmin = VendorService.GetSystemAdminAsync(Guid.Parse(id));
+        Task.WaitAll(taskSystem, taskClientList, taskSystemLinkList, taskSystemAdmin);
+        System = taskSystem.Result.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "取得に失敗しました。").Result ?? new();
+        System.ClientList = taskClientList.Result.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "取得に失敗しました。").Result ?? new();
+        System.SystemLinkList = taskSystemLinkList.Result.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "取得に失敗しました。").Result ?? new();
+        System.SystemAdmin = taskSystemAdmin.Result.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "取得に失敗しました。").Result ?? new();
+
+        if (System.ClientList != null)
+        {
+            if (System.ClientList.Count > 1)
+            {
+                // 認証を1件に制限
+                System.ClientList = new List<ClientModel>() { System.ClientList.First() };
+            }
+        }
+        _orgSystemLinkIdList = System.SystemLinkList.Select(link => link.SystemLinkId).ToList();
+        _deleteSystemLinkIdList = new();
+        _deleteClientId = null;
+    }
+
+    #region SystemLink
+    private async Task EditSystemLink(SystemLinkModel systemLink = null)
+    {
+        if (!_isEditable)
+        {
+            return;
+        }
+        SystemLinkModel result = await DialogService.OpenAsync<SystemLinkDialog>(
+            null,
+            new Dictionary<string, object>()
+            {
+                { "SystemLink", systemLink?.Clone() ?? new SystemLinkModel() { SystemId = SystemId, SystemLinkId = Guid.NewGuid().ToString(), IsVisible = true } },
+                { "IsNew", systemLink == null }
+            }
+        );
+
+        if (result != null)
+        {
+            if (systemLink == null)
+            {
+                // 新しいリンクの場合は追加
+                System.SystemLinkList.Add(result);
+            }
+            else
+            {
+                // 既存リンクの場合は更新
+                var index = System.SystemLinkList.FindIndex(link => link.SystemLinkId == systemLink.SystemLinkId);
+                System.SystemLinkList[index] = result;
+            }
+            await _systemLinkGrid.Reload();
+        }
+    }
+
+    private async Task RemoveVendorLink(SystemLinkModel systemLink)
+    {
+        var index = System.SystemLinkList.FindIndex(l => l.SystemLinkId == systemLink.SystemLinkId);
+        if (_orgSystemLinkIdList.Contains(systemLink.SystemLinkId))
+        {
+            _deleteSystemLinkIdList.Add(System.SystemLinkList[index].SystemLinkId);
+        }
+        System.SystemLinkList.RemoveAt(index);
+        await _systemLinkGrid.Reload();
+    }
+    #endregion
+
+    #region Client
+    private void AddClient()
+    {
+        System.ClientList = new List<ClientModel>() { new ClientModel { AccessTokenExpirationTimeSpan = "12:00", IsActive = true, SystemId = SystemId } };
+        SystemEditContext = new EditContext(System);
+    }
+    private async Task EditClient(ClientModel client)
+    {
+        _editTargetClient = client.Clone();
+        await _clientGrid.EditRow(client);
+    }
+
+    private async Task UpdateClient(ClientModel client)
+    {
+        await _clientGrid.UpdateRow(client);
+        _editTargetClient = null;
+    }
+
+    private async Task DeleteClient(ClientModel cl)
+    {
+        if (cl != null)
+        {
+            _deleteClientId = cl.ClientId;
+            System.ClientList.Remove(cl);
+        }
+        await _clientGrid.Reload();
+    }
+
+    private async Task CancelEditClient(ClientModel client)
+    {
+        // 追加時以外は編集前の状態に戻す
+        if (_editTargetClient != null)
+        {
+            System.ClientList[0] = _editTargetClient;
+            _editTargetClient = null;
+        }
+        
+        _clientGrid.CancelEditRow(client);
+        await _clientGrid.Reload();
+    }
+    #endregion
+
+    private async Task Save()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog($"システム{(IsNewSystem ? "作成" : "保存")}", $"システム情報の{(IsNewSystem ? "作成" : "保存")}をします。よろしいですか？");
+        if (confirmResult != true) return;
+        await Layout.ToggleSpinner(true);
+
+        string _systemId;
+        try
+        {
+            if (System.ClientList?.Any() == true)
+            {
+                System.ClientList[0].ClientSecret = string.IsNullOrEmpty(System.ClientList[0].ClientSecret) ? null : System.ClientList[0].ClientSecret;
+            }
+
+            if (IsNewSystem)
+            {
+                // 新規登録
+                // 認証キーが入力されていない場合
+                if (String.IsNullOrEmpty(System.SystemAdmin.AdminSecret))
+                {
+                    System.SystemAdmin = null;
+                }
+                else
+                {
+                    System.SystemAdmin.SystemId = SystemId;
+                }
+                var result = VendorService.RegisterSystem(System);
+                if(!result.IsSuccessStatusCode)
+                {
+                    await Layout.ToggleSpinner(false);
+                    var errorMsg = result.ContentString.ToJson();
+                    await Layout.ShowMessageDialog($"システム作成失敗",
+                                                   $"システムの作成に失敗しました。", "OK", $"{errorMsg["Detail"]}");
+
+                    return;
+                }
+                _systemId = result.ContentString.ToJson()["SystemId"].ToString();
+
+                IsNewSystem = false;
+
+                Layout.ShowNotifySuccess(message: "システムの作成が正常に完了しました。");
+
+            }
+            else
+            {
+                var updateTask = new List<Task<WebApiResponseResult>>();
+                updateTask.Add(VendorService.UpdateSystemAsync(System));
+
+                if (System.ClientList?.Any() == true)
+                {
+                    if (string.IsNullOrEmpty(System.ClientList[0].ClientId))
+                        updateTask.Add(VendorService.RegisterClientAsync(System.ClientList[0]));
+                    else
+                        updateTask.Add(VendorService.UpdateClientAsync(System.ClientList[0]));
+                }
+
+                if (!string.IsNullOrEmpty(_deleteClientId))
+                {
+                    // クライアントの削除
+                    updateTask.Add(VendorService.DeleteClientAsync(_deleteClientId));
+                }
+                if (System.SystemLinkList?.Any() == true)
+                {
+                    // システムリンクの更新
+                    updateTask.Add(VendorService.RegisterSystemLinkAsync(System.SystemLinkList.Select(ca => (object)ca).ToList()));
+                }
+                if (_deleteSystemLinkIdList?.Any() == true)
+                {
+                    // システムリンクの削除
+                    _deleteSystemLinkIdList.ForEach(id =>
+                        updateTask.Add(VendorService.DeleteSystemLinkAsync(id)));
+                    _deleteSystemLinkIdList = null;
+                }
+                System.SystemAdmin.SystemId ??= SystemId;
+                System.SystemAdmin.AdminSecret ??= "";
+                // Admin認証の更新
+                var taskSystemAdmin = VendorService.RegisterSystemAdminAsync(System.SystemAdmin);
+                updateTask.Add(taskSystemAdmin);
+
+                await Task.WhenAll(updateTask);
+
+                if(updateTask.Any(x => !x.Result.IsSuccessStatusCode))
+                {
+                    await Layout.ToggleSpinner(false);
+                    var errorMsg = new JArray();
+                    updateTask.ForEach(x => errorMsg.Add(x.Result.ContentString.ToJson()));
+                    await Layout.ShowMessageDialog($"システム保存失敗",
+                                                   $"システムの保存に失敗しました。", "OK", $"{errorMsg}");
+
+                    return;
+                }
+
+                _systemId = SystemId;
+                Layout.ShowNotifySuccess(message: "システムの保存が正常に完了しました。");
+            }
+
+            await OnChangeSystem.InvokeAsync(new[] { System.VendorId, System.VendorName, _systemId });
+            await Layout.ToggleSpinner(false);
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await ShowError("システム保存失敗", e);
+            return;
+        }
+    }
+
+    private async Task Remove()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("システム削除", 
+                                                    $"システム「{System.SystemName}」を削除します。\nよろしいですか？");
+        if (confirmResult != true) return;
+        await Layout.ToggleSpinner(true);
+        try
+        {
+            VendorService.DeleteSystem(SystemId);
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await ShowError("システム削除失敗", e);
+        }
+        Layout.ShowNotifySuccess(message: "システムの削除が正常に完了しました。");
+        await OnChangeSystem.InvokeAsync();
+        await Layout.ToggleSpinner(false);
+    }
+
+    /// <summary>
+    /// エラーメッセージを表示する。
+    /// </summary>
+    /// <param name="title">タイトル/param>
+    /// <param name="e">例外</param>
+    /// <returns></returns>
+    private async Task ShowError(string title, Exception e)
+    {
+        await Layout.ToggleSpinner(false);
+        await Layout.ShowMessageDialog(title, e.Message, e.ToString());
+    }
+}

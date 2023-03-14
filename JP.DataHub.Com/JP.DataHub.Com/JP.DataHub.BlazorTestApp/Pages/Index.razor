@@ -1,0 +1,69 @@
+﻿@page "/"
+@*@inherits JP.DataHub.Blazor.Core.Pages.BlazorPageBase
+*@
+<br />
+次のボタンでプロパティの内容を変更します。
+<br />
+<button @onclick="DoChange">Chage</button>
+<br />
+次のボタンでプロパティの復元を変更します。
+<br />
+<button @onclick="DoRestore">Restore</button>
+
+<br />
+<br />
+Member1
+<br />
+<input type="text" @bind-value=@Member1 />
+<br />
+Member2
+<br />
+<input type="text" @bind-value=@Member2 />
+<br />
+Member3.Name
+<br />
+<input type="text" @bind-value=@Member3.Name />
+<br />
+Member3.Age
+<br />
+<input type="text" @bind-value=@Member3.Age />
+<br />
+<br />
+<RadzenButton Text="@Member1" Icon="add_circle_outline" />
+
+
+@code
+{
+    public class Member
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+
+    [Session]
+    public string Member1 { get; set; } = "456";
+    [Session]
+    public int Member2 { get; set; } = 123;
+    [Session]
+    public Member Member3 { get; set; } = new Member() { Name = "ukabis", Age = 17 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        //Session.To("days", 100);
+        //Session.Store(this);
+    }
+
+    private void DoChange()
+    {
+        Member1 = "987";
+        Member2 = 654;
+        Member3.Name = Guid.NewGuid().ToString();
+        Member3.Age = 4;
+    }
+
+    private void DoRestore()
+    {
+        //var x = Session.Get<int>("days");
+        //Session.Restore(this);
+    }
+}

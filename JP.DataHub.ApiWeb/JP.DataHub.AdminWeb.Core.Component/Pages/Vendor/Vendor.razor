@@ -1,0 +1,481 @@
+﻿@page "/vendor"
+@using JP.DataHub.AdminWeb.Core.Component.Pages.Invitation
+@using JP.DataHub.AdminWeb.Service.Interface
+@using JP.DataHub.AdminWeb.WebAPI.Models
+@using JP.DataHub.AdminWeb.WebAPI.Resources
+@using JP.DataHub.Com.Net.Http
+@using System.Net
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+@using JP.DataHub.Com.Extensions;
+@using JP.DataHub.AdminWeb.Core.Component.Pages;
+
+@attribute [Authorize(Policy = "Vendor")]
+@inject IJSRuntime jsRuntime
+@inherits AdminWebBasePage
+@inject IAdminVendorService VendorService
+
+
+<div class="row h-100">
+    <div class="col-3 h-100" style="min-width: 350px; overflow-y: hidden;">
+        <div class="row mb-2">
+            <div class="col-7 pl-2">
+                <div class="my-2">
+                    <h4>ベンダー</h4>
+                </div>
+            </div>
+            <div class="col d-flex align-items-center justify-content-end">
+                <AuthorizeView Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+                    <RadzenButton class="px-2" Text="ベンダー追加" Click="(args) => Toggle(null)" Size="ButtonSize.Small" />
+                </AuthorizeView>
+            </div>
+        </div>
+        <RadzenTree class="w-100 overflow-auto vendor-tree" @bind-Value="_selectedNode" Change="OnChange">
+            @{
+                @*権限のフラグを設定*@
+                bool vendorWrite = false;
+                bool systemWrite = false;
+                bool userInvitationWrite = false;
+                <AuthorizeView Policy="@(FunctionPolicy.VendorWrite.ToString())">
+                    @{
+                        vendorWrite = true;
+                    }
+                </AuthorizeView>
+                <AuthorizeView Policy="@(FunctionPolicy.SystemWrite.ToString())">
+                    @{
+                        systemWrite = true;
+                    }
+                </AuthorizeView>
+                <AuthorizeView Policy="@(FunctionPolicy.UserInvitationWrite.ToString())">
+                    @{
+                        userInvitationWrite = true;
+                    }
+                </AuthorizeView>
+                <AuthorizeView Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+                    <Authorized>
+                        @foreach (var vendor in Vendors)
+                        {
+                            <span class="@(vendor.SystemList?.Any() == true ? "" : "empty-child")">
+                                <RadzenTreeItem Text="Vendor" Value="vendor.VendorId" Selected="@(selectNodeType == NodeType.Vendor && SelectedVendorId == vendor.VendorId)">
+                                    <Template Context="Vendor">
+                                        <span class="w-100 position-relative">
+                                            <RadzenIcon Icon="business" Style="vertical-align: middle;" />
+                                            <b class="w-75 treenode-label-text">@vendor.VendorName</b>
+                                            <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                                @if (IsOpenSettingNodeType == NodeType.Vendor && IsOpenSettingVendorId == vendor.VendorId)
+                                                {
+                                                    <span>
+                                                        <RadzenButton Icon="email" Click="@((args) => Invite(vendor.VendorId))" Size="ButtonSize.Small" @onclick:stopPropagation="true" Visible="userInvitationWrite" /> <!--ユーザ招待-->
+                                                        <RadzenButton Icon="add" Click="(args) => ToggleSystem(vendor.VendorId, vendor.VendorName, null)" Size="ButtonSize.Small" @onclick:stopPropagation="true" Visible="systemWrite" /> <!--システム追加-->
+                                                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" @onclick:stopPropagation="true" Click="(args => RemoveVendor(vendor))" Visible="vendorWrite" /> <!--削除-->
+                                                        <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => VendorOperationVisibility(vendor.VendorId)" @onclick:stopPropagation="true" Visible="@(vendorWrite || systemWrite || userInvitationWrite)"></RadzenButton>
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => VendorOperationVisibility(vendor.VendorId)" @onclick:stopPropagation="true" Visible="@(vendorWrite || systemWrite || userInvitationWrite)"></RadzenButton>
+                                                }
+                                            </span>
+                                        </span>
+                                    </Template>
+                                    <ChildContent>
+                                        @foreach (var system in vendor.SystemList)
+                                        {
+                                            <RadzenTreeItem Text="System" Value="system.SystemId" Selected="@(selectNodeType == NodeType.System && SelectedSystemId == system.SystemId)">
+                                                <Template Context="System">
+                                                    <span class="w-100 position-relative">
+                                                        <RadzenIcon Icon="dns" Style="vertical-align: middle;"></RadzenIcon>
+                                                        <b class="w-75 treenode-label-text">@system.SystemName</b>
+                                                        @if (systemWrite)
+                                                        {
+                                                            <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                                                @if (IsOpenSettingNodeType == NodeType.System && IsOpenSettingSystemId == system.SystemId)
+                                                                {
+                                                                    <span>
+                                                                        <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="(args => RemoveSystem(system))" @onclick:stopPropagation="true" /> <!--削除-->
+                                                                        <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => SystemOperationVisibility(system.SystemId)" @onclick:stopPropagation="true"></RadzenButton>
+                                                                    </span>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => SystemOperationVisibility(system.SystemId)" @onclick:stopPropagation="true"></RadzenButton>
+                                                                }
+                                                            </span>
+                                                        }
+                                                    </span>
+                                                </Template>
+                                            </RadzenTreeItem>
+                                        }
+                                    </ChildContent>
+                                </RadzenTreeItem>
+                            </span>
+                        }
+                    </Authorized>
+                    <NotAuthorized>
+                        <span class="@(_vendor.SystemList?.Any() == true ? "" : "empty-child")">
+                            <RadzenTreeItem Text="Vendor" Value="_vendor.VendorId" Selected="@(selectNodeType == NodeType.Vendor && SelectedVendorId == _vendor.VendorId)">
+                                <Template Context="Vendor">
+                                    <span class="w-100 position-relative">
+                                        <RadzenIcon Icon="business" Style="vertical-align: middle;" />
+                                        <b class="w-75 treenode-label-text">@_vendor.VendorName</b>
+                                        <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                            @if (IsOpenSettingNodeType == NodeType.Vendor && IsOpenSettingVendorId == _vendor.VendorId)
+                                            {
+                                                <span>
+                                                    <AuthorizeView Policy="@(FunctionPolicy.UserInvitationWrite.ToString())" Context="UserInvitationButton">
+                                                        <RadzenButton Icon="email" Size="ButtonSize.Small" Click="@((args) => Invite(_vendor.VendorId))" @onclick:stopPropagation="true" Visible="userInvitationWrite" /> <!--ユーザ招待-->
+                                                    </AuthorizeView>
+                                                    <AuthorizeView Policy="@(FunctionPolicy.SystemWrite.ToString())" Context="AddSystemButton">
+                                                        <RadzenButton Icon="add" Size="ButtonSize.Small" Click="(args) => ToggleSystem(_vendor.VendorId, _vendor.VendorName, null)" @onclick:stopPropagation="true" Visible="systemWrite" /> <!--システム追加-->
+                                                    </AuthorizeView>
+                                                    <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => VendorOperationVisibility(_vendor.VendorId)" @onclick:stopPropagation="true" Visible="@(vendorWrite || systemWrite || userInvitationWrite)"></RadzenButton>
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => VendorOperationVisibility(_vendor.VendorId)" @onclick:stopPropagation="true" Visible="@(vendorWrite || systemWrite || userInvitationWrite)"></RadzenButton>
+                                            }
+                                        </span>
+                                    </span>
+                                </Template>
+                                <ChildContent>
+                                    @foreach (var system in _vendor.SystemList)
+                                    {
+                                        <RadzenTreeItem Text="System" Value="system.SystemId" Selected="@(selectNodeType == NodeType.System && SelectedSystemId == system.SystemId)">
+                                            <Template Context="System">
+                                                <span style="position: relative; width: 100%;">
+                                                    <RadzenIcon Icon="dns" Style="vertical-align: middle;"></RadzenIcon>
+                                                    <b class="w-75 treenode-label-text">@system.SystemName</b>
+                                                    @if (systemWrite)
+                                                    {
+                                                        <span class="position-absolute top-0 end-0" style="margin-top: -.1rem;">
+                                                            @if (IsOpenSettingNodeType == NodeType.System && IsOpenSettingSystemId == system.SystemId)
+                                                            {
+                                                                <span>
+                                                                    <RadzenButton Icon="delete" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Danger" Click="(args => RemoveSystem(system))" @onclick:stopPropagation="true" /> <!--削除-->
+                                                                    <RadzenButton Icon="chevron_right" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => SystemOperationVisibility(system.SystemId)" @onclick:stopPropagation="true"></RadzenButton>
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <RadzenButton Icon="settings" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Light" Click="() => SystemOperationVisibility(system.SystemId)" @onclick:stopPropagation="true"></RadzenButton>
+                                                            }
+                                                        </span>
+                                                    }
+                                                </span>
+                                            </Template>
+                                        </RadzenTreeItem>
+                                    }
+                                </ChildContent>
+                            </RadzenTreeItem>
+                        </span>
+                    </NotAuthorized>
+                </AuthorizeView>
+            }
+        </RadzenTree>
+    </div>
+    <div class="vr p-0"></div>
+    <div class="col h-100 overflow-auto" style="min-width: 500px;">
+        @if ((SelectedVendorId != null || selectNodeType == NodeType.Vendor) && UserInvite == false)
+        {
+            <VendorEdit SelectedVendorId="@SelectedVendorId" OnChange="(args => TreeUpdate(NodeType.Vendor, args))" />
+        }
+        @if (SelectedSystemId != null && UserInvite == false)
+        {
+            <SystemDetail SystemId="@SelectedSystemId" IsNewSystem="@IsNewSystem" SystemVendor="@SystemVendor" OnChangeSystem="@(args => TreeUpdate(NodeType.System, args))" />
+        }
+        @if (UserInvite == true)
+        {
+            <UserInvitation VendorId="@SelectedVendorId" />
+        }
+    </div>
+</div>
+
+
+@code {
+    private enum NodeType
+    {
+        Vendor,
+        System,
+        Invite,
+        Other
+    }
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [CascadingParameter]
+    protected Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    private List<VendorModel> Vendors { get; set; } = new();
+
+    private VendorModel _vendor = new();
+
+    private string SelectedVendorId { get; set; }
+
+    private string SelectedSystemId { get; set; }
+
+    private bool IsNewSystem { get; set; }
+
+    private SystemVendorModel SystemVendor { get; set; }
+
+    private NodeType IsOpenSettingNodeType { get; set; }
+
+    private string IsOpenSettingVendorId { get; set; }
+
+    private string IsOpenSettingSystemId { get; set; }
+
+    NodeType selectNodeType = NodeType.Other;
+
+    private bool UserInvite { get; set; }
+
+    private object _selectedNode;
+
+    private bool _isDelete = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Layout.ToggleSpinner(true);
+        }
+    }
+
+    protected override async Task OnAfterInitializeAsync()
+    {
+        await RefreshTree();
+    }
+
+    private async Task OnChange(TreeEventArgs args)
+    {
+        // 削除時のツリーリロードでもOnChangeが呼ばれるが、削除対象以外の編集画面を表示している状態で削除を実施すると
+        // なぜか選択ノードとは異なるノードのIDが渡されて別のベンダー/システムの編集画面が表示されてしまうので
+        // 上記条件に該当する場合は表示を切り替えない
+        if (_isDelete)
+        {
+            _isDelete = false;
+            if ((args.Text == "Vendor" && selectNodeType == NodeType.Vendor && SelectedVendorId != (string)args.Value)
+                || (args.Text == "System" && selectNodeType == NodeType.System && SelectedSystemId != (string)args.Value))
+            {
+                return;
+            }
+        }
+
+        UserInvite = false;
+        SelectedVendorId = null;
+        SelectedSystemId = null;
+        selectNodeType = NodeType.Other;
+        await Layout.ToggleSpinner(true);
+        if (args.Text == "Vendor")
+        {
+            selectNodeType = NodeType.Vendor;
+            // ベンダーを選択した場合
+            Toggle((string)args.Value);
+        }
+        else if (args.Text == "System")
+        {
+            selectNodeType = NodeType.System;
+            // システムを選択した場合
+            ToggleSystem(null, null, (string)args.Value);
+        }
+        await Layout.ToggleSpinner(false);
+    }
+
+    private async Task Toggle(string vendorId)
+    {
+        UserInvite = false;
+        SelectedVendorId = null;
+        SelectedSystemId = null;
+        selectNodeType = NodeType.Other;
+
+        await Layout.ToggleSpinner(true);
+
+        selectNodeType = NodeType.Vendor;
+        SelectedVendorId = vendorId;
+
+        await Layout.ToggleSpinner(false);
+    }
+
+    private async Task RemoveVendor(VendorModel vendor)
+    {
+        var result = await Layout.ShowConfirmDialog("ベンダー削除", 
+                                                    $"ベンダー「{vendor.VendorName}」を削除します。\nよろしいですか？");
+
+        DialogService.Close();
+
+        if (!result.HasValue || result == false)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        var res = VendorService.RemoveVendor(vendor.VendorId);
+        if(!res.IsSuccessStatusCode)
+        {
+            await Layout.ToggleSpinner(false);
+            var errorMsg = res.ContentString.ToJson();
+            await Layout.ShowMessageDialog("ベンダー削除失敗", "ベンダーの削除に失敗しました。", "OK", $"{errorMsg["Detail"]}");
+            return;
+        }
+
+        Layout.ShowNotifySuccess(message: "ベンダーの削除が正常に完了しました。");
+        // 削除対象が編集中である場合は編集画面を閉じる
+        if (SelectedVendorId == vendor.VendorId)
+        {
+            await TreeUpdate(NodeType.Vendor, null);
+        }
+        else if (selectNodeType == NodeType.System && SystemVendor?.VendorId == vendor.VendorId)
+        {
+            await TreeUpdate(NodeType.System, null);
+        }
+        else
+        {
+            _isDelete = true;
+            await RefreshTree();
+        }
+    }
+
+    private async Task ToggleSystem(string vendorId, string vendorName, string systemId)
+    {
+        UserInvite = false;
+        SelectedVendorId = null;
+        SelectedSystemId = null;
+        selectNodeType = NodeType.System;
+        await Layout.ToggleSpinner(true);
+
+        if (systemId == null)
+        {
+            SelectedSystemId = Guid.NewGuid().ToString();
+            SystemVendor = new SystemVendorModel() { VendorId = vendorId, VendorName = vendorName };
+            IsNewSystem = true;
+            _selectedNode = null;
+        }
+        else
+        {
+            SelectedSystemId = systemId;
+            IsNewSystem = false;
+        }
+        await Layout.ToggleSpinner(false);
+    }
+
+    private void VendorOperationVisibility(string id)
+    {
+        if (IsOpenSettingNodeType == NodeType.Vendor && id == IsOpenSettingVendorId)
+        {
+            IsOpenSettingNodeType = NodeType.Other;
+            IsOpenSettingVendorId = null;
+        }
+        else
+        {
+            IsOpenSettingNodeType = NodeType.Vendor;
+            IsOpenSettingVendorId = id;
+        }
+    }
+
+    private void SystemOperationVisibility(string id)
+    {
+        if (IsOpenSettingNodeType == NodeType.System && id == IsOpenSettingSystemId)
+        {
+            IsOpenSettingNodeType = NodeType.Other;
+            IsOpenSettingSystemId = null;
+        }
+        else
+        {
+            IsOpenSettingNodeType = NodeType.System;
+            IsOpenSettingSystemId = id;
+        }
+    }
+
+    private void Invite(string id)
+    {
+        selectNodeType = NodeType.Invite;
+        SelectedVendorId = id;
+        UserInvite = true;
+    }
+
+    private async Task RemoveSystem(VendorModel.SystemModel removeSystem)
+    {
+        var result = await Layout.ShowConfirmDialog("システム削除", 
+                                                    $"システム「{removeSystem.SystemName}」を削除します。\nよろしいですか？");
+
+        DialogService.Close();
+
+        if (!result.HasValue || result == false)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+        var res = VendorService.DeleteSystem(removeSystem.SystemId);
+        if(!res.IsSuccessStatusCode)
+        {
+            await Layout.ToggleSpinner(false);
+            var errorMsg = res.ContentString.ToJson();
+            await Layout.ShowMessageDialog($"システム削除失敗",
+                                            $"システムの削除に失敗しました。", "OK", $"{errorMsg["Detail"]}");
+
+            return;
+        }
+        Layout.ShowNotifySuccess(message: "システムの削除が正常に完了しました。");
+
+        // 削除対象が編集中である場合は編集画面を閉じる
+        if (SelectedSystemId == removeSystem.SystemId)
+        {
+            await TreeUpdate(NodeType.System, null);
+        }
+        else
+        {
+            _isDelete = true;
+            await RefreshTree();
+        }
+
+    }
+
+    private async Task TreeUpdate(NodeType nodeType, string[] param)
+    {
+        UserInvite = false;
+        SelectedVendorId = null;
+        SelectedSystemId = null;
+        selectNodeType = NodeType.Other;
+        StateHasChanged();
+
+        await RefreshTree();
+
+        switch (nodeType)
+        {
+            case NodeType.Vendor:
+                if (param != null && !string.IsNullOrEmpty(param[0]))
+                    await Toggle(param[0]);
+
+                break;
+            case NodeType.System:
+                if (param != null && !string.IsNullOrEmpty(param[0]))
+                   await ToggleSystem(param[0], param[1], param[2]);
+
+                break;
+
+                
+        }
+        
+    }
+
+    private async Task RefreshTree() 
+    {
+        await Layout.ToggleSpinner(true);
+        CommonService.GetList<ILoginUser, IVendorResource, VendorModel>()
+        .Action(x => !x.IsSuccessStatusCode, async y => 
+        {
+            await InvokeAsync(() => Layout.ToggleSpinner(false));
+            var errorMsg = y.RawContentString.ToJson();
+            await InvokeAsync(() => Layout.ShowMessageDialog("ベンダー一覧取得失敗", "ベンダー一覧の取得に失敗しました。", "OK",  $"{errorMsg["Detail"]}"));
+        })
+        .Action(x => x.IsSuccessStatusCode, async y => {
+            Vendors = y.Result;
+            var vendorId = (await authenticationStateTask).User.FindFirst(AdminClaimTypes.VendorIdentifier).Value;
+            _vendor = Vendors.Where(x => x.VendorId == vendorId).First();
+        });
+        await Layout.ToggleSpinner(false);
+
+    }
+}

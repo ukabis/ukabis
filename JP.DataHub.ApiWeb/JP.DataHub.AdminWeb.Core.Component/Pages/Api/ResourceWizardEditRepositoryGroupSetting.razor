@@ -1,0 +1,76 @@
+﻿@using JP.DataHub.AdminWeb.Core.Component.Component
+@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+
+<RadzenTemplateForm TItem="ResourceWizardModel" EditContext="@_repositoryGroupSetting">
+    <ObjectGraphDataAnnotationsValidator />
+    <ValidationSummary />
+    <h5 style="text-align:center">データ格納先（リポジトリ）を選択してください</h5>
+    <div class="row mb-2">
+        <div class="col">
+            <div class="p-2 border">
+                <RadzenDataGrid @ref="_repositoryGroupGrid" Data="@RepositoryGroupList" AllowPaging="true" TItem="JP.DataHub.AdminWeb.WebAPI.Models.RepositoryGroupModel" @bind-Value="@Resource.RepositoryGroup" Style="padding: 0; max-height:470px;" class="grid-resource-wizard-repository-group">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="JP.DataHub.AdminWeb.WebAPI.Models.RepositoryGroupModel" Property="RepositoryGroupName" Title="リポジトリグループ" Sortable="false">
+                            <Template Context="repositoryGroup">
+                                @repositoryGroup.RepositoryGroupName
+                            </Template>
+                            <EditTemplate Context="repositoryGroup">
+                                @repositoryGroup.RepositoryGroupName
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem="JP.DataHub.AdminWeb.WebAPI.Models.RepositoryGroupModel" Property="IsEnable" Title="有効/無効" Sortable="false">
+                            <Template Context="repositoryGroup">
+                                @s_IsEnable[repositoryGroup.IsEnable]
+                            </Template>
+                            <EditTemplate Context="repositoryGroup">
+                                @s_IsEnable[repositoryGroup.IsEnable]
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+                @*エラーのときに文字を出すためだけのテキストボックス。使わなくていいのであれば使いたくない*@
+                <RadzenTextBox Name="repositoryGroup" @bind-Value="_validateString" Visible=false Style="display: block;" />
+                <FunctionValidator Func="ValidateRepositoryGroup" Text="リポジトリグループを選択してください。" Component="repositoryGroup" Style="display: block; font-size:16px; color:red;"></FunctionValidator>
+            </div>
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ResourceWizardModel Resource { get; set; }
+
+    [Parameter]
+    public List<JP.DataHub.AdminWeb.WebAPI.Models.RepositoryGroupModel> RepositoryGroupList { get; set; }
+
+    private RadzenDataGrid<JP.DataHub.AdminWeb.WebAPI.Models.RepositoryGroupModel> _repositoryGroupGrid;
+
+    private static Dictionary<bool, string> s_IsEnable = new()
+    {
+        { true, "有効" },
+        { false, "無効" },
+    };
+
+    EditContext _repositoryGroupSetting;
+
+    /// <summary>
+    /// Validatorを動かすためだけの文字列
+    /// </summary>
+    private string _validateString;
+
+    protected override void OnInitialized()
+    {
+        _repositoryGroupSetting = new EditContext(Resource);
+        base.OnInitialized();
+    }
+
+    public bool Validate()
+    {
+        return _repositoryGroupSetting.Validate();
+    }
+
+    private bool ValidateRepositoryGroup() => Resource.RepositoryGroup.Any();
+}

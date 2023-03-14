@@ -1,0 +1,37 @@
+﻿::deep .textarea-schema-description {
+    height: calc(8 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+::deep .textarea-json-schema {
+    height: calc(16 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+.markdown-heading1 {
+    font-size: 2rem;
+    border-bottom: 1px solid #eaecef;
+}
+
+.markdown-heading2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+}
+
+.markdown-heading3 {
+    font-size: 1.25em;
+}
+
+.markdown-heading4 {
+    font-size: 1em;
+}
+
+.markdown-heading5 {
+    font-size: 0.875em;
+}
+
+.markdown-heading6 {
+    font-size: 0.875em;
+}
+
+.markdown-heading6:not(:hover) {
+    color: #6a737d;
+}

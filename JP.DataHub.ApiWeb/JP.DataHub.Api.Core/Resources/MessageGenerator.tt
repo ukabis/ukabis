@@ -1,0 +1,360 @@
+﻿<#@ template hostspecific="True" #>
+<#@ assembly name="EnvDTE" #>
+<#@ assembly name="System.Core.dll" #>
+<#@ assembly name="System.Data" #>
+<#@ assembly name="System.Data.Entity.Design" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Configuration" #>
+<#@ assembly name="System.Windows.Forms" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Data" #>
+<#@ import namespace="System.Data.SqlClient" #>
+<#@ import namespace="System.Data.Common" #>
+<#@ import namespace="System.Diagnostics" #>
+<#@ import namespace="System.Globalization" #>
+<#@ import namespace="System.IO" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Text.RegularExpressions" #>
+<#@ import namespace="System.Configuration" #>
+<#@ import namespace="System.Windows.Forms" #>
+<#@ import namespace="System.Net" #>
+<#
+	// Settings
+    Namespace = "JP.DataHub.Api.Core.ErrorCode";
+	ClassPrefix = "DB_";
+    MessagePrefix = "DynamicApiMessages";
+    COUNT = 4;
+#>
+using JP.DataHub.Com.Extensions;
+using JP.DataHub.Com.Helper;
+using JP.DataHub.Com.Resources;
+using JP.DataHub.Com.Unity;
+using JP.DataHub.Com.RFC7807;
+using JP.DataHub.Com.DataContainer;
+using JP.DataHub.Api.Core.Resources;
+using JP.DataHub.Api.Core.ErrorCode;
+using Newtonsoft.Json;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
+using System.Text;
+using Unity;
+using Microsoft.Extensions.Configuration;
+
+// .NET6
+// この定義はMessageGenerator.ttから自動生成したものである
+// このクラスを直接変更するのではなく、TTテンプレートから自動生成を必ず行うこと
+namespace <#=Namespace #>
+{
+    public static partial class ErrorCodeMessage
+    {
+        private const string MEDIATYPE_JSON = "application/json";
+
+        public enum Code
+        {
+<#
+    int count = Def.Length / COUNT;
+    for (int i = 0; i < count; i++)
+    {
+#>
+            [MessageDefinition("<#=Def[i * COUNT+1]#>", "<#=Def[i * COUNT+2]#>", HttpStatusCode.<#=Def[i * COUNT+3]#>)]
+            <#=Def[i * COUNT+0]#>,
+<#
+    }
+#>
+        }
+
+        private static Lazy<System.Resources.ResourceManager> _resourceManager = new Lazy<System.Resources.ResourceManager>(() =>
+        {
+            var list = RuntimeReflectionExtensions.GetRuntimeProperties(typeof(<#=MessagePrefix#>)).ToList();
+            var prop = list?.Where(x => x.Name == "ResourceManager").FirstOrDefault();
+            var result = (System.Resources.ResourceManager)prop?.GetValue(null);
+            return result;
+        });
+
+        private static System.Resources.ResourceManager ResourceManager => _resourceManager.Value;
+
+        public static string GetString(string resourceName, CultureInfo cultureInfo)
+        {
+            IDataContainer dataContainer;
+            try
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>();
+            }
+            catch (ResolutionFailedException)
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>("multiThread");
+            }
+            return ResourceManager.GetString(resourceName, cultureInfo);
+        }
+
+        public static string GetString(string resourceName)
+        {
+            IDataContainer dataContainer;
+            try
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>();
+            }
+            catch (ResolutionFailedException)
+            {
+                dataContainer = UnityCore.Resolve<IDataContainer>("multiThread");
+            }
+            return ResourceManager.GetString(resourceName, dataContainer.CultureInfo);
+        }
+
+        public static RFC7807ProblemDetailExtendErrors GetRFC7807(this Code errorCode, CultureInfo cultureInfo, string relativeUrl = null)
+        {
+            // エラーの変換が定義されていればエラーコードを変換する
+            var newcodestring = UnityCore.Resolve<IConfiguration>().GetValue<string>($"Rfc7807ErrorMap:{errorCode}.To", null);
+            if (!string.IsNullOrEmpty(newcodestring) && newcodestring.TryParse<Code>(out var newcode))
+            {
+                errorCode = newcode;
+            }
+
+            var rpdc = new RFC7807ProblemDetailExtendErrors();
+            if (string.IsNullOrEmpty(relativeUrl) == false)
+            {
+                rpdc.Instance = new Uri(relativeUrl, UriKind.Relative);
+            }
+            rpdc.ErrorCode = errorCode.ToString();
+
+            var attr = errorCode.GetAttribute<MessageDefinitionAttribute>();
+            if (attr != null)
+            {
+                rpdc.Title = GetString(attr.Message, cultureInfo);
+                rpdc.Detail = GetString(attr.Detail, cultureInfo);
+                rpdc.Status = (int)attr.HttpStatusCode;
+            }
+            return rpdc;
+        }
+
+        public static RFC7807ProblemDetailExtendErrors GetRFC7807(this Code errorCode, string relativeUrl = null)
+        {
+            // エラーの変換が定義されていればエラーコードを変換する
+            var newcodestring = UnityCore.Resolve<IConfiguration>().GetValue<string>($"Rfc7807ErrorMap:{errorCode}.To", null);
+            if (!string.IsNullOrEmpty(newcodestring) && newcodestring.TryParse<Code>(out var newcode))
+            {
+                errorCode = newcode;
+            }
+
+            var rpdc = new RFC7807ProblemDetailExtendErrors();
+            if (string.IsNullOrEmpty(relativeUrl) == false)
+            {
+                rpdc.Instance = new Uri(relativeUrl, UriKind.Relative);
+            }
+            rpdc.ErrorCode = errorCode.ToString();
+
+            var attr = errorCode.GetAttribute<MessageDefinitionAttribute>();
+            if (attr != null)
+            {
+                rpdc.Title = GetString(attr.Message);
+                rpdc.Detail = GetString(attr.Detail);
+                rpdc.Status = (int)attr.HttpStatusCode;
+            }
+            return rpdc;
+        }
+
+        public static HttpResponseMessage GetRFC7807HttpResponseMessage(Code errorCode, CultureInfo cultureInfo, string relativeUrl = null, string title = null, string detail = null)
+        {
+            var error = GetRFC7807(errorCode, relativeUrl);
+            return GetRFC7807HttpResponseMessage(error, relativeUrl, title, detail);
+        }
+
+        public static HttpResponseMessage GetRFC7807HttpResponseMessage(Code errorCode, string relativeUrl = null, string title = null, string detail = null)
+        {
+            var error = GetRFC7807(errorCode, relativeUrl);
+            return GetRFC7807HttpResponseMessage(error, relativeUrl, title, detail);
+        }
+
+        public static HttpResponseMessage GetRFC7807HttpResponseMessage(RFC7807ProblemDetailExtendErrors error, string relativeUrl = null, string title = null, string detail = null)
+        {
+            if (string.IsNullOrEmpty(relativeUrl) == false)
+            {
+                error.Instance = new Uri(relativeUrl, UriKind.Relative);
+            }
+
+            if (string.IsNullOrEmpty(title) == false)
+            {
+                error.Title = title;
+            }
+
+            if (string.IsNullOrEmpty(detail) == false)
+            {
+                error.Detail = detail;
+            }
+
+            return new HttpResponseMessage((HttpStatusCode)error.Status) { Content = new StringContent(JsonConvert.SerializeObject(error), Encoding.UTF8, MEDIATYPE_JSON) };
+        }
+    }
+}
+
+<#+
+string Namespace = "";
+string ClassPrefix = "";
+string ClassSuffix = "";
+string MessagePrefix = "";
+int COUNT = 0;
+
+        string[] Def = new string[] {
+
+"E01401","OpenIdAuthRequired","OpenIdAuthRequired_Detail","Forbidden",
+"E01402","OpenIdNotAllowedCA","OpenIdNotAllowedCA_Detail","Forbidden",
+"E01403","AccessControlAuthFailed","OpenidAccessControlAuthFailed_Detail","Forbidden",
+"E01404","ToAuthenticateTheOpenIdHasFailed","AccessControlAuthFailed_Detail","Unauthorized",
+"E01405","OpenIdAccessTokenExpired","OpenIdAccessTokenExpired_Detail","Unauthorized",
+"E01406","OpenIdAccessTokenInvalid","OpenIdAccessTokenInvalid_Detail","Unauthorized",
+"E02401","AccessControlAuthFailed","AccessControlAuthFailed_Detail","Forbidden",
+"E02402","VendorSystemAuthRequired","VendorSystemAuthRequired_Detail","Forbidden",
+"E02403","NotAllowedForSystem","NotAllowedForSystem_Detail","Forbidden",
+"E02404","AdminAuthFailed","AdminAuthFailed_Detail","Forbidden",
+"E02405","ClientIdNotFoundOrVendorSystemUnusable","ClientIdNotFoundOrVendorSystemUnusable_Detail","Unauthorized",
+"E02406","VendorSystemAccessTokenNotFound","VendorSystemAccessTokenNotFound_Detail","Unauthorized",
+"E02407","VendorSystemTokenExpired","","Unauthorized",
+"E02408","VendorSystemTokenInvalid","","Unauthorized",
+"E02409","ClientCertificateNotFoundOrVendorSystemUnusable","ClientCertificateNotFoundOrVendorSystemUnusable_Detail","Unauthorized",
+"E02410","ClientCertificateExpired","ClientCertificateExpired_Detail","Unauthorized",
+"E02411","ClientCertificateAuthenticationRequired","ClientCertificateAuthenticationRequired_Detail","Forbidden",
+"E10401","ReferenceFailureToRollBackDueToNotifyOfUpdateFilure","ReferenceFailureToRollBackDueToNotifyOfUpdateFilure_Detail","BadRequest",
+"E10402","OneOrMoreJsonValidationErrorsOccurred","","BadRequest",
+"E10403","OneOrMoreErrorsOccurred","InvalidMethodType","BadRequest",
+"E10404","OneOrMoreErrorsOccurred","RequestBodyIsEmpty","BadRequest",
+"E10405","OneOrMoreErrorsOccurred","RequestBodyIsArrayOnly","BadRequest",
+"E10406","OneOrMoreErrorsOccurred","KeyPropertyIsRequiredInRequestData","BadRequest",
+"E10407","OneOrMoreErrorsOccurred","NoDataFound","BadRequest",
+"E10408","OneOrMoreErrorsOccurred","TooMachData","BadRequest",
+"E10409","OneOrMoreErrorsOccurred","InvalidTypeExpectedObject_ButGotArray","BadRequest",
+"E10410","ResourceIsNotPublic","","BadRequest",
+"E10411","DefinedInVendorNotUsedFlag","DefinedInVendorNotUsedFlag_Detail","Forbidden",
+"E10412","DefinedOtherVendorNotUsedFlag","NotAgreedAndApproved_Detail","Forbidden",
+"E10413","NotAgreedAndApproved","NotAgreedAndApproved_Detail","Forbidden",
+"E10414","VendorOrSystemUnspecified","","BadRequest",
+"E10415","CantCallInternalCallsFromOutside","","BadRequest",
+"E10416","WrongInternalCallingKeyword","","BadRequest",
+"E10417","APIIPFilter","","Unauthorized",
+"E10418","MethodIPFilter","","Unauthorized",
+"E10419","MethodTypeIsIncorrect","","BadRequest",
+"E10420","MissingRepositoryKey","","BadRequest",
+"E10421","DeleteWasSuccessful","","NotFound",
+"E10422","QueryResultsDidNotHaveData.","","NotFound",
+"E10423","WeCallTheGatewayDidNotHaveTheData","","NotFound",
+"E10424","GatewayURLDefinedError","","BadRequest",
+"E10425","YouCanNotUseIt","HttpMethodTypeDoesNotSupport","NotImplemented",
+"E10426","SyntaxErrorOfOData","SyntaxErrorOfOData_Detail","BadRequest",
+"E10427","IMadeASearchByODataDidNotHaveTheData","","NotFound",
+"E10428","ItWasExecutedODataDelete","","NotFound",
+"E10429","ExceptionOccured","","BadRequest",
+"E10430","IsTransparentApiIncorrect","","BadRequest",
+"E10431","QuerySyntaxErrorException","InvalidApiQuerySql_ResourceIdSpecified","BadRequest",
+"E10432","QuerySyntaxErrorException","InvalidApiQuerySql_TableToJoinNotFound","BadRequest",
+"E10433","QuerySyntaxErrorException","InvalidApiQuerySql_TableJoinNotAllowed","BadRequest",
+"E10434","QuerySyntaxErrorException","InvalidApiQuerySql_SelectInvalidColumn","BadRequest",
+"E10435","ODataPatchUnavailable","ODataPatchUnavailable_NotSupportedRepository","BadRequest",
+"E10436","ODataPatchUnavailable","ODataPatchUnavailable_OptimisticConcurrencyEnabled","BadRequest",
+"E10437","ODataPatchUnavailable","ODataPatchUnavailable_UnsaportedFeaturesEnabled","BadRequest",
+"E10438","ODataPatchRequestInvalid","","BadRequest",
+"E10439","ODataPatchRequestInvalid","ODataPatchRequestInvalid_UneditableProperty","BadRequest",
+"E10440","ODataPatchRequestInvalid","ODataPatchRequestInvalid_AdditionalConditionInvalid","BadRequest",
+"E10441","OperatingVendorUserOnly","OperatingVendorUserOnly_Detail","Forbidden",
+"E10442","DataEncryptionError","DataEncryptionError_CommonKeyNotFound","BadRequest",
+"E10443","DataEncryptionError","DataEncryptionError_DecryptionFailed","BadRequest",
+"E10501","AnInternalServerErrorHasOccurred","","InternalServerError",
+"E10502","ExceptionOccured","","InternalServerError",
+"E10503","AsyncDynamicApiError","","InternalServerError",
+"E20401","FileIdRequired","FileIdRequired_Detail","BadRequest",
+"E20402","KeyMissMatch","KeyMissMatch_Detail","BadRequest",
+"E20403","YouCanNotUseIt","YouCanNotUseIt_Detail","NotImplemented",
+"E20404","HttpMethodTypeDoesNotMatch","HttpMethodTypeDoesNotMatch_Detail","BadRequest",
+"E20405","RepositoryKeyHasNotBeenSet","RepositoryKeyHasNotBeenSet_Detail","BadRequest",
+"E20406","DoesNotExistDataToBeUpdatedIs","DoesNotExistDataToBeUpdatedIs_Detail","NotFound",
+"E20407","YouCanNotUseIt","YouCanNotUseIt_Detail","BadRequest",
+"E20408","MethodTypeDoesNotMatch","MethodTypeDoesNotMatch_Detail","BadRequest",
+"E20409","RepositoryKeyHasNotBeenSet","RepositoryKeyHasNotBeenSet_Detail","NotFound",
+"E20410","FileIdNoSettingRequired","","BadRequest",
+"E20411","BlockedRequestedContentTypeOrFileTypeByList","BlockedRequestedContentTypeOrFileTypeByList_Detail","BadRequest",
+"E20412","ExternalAttachiFileError","ExternalAttachiFileError_UnnecessaryUpload","BadRequest",
+"E20413","ExternalAttachiFileError","ExternalAttachiFileError_FileInfoMissing","BadRequest",
+"E20414","ExternalAttachiFileError","ExternalAttachiFileError_InvalidFileInfo","BadRequest",
+"E20415","ExternalAttachiFileError","ExternalAttachiFileError_ConnectionFailed","BadRequest",
+"E20416","ExternalAttachiFileError","ExternalAttachiFileError_FileNotFound","BadRequest",
+"E20417","InvalidAttachFileName","","BadRequest",
+"E20418","ExternalAttachiFileError","ExternalAttachiFileError_DocumentHistoryUnsupported","BadRequest",
+"E30401","OneOrMoreErrorsOccurred","XReferenceHeaderIsInvalid","BadRequest",
+"E30402","IdIsRequired","IdIsRequired","BadRequest",
+"E30403","VersionIsRequired","VersionIsRequired","BadRequest",
+"E30404","IdDoesNotMatch","IdDoesNotMatch","NotFound",
+"E30405","TypeOfVersionIsIntOrGuid","TypeOfVersionIsIntOrGuid","BadRequest",
+"E30406","VersionDoesNotExistInHistory","VersionDoesNotExistInHistory","NotFound",
+"E30407","DocumentHasBeenDeleted","DocumentHasBeenDeleted","NotFound",
+"E30408","DataIsAlreadyRegistered","DataIsAlreadyRegistered","BadRequest",
+"E30409","HistoryDataNotFound","HistoryDataNotFound","NotFound",
+"E30410","MethodTypeIsIncorrect","MethodTypeIsIncorrect","BadRequest",
+"E30411","HistoryDatNotFound","HistoryDatNotFound","NotFound",
+"E30412","FailedWithDriveOutTransparentAPI","FailedWithDriveOutTransparentAPI_Detail","NotFound",
+"E30501","ThisURLDoesNotSupportDocumentHistory","","NotImplemented",
+"E40201","BlockchainValidate_AttachFile_NoSource","BlockchainValidate_AttachFile_NoSource_Detail","OK",
+"E40202","BlockchainValidate_AttachFile_NoBlockchainHash","BlockchainValidate_AttachFile_NoBlockchainHash_Detail","OK",
+"E40203","BlockchainValidate_AttachFile_Mismatch","BlockchainValidate_AttachFile_Mismatch_Detail","OK",
+"E40204","BlockchainValidate_NoSource","BlockchainValidate_NoSource_Detail","OK",
+"E40205","BlockchainValidate_NoBlockchainHash","BlockchainValidate_NoBlockchainHash_Detail","OK",
+"E40206","BlockchainValidate_Mismatch","BlockchainValidate_Mismatch_Detail","OK",
+"E40401","BlockchainValidate_DocumentHistory_Disable","BlockchainValidate_DocumentHistory_Disable_Detail","BadRequest",
+"E40402","BlockchainValidate_DocumentHistory_VersionNotFound","BlockchainValidate_DocumentHistory_VersionNotFound_Detail","BadRequest",
+"E50401","HttpResponseException","","NotFound",
+"E50402","RoslynScriptRuntimeException","","InternalServerError",
+"E50403","AggregateException","","InternalServerError",
+"E50404","XVersionNotFoundException","InvalidXVersion","NotFound",
+"E50405","QuerySyntaxErrorException","QuerySyntaxError","BadRequest",
+"E50406","ODataException","","BadRequest",
+"E50407","ApiException","","InternalServerError",
+"E50408","NotParseCsvException","CsvParseFailed","BadRequest",
+"E50409","ResourceSchemaNotAdaptable","ResourceSchemaNotAdaptable_ResourceSchemaRequired","BadRequest",
+"E50410","ResourceSchemaNotAdaptable","ResourceSchemaNotAdaptable_OneOrMoreErrorsOccurred","BadRequest",
+"E50411","QuerySyntaxErrorException","InvalidApiQuerySql_TableNotFound","BadRequest",
+"E99998","Dummy","","BadRequest",
+"E99999","Exception","","InternalServerError",
+"E60401","InvalidResourceAgreement","InvalidResourceAgreement_Detail","BadRequest",
+"E60402","InvaliOtherResourceSqlAccessRepositoryType","InvaliOtherResourceSqlAccessRepositoryType_Detail","BadRequest",
+"W60403","TermsGroupNotFound","TermsGroupNotFound_Detail","NotFound",
+"W60404","NotDeleteTermsGroupKeyNotMatch","NotDeleteTermsGroupKeyNotMatch_Detail","NotFound",
+"W60405","NotUpdateTermsGroupKeyNotMatch","NotUpdateTermsGroupKeyNotMatch_Detail","NotFound",
+"W60406","TermsNotFound","TermsNotFound_Detail","NotFound",
+"W60407","NotDeleteTermsKeyNotMatch","NotDeleteTermsKeyNotMatch_Detail","NotFound",
+"W60408","NotUpdateTermsGKeyNotMatch","NotUpdateTermsGKeyNotMatch_Detail","NotFound",
+"W60409","NotAgreementNoTerms","NotAgreementNoTerms_Detail","NotFound",
+"E60410","NoAgreementAlreadyAgreement","NoAgreementAlreadyAgreement_Detail","BadRequest",
+"E60411","NoRevokeNotAgreement","NoRevokeNotAgreement_Detail","BadRequest",
+"W60412","UserTermsNotFound","UserTermsNotFound_Detail","NotFound",
+"W60413","CertifiedApplicationNotFound","CertifiedApplicationNotFound_Detail","NotFound",
+"E60414","NoValidVendorOrSystem","NoValidVendorOrSystem_Detail","BadRequest",
+"W60415","NotDeleteCertifiedApplicationNotMatch","NotDeleteCertifiedApplicationNotMatch_Detail","NotFound",
+"W60416","UserGroupNotFound","UserGroupNotFound_Detail","NotFound",
+"W60417","NotDeleteUserGroupKeyNotMatch","NotDeleteUserGroupKeyNotMatch_Detail","NotFound",
+"W60418","UserResourceShare_GetList_NotFound","UserResourceShare_GetList_NotFound_Detail","NotFound",
+"W60419","UserResourceShare_Register_UnMatchKey","UserResourceShare_Register_UnMatchKey_Detail","NotFound",
+"E60420","UserResourceShare_Register_UserShareTypeCodeMissMatch","UserResourceShare_Register_UserShareTypeCodeMissMatch_Detail","BadRequest",
+"E60421","UserResourceShare_Delete_KeyNotMatch","UserResourceShare_Delete_KeyNotMatch_Detail","BadRequest",
+"E60422","Revoke_Start_NotAgreement","Revoke_Start_NotAgreement_Detail","BadRequest",
+"E60423","Revoke_Start_FK","Revoke_Start_FK_Detail","BadRequest",
+"E60424","Revoke_Stop_NotAgreement","Revoke_Stop_NotAgreement_Detail","BadRequest",
+"E60425","Revoke_Stop_NotStart","Revoke_Stop_NotStart_Detail","BadRequest",
+"E60426","Revoke_RemoveResourceStart_Fail","Revoke_RemoveResourceStart_Fail_Detail","BadRequest",
+"E60427","Revoke_RemoveResourceEnd_NotFound","Revoke_RemoveResourceEnd_NotFound_Detail","BadRequest",
+"E60428","Revoke_RemoveResourceEnd_Fail","Revoke_RemoveResourceEnd_Fail_Detail","BadRequest",
+"W60429","ResourceGroup_GetList_NotFound","ResourceGroup_GetList_NotFound_Detail","NotFound",
+"E60430","ResourceGroup_Register_NotFound","ResourceGroup_Register_NotFound_Detail","BadRequest",
+"E60431","ResourceGroup_Delete_NotFound","ResourceGroup_Delete_NotFound_Detail","BadRequest",
+"E70401","HasDefinedKeywordDataSchemaException","","BadRequest",
+"E80401","InvalidAccountFormatException","","BadRequest",
+"I10401","IMadeASearchByODataDidNotHaveTheData","","NotFound",
+"I10402","ODataPatchNotFound","","NotFound",
+"I10403","QueryResultsDidNotHaveData.","","NotFound",
+"E50412","MustAgreeToTheTerms","","Forbidden",
+"E50413","AnOpenIDWasSpecifiedThatIsNotAllowedToBeShared","An OpenID was specified that is not allowed to be shared","Forbidden",
+"E50414","CannotSetX-UserResourceSharingWhenIsContainerDynamicSeparationIsSet","CannotSetX-UserResourceSharingWhenIsContainerDynamicSeparationIsSet","BadRequest",
+"E50415","X-UserResourceSharingCanBeSpecifiedForDataRetrieval","X-UserResourceSharingCanBeSpecifiedForDataRetrieval","BadRequest",
+        };
+#>

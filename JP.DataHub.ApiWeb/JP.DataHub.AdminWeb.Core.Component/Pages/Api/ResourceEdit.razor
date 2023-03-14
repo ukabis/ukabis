@@ -1,0 +1,632 @@
+﻿@inherits AdminWebBasePage
+@using AutoMapper;
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+@using JP.DataHub.AdminWeb.Core.Component.Models;
+@using JP.DataHub.AdminWeb.Core.Component.Pages.Common;
+@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+@using JP.DataHub.Com.Extensions;
+
+@attribute [Authorize(Policy = "Api")]
+
+@inject IAdminApiService Service 
+
+@if(_editTargetSchema != null)
+{
+    <SchemaEdit Schema="_editTargetSchema" Vendors="Vendors" OnChange="OnChangeSchema" OnCancle="OnCancelEditSchema" AllowCancel="true" AllowDelete="@(_editTargetSchema.SchemaId != null)"></SchemaEdit>
+}
+else
+{
+    <RadzenCard>
+        <EditForm EditContext="@ResourceEditContext" OnValidSubmit="@Save">
+            <h4>@(ResourceHeader.IsNew ? "API追加" : "API編集")</h4>
+            <ObjectGraphDataAnnotationsValidator />
+            <ValidationSummary />
+            @if (ResourceHeader.IsNew)
+            {
+                <div class="mb-2">
+                    <RadzenCheckBox Name="DetailModelChkBox" TValue="bool" @bind-Value="@_isDetailMode"></RadzenCheckBox>
+                    <RadzenLabel Component="DetailModelChkBox" Text="詳細モード"></RadzenLabel>
+                </div>
+            }
+            <RadzenTabs RenderMode="TabRenderMode.Client">
+                <Tabs>
+                    <RadzenTabsItem Text="基本設定">
+                        <ResourceBaseSettings ResourceHeader="ResourceHeader" Vendors="Vendors" IsDetailMode="IsDetailMode" AddSchema="AddSchema" EditSchema="EditSchema"></ResourceBaseSettings>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="DataDictionary" Visible="IsDetailMode" style="display:none">
+                        <DataDictionary ResourceHeader="ResourceHeader" TagListFlat="_tagListFlat" FieldListFlat="_fieldListFlat"></DataDictionary>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="添付ファイル" Visible="IsDetailMode">
+                        <ApiAttachFile ResourceHeader="ResourceHeader"></ApiAttachFile>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="履歴" Visible="IsDetailMode">
+                        <DocumentHistorySetting ResourceHeader="ResourceHeader"></DocumentHistorySetting>
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="その他設定" Visible="IsDetailMode">
+                        <ResourceEtcSettings ResourceHeader="ResourceHeader" IsNewResource="@ResourceHeader.IsNew"></ResourceEtcSettings>
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+            <AuthorizeView Context="CRUDButton" Policy="@(FunctionPolicy.ApiWrite.ToString())">
+                <div class="row justify-content-center mt-5">
+                    @if (ResourceHeader.IsNew)
+                    {
+                        <div class="col text-center">
+                            <RadzenButton Text="作成" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary"></RadzenButton>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="col-3 text-center">
+                            <RadzenButton Text="保存" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary" Click="Save"></RadzenButton>
+                        </div>
+                        <div class="col-3 text-center">
+                            <RadzenButton Text="削除" ButtonStyle="ButtonStyle.Danger" Click="Remove"></RadzenButton>
+                        </div>
+                        <div class="col-3 text-center">
+                            <RadzenButton Text="APIフラッシュ" ButtonStyle="ButtonStyle.Primary" Click="Flush"></RadzenButton>
+                        </div>
+                        <div class="col-3 text-center">
+                            <RadzenButton Text="永続化層の更新" ButtonStyle="ButtonStyle.Primary" Click="AdaptResourceSchema" Disabled="!ResourceHeader.EnableAdaptResourceSchema"></RadzenButton>
+                        </div>
+                    }
+                </div>
+            </AuthorizeView>
+        </EditForm>
+    </RadzenCard>
+}
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ApiResourceHeaderModel ResourceHeader { get; set; }
+
+    [Parameter]
+    public List<VendorSimpleModel> Vendors { get; set; }
+
+    [Parameter]
+    public EventCallback<ResourceChangedArgs> OnChange { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+
+    private List<ControllerCategoryInfomationModel> _checkedCategoryList = new();
+
+    private List<ApiResourceCommonIpFilterGroupModel> _checkedCommonIpFilterGroup = new();
+
+    private List<ApiResourceIpFilterModel> _beforeControllerIpFilterList = new();
+
+    private List<RegisterResourceOpenIdCaModel> _beforeOpenIdCaList = new();
+
+    private List<TagInfoModel> _tagListFlat = new();
+
+    private List<ApiResourceFieldQueryModel> _fieldListFlat = new();
+
+    private bool IsDetailMode => ResourceHeader.IsNew ? _isDetailMode : true;
+    private bool _isDetailMode = false;
+
+    private bool IsUpdating = false;
+
+    private EditContext ResourceEditContext;
+    private ValidationMessageStore _validationMessageStore;
+
+    private SchemaModel _editTargetSchema;
+
+    /// <summary>
+    /// 編集前のURL。URLの変更検知に利用。
+    /// </summary>
+    private string _initialUrl = string.Empty;
+
+    #region Mapper
+    /// <summary>
+    /// AutoMapperの設定
+    /// </summary>
+    private static IMapper Mapper => s_lazyMapper.Value;
+    private static Lazy<IMapper> s_lazyMapper = new(() =>
+    {
+        var config = new MapperConfiguration(cfg =>
+        {
+            cfg.CreateMap<ApiResourceInformationModel, RegisterResourceApiModel>();
+            cfg.CreateMap<ApiResourceAttachFileSettingsModel, RegisterDynamicApiAttachFileSettingsModel>();
+            cfg.CreateMap<DocumentHistorySettingsModel, RegisterDocumentHistorySettingsModel>();
+            cfg.CreateMap<ApiResourceCommonIpFilterGroupModel, RegisterApiCommonIpFilterGroupModel>();
+            cfg.CreateMap<ApiResourceIpFilterModel, RegisterApiIpFilterModel>();
+            cfg.CreateMap<OpenIdCaViewModel, RegisterResourceOpenIdCaModel>();
+            cfg.CreateMap<ApiResourceTagInfoModel , RegisterApiTagInfoModel>();
+            cfg.CreateMap<ControllerCategoryInfomationModel, RegisterApiCategoryModel>();
+            cfg.CreateMap<ApiResourceFieldInfoModel, RegisterApiFieldInfoModel>();
+        });
+
+        return config.CreateMapper();
+    });
+
+    #endregion
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        ResourceEditContext = new EditContext(ResourceHeader.Controller);
+        _validationMessageStore = new ValidationMessageStore(ResourceEditContext);
+        ResourceEditContext.OnFieldChanged += (sender, args) => { ValidateUrl(); };
+        ResourceEditContext.OnFieldChanged += (sender, args) => { ValidateFee(); };
+        ResourceEditContext.OnValidationRequested += (sender, args) => { ValidateUrl(); };
+        ResourceEditContext.OnValidationRequested += (sender, args) => { ValidateFee(); };
+
+        await base.OnInitializedAsync();
+
+        _initialUrl = ResourceHeader.Controller.Url;
+        _checkedCategoryList = ResourceHeader.ControllerCategoryInfomationList.Where(x => x.IsActive).ToList();
+        _checkedCommonIpFilterGroup = ResourceHeader.ControllerCommonIpFilterGroupList.Where(x => x.IsActive).ToList();
+        _beforeOpenIdCaList.AddRange(Mapper.Map<List<RegisterResourceOpenIdCaModel>>(ResourceHeader.OpenIdCaList));
+        _beforeControllerIpFilterList = ResourceHeader.Controller.ApiIpFilterList.DeepCopy();
+        FlattenTagList();
+        FlattenFieldList();
+
+        if(ResourceHeader.IsNew)
+        {
+            //初期値として先頭のシステムをセットする
+            var system = Vendors.Single(x => x.VendorId == ResourceHeader.Controller.VendorId).SystemList.FirstOrDefault();
+            ResourceHeader.Controller.SystemId = system?.SystemId;
+        }
+    }
+
+    /// <summary>
+    /// URLのフォーマットをチェックする。
+    /// 属性によるバリデーションだと権限による分岐ができないためここでチェックする。
+    /// </summary>
+    private void ValidateUrl()
+    {
+        // システム管理者の場合はチェックしない
+        if (IsSystemAdministrator())
+        {
+            return;
+        }
+
+        var id = ResourceEditContext.Field("Url");
+        _validationMessageStore.Clear(id);
+        if (!string.IsNullOrEmpty(ResourceHeader.Controller.Url) && !ResourceHeader.Controller.Url.StartsWith("/API/Individual/"))
+        {
+            _validationMessageStore.Add(id, "URLは「/API/Individual/」から始めてください。");
+        }
+    }
+
+    /// <summary>
+    /// 使用料を文字数をチェックする。
+    /// 属性によるバリデーションだと有料/無料切り替え時にメッセージがクリアされないためここでチェックする。
+    /// </summary>
+    private void ValidateFee()
+    {
+        var id = ResourceEditContext.Field("FeeDescription");
+        _validationMessageStore.Clear(id);
+
+        var maxLength = 500;
+        if (ResourceHeader.Controller.IsPay && ResourceHeader.Controller.FeeDescription.Length > maxLength)
+        {
+            _validationMessageStore.Add(id, $"使用料は{maxLength}文字以内で入力して下さい。");
+        }
+    }
+
+    /// <summary>
+    /// タグの子コンテンツを平坦化する
+    /// </summary>
+    /// <param name="list"></param>
+    private void FlattenTagList(IEnumerable<TagInfoModel> list = null)
+    {
+        if(list == null)
+        {
+            list = ResourceHeader.TagInfoList;
+            _tagListFlat = new List<TagInfoModel>();
+        }
+        foreach(var tag in list)
+        {
+            _tagListFlat.Add(tag);
+            if (tag.Children != null)
+                FlattenTagList(tag.Children);
+        }
+    }
+
+    /// <summary>
+    /// フィールドのコンテンツを平坦化する
+    /// </summary>
+    /// <param name="list"></param>
+    private void FlattenFieldList(IEnumerable<ApiResourceFieldQueryModel> list = null)
+    {
+        if(list == null)
+        {
+            list = ResourceHeader.FieldInfoList;
+            _fieldListFlat = new List<ApiResourceFieldQueryModel>();
+        }
+        foreach(var field in list)
+        {
+            _fieldListFlat.Add(field);
+            if (field.Children != null)
+                FlattenFieldList(field.Children);
+        }
+    }
+
+    private void AddSchema() 
+    {
+        // ManageAPIはSchemaIdが未指定なら同じURLのAPIを上書きする仕様となっているため、
+        // 新規の場合は管理画面側であらかじめSchemaIdを発行しておく
+        _editTargetSchema = new()
+        {
+            SchemaId = Guid.NewGuid().ToString(),
+            VendorId = ResourceHeader.Controller.VendorId,
+            IsNew = true
+        };
+    }
+
+    private void EditSchema(string schemaId)
+    {
+        _editTargetSchema = ResourceHeader.DataSchemaList.Single(s => s.SchemaId == schemaId);
+    }
+
+    private async Task OnChangeSchema()
+    {
+        await Layout.ToggleSpinner(true);
+        ResourceHeader.Controller.ControllerSchemaId = _editTargetSchema.SchemaId;
+
+        _editTargetSchema = null;
+        try
+        {
+            ResourceHeader.DataSchemaList = (await Service.GetSchemasAsync()).Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "スキーマ一覧の取得に失敗しました。")
+                                                       .Result;
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await ShowError(e);
+        }
+
+        await Layout.ToggleSpinner(false);
+
+        await OnChange.InvokeAsync(new ResourceChangedArgs() 
+        { 
+            id = ResourceHeader.Controller.ApiId,
+            IsCreatedOrRenamed = false
+        });
+    }
+
+    private async Task OnCancelEditSchema()
+    {
+        _editTargetSchema = null;
+    }
+
+
+    private async Task Save()
+    {
+        if (!ResourceEditContext.Validate())
+            return;
+
+        bool? result = false;
+        if (ResourceHeader.IsNew)
+        {
+            result = await Layout.ShowConfirmDialog("API作成", $"APIを作成します。\nよろしいですか？");
+        }
+        else
+        {
+            result = await Layout.ShowConfirmDialog("API保存", $"APIを保存します。\nよろしいですか？");
+        }
+
+        DialogService.Close();
+
+        if (!result.HasValue || result == false)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        if(ResourceHeader.IsNew)
+        {
+            // 簡単モードの場合は、BaseSetting以外は初期値
+            if (!IsDetailMode)
+            {
+                var vendorId = ResourceHeader.Controller.VendorId;
+                var systemId = ResourceHeader.Controller.SystemId;
+                var resourceId = ResourceHeader.Controller.ApiId;
+
+                var tmpResourceHeader = Service.GetApiResourceHeaderFromVendorIdApiId(vendorId, Guid.NewGuid().ToString())
+                                           .Throw(x => !x.IsSuccessStatusCode, x => "リソースの取得に失敗しました。")
+                                               .Result;
+
+                tmpResourceHeader.Controller ??= new ApiResourceInformationModel(){
+                    ControllerId = resourceId, 
+                    VendorId = vendorId, 
+                    SystemId = systemId,
+                    IsEnable = true,
+                    IsVendor = true,
+                    IsPerson = false,
+                    IsData = true,
+                    IsBusinessLogic = false,
+                };
+                tmpResourceHeader.AttachFileSettings = new (false, null, null);
+                tmpResourceHeader.DocumentHistorySettings = new(false, null);
+                // 設定された内容を反映
+                tmpResourceHeader.Controller.ControllerName = ResourceHeader.Controller.ControllerName;
+                tmpResourceHeader.Controller.Url = ResourceHeader.Controller.Url;
+                tmpResourceHeader.Controller.ControllerDescription = ResourceHeader.Controller.ControllerDescription;
+                tmpResourceHeader.Controller.RepositoryKey = ResourceHeader.Controller.RepositoryKey;
+                // 設定されたところ以外は、デフォルト値に戻す
+                ResourceHeader = tmpResourceHeader;
+            }
+        }
+
+        // タグ、カテゴリー、分野、CommonIpFilterリストをマージする
+        var tagListActive = _tagListFlat.Where(x => x.IsActive)?.ToList();
+        var tagListNonActive = _tagListFlat.Where(x => !x.IsActive)?.ToList();
+
+        var categoryListActive = ResourceHeader.ControllerCategoryInfomationList.Where(x => x.IsActive)?.ToList();
+        var categoryListNonActive = ResourceHeader.ControllerCategoryInfomationList.Where(x => !x.IsActive)?.ToList();
+
+        var fieldListActive = _fieldListFlat.Where(x => x.IsActive)?.ToList();
+        var fieldListNonActive = _fieldListFlat.Where(x => !x.IsActive)?.ToList();
+
+        var commonGrpFltListActive = ResourceHeader.ControllerCommonIpFilterGroupList.Where(x => x.IsActive)?.ToList();
+        var commonGrpFltListNonActive = ResourceHeader.ControllerCommonIpFilterGroupList.Where(x => !x.IsActive)?.ToList();
+
+        var regData = Mapper.Map<RegisterResourceApiModel>(ResourceHeader.Controller);
+        regData.AttachFileSettings = Mapper.Map<RegisterDynamicApiAttachFileSettingsModel>(ResourceHeader.Controller.AttachFileSettings);
+        regData.DocumentHistorySettings = Mapper.Map<RegisterDocumentHistorySettingsModel>(ResourceHeader.Controller.DocumentHistorySettings);
+        regData.ApiTagInfoList = Mapper.Map<List<RegisterApiTagInfoModel>>(ResourceHeader.Controller.ControllerTagInfoList);
+        regData.ApiFieldInfoList = Mapper.Map<List<RegisterApiFieldInfoModel>>(ResourceHeader.Controller.ControllerFieldInfoList);
+        regData.CategoryList = Mapper.Map<List<RegisterApiCategoryModel>>(ResourceHeader.Controller.CategoryList.Where(x => x.IsActive).ToList());
+        regData.ApiCommonIpFilterGroupList = Mapper.Map<List<RegisterApiCommonIpFilterGroupModel>>(ResourceHeader.Controller.ControllerCommonIpFilterGroupList.Where(x => x.IsActive).ToList());
+        regData.ApiIpFilterList = Mapper.Map<List<RegisterApiIpFilterModel>>(ResourceHeader.Controller.ApiIpFilterList.ToList());
+
+        // 必要な項目を埋める
+        if(regData.AttachFileSettings != null)
+            regData.AttachFileSettings.ControllerId = regData.ApiId;
+        if(regData.DocumentHistorySettings != null)
+            regData.DocumentHistorySettings.ControllerId = regData.ApiId;
+
+        regData.ApiTagInfoList.ForEach(x => {
+            x.ControllerId = regData.ApiId;
+            x.ControllerTagId ??= Guid.NewGuid().ToString();
+        });
+        regData.ApiFieldInfoList.ForEach(x =>
+        {
+            x.ControllerId = regData.ApiId;
+            x.ControllerFieldId ??= Guid.NewGuid().ToString();
+        });
+        regData.CategoryList.ForEach(x =>
+        {
+            x.ControllerId = regData.ApiId;
+            x.ControllerCategoryId ??= Guid.NewGuid().ToString();
+        });
+        regData.ApiCommonIpFilterGroupList.ForEach(x => x.ControllerId = regData.ApiId);
+
+        // マージする
+        // タグ
+        foreach(var tag in tagListActive)
+        {
+            if (!regData.ApiTagInfoList.Any(x => x.TagId == tag.TagId))
+                regData.ApiTagInfoList.Add(new RegisterApiTagInfoModel()
+                {
+                    ControllerTagId = Guid.NewGuid().ToString(),
+                    ControllerId = regData.ApiId,
+                    TagId = tag.TagId,
+                    IsActive = true
+                });
+        }
+        foreach(var tag in tagListNonActive)
+        {
+            var index = regData.ApiTagInfoList.FindIndex(x => x.TagId == tag.TagId);
+            if (index >= 0)
+            {
+                regData.ApiTagInfoList.RemoveAt(index);
+            }
+        }
+
+        // カテゴリー
+        foreach(var ctgr in categoryListActive)
+        {
+            if (!regData.CategoryList.Any(x => x.CategoryId == ctgr.CategoryId))
+                regData.CategoryList.Add(new RegisterApiCategoryModel()
+                {
+                    ControllerCategoryId = Guid.NewGuid().ToString(),
+                    ControllerId = regData.ApiId,
+                    CategoryId = ctgr.CategoryId,
+                    IsActive = true
+                });
+        }
+        foreach(var ctgr in categoryListNonActive)
+        {
+            var index = regData.CategoryList.FindIndex(x => x.CategoryId == ctgr.CategoryId);
+            if (index >= 0)
+            {
+                regData.CategoryList.RemoveAt(index);
+            }
+        }
+
+        // 分野
+        foreach(var fld in fieldListActive)
+        {
+            if (!regData.ApiFieldInfoList.Any(x => x.FieldId == fld.FieldId))
+                regData.ApiFieldInfoList.Add(new RegisterApiFieldInfoModel()
+                {
+                    ControllerFieldId = Guid.NewGuid().ToString(),
+                    ControllerId = regData.ApiId,
+                    FieldId = fld.FieldId,
+                    IsActive = true
+                });
+        }
+        foreach(var fld in fieldListNonActive)
+        {
+            var index = regData.ApiFieldInfoList.FindIndex(x => x.FieldId == fld.FieldId);
+            if (index >= 0)
+            {
+                regData.ApiFieldInfoList.RemoveAt(index);
+            }
+        }
+
+        // CommonIpFilter
+        foreach(var cgf in commonGrpFltListActive)
+        {
+            if (!regData.ApiCommonIpFilterGroupList.Any(x => x.CommonIpFilterGroupId == cgf.CommonIpFilterGroupId))
+                regData.ApiCommonIpFilterGroupList.Add(new RegisterApiCommonIpFilterGroupModel()
+                {
+                    CommonIpFilterGroupId = cgf.CommonIpFilterGroupId,
+                    ControllerId = regData.ApiId,
+                    IsActive = true
+                });
+        }
+        foreach(var cgf in commonGrpFltListNonActive)
+        {
+            if (_checkedCommonIpFilterGroup.Any(x => x.CommonIpFilterGroupId == cgf.CommonIpFilterGroupId))
+            {
+                var cmnRegData = _checkedCommonIpFilterGroup.Where(x => x.CommonIpFilterGroupId == cgf.CommonIpFilterGroupId).FirstOrDefault();
+                if (cmnRegData != null)
+                    regData.ApiCommonIpFilterGroupList.Add(Mapper.Map<RegisterApiCommonIpFilterGroupModel>(cmnRegData));
+
+                var data = regData.ApiCommonIpFilterGroupList.Where(x => x.CommonIpFilterGroupId == cgf.CommonIpFilterGroupId).FirstOrDefault();
+                if(data != null)
+                {
+                    data.IsActive = false;
+                    data.ControllerId = regData.ApiId;
+                }
+            }
+        }
+
+        // 削除されたIPフィルタはis_active, is_enable = falseで連携する
+        _beforeControllerIpFilterList.ForEach(x =>
+        {
+            if (!regData.ApiIpFilterList.Any(xx => xx.IpAddress == x.IpAddress))
+            {
+                x.IsActive = false;
+                x.IsEnable = false;
+                regData.ApiIpFilterList.Add(Mapper.Map<RegisterApiIpFilterModel>(x));
+            }
+        });
+
+        // OpenIdCa
+        var diff = regData.OpenIdCaList.Except(_beforeOpenIdCaList, new RegisterResourceOpenIdCaModel.RegisterResourceOpenIdCaModelComparer());
+        regData.OpenIdCaList = diff.ToList();
+        regData.OpenIdCaList.ForEach(x => x.ControllerId = regData.ApiId);
+
+        var ret = Service.RegisterApi(regData);
+
+        if(ret.IsSuccessStatusCode)
+        {
+            // APIツリー更新
+            await Layout.ToggleSpinner(false);
+            Layout.ShowNotifySuccess(message: "APIの作成／保存に成功しました。");
+            await OnChange.InvokeAsync(new ResourceChangedArgs() 
+            { 
+                id = ret.Result.ApiId,
+                IsCreatedOrRenamed = ResourceHeader.IsNew || (_initialUrl != ResourceHeader.Controller.Url)
+            });
+            _initialUrl = ResourceHeader.Controller.Url;
+            _beforeControllerIpFilterList = ResourceHeader.Controller.ApiIpFilterList.DeepCopy();
+        }
+        else
+        {
+            await InvokeAsync(StateHasChanged);
+            var errorMsg = ret.RawContentString.ToJson();
+            await Layout.ShowMessageDialog("失敗", "APIの作成／保存が失敗しました。", "OK", $"HttpStatusCode:{ret.StatusCode} {errorMsg["Detail"]}");
+        }
+    }
+
+    private async Task Remove()
+    {
+        bool? result = await Layout.ShowConfirmDialog("API削除", $"{ResourceHeader.Controller.Url} を削除します。\nよろしいですか？");
+
+        if(!result.HasValue || result == false)
+        {
+            DialogService.Close();
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        var ret = Service.DeleteApi(ResourceHeader.Controller.ApiId);
+
+        // APIツリー更新
+        await OnDelete.InvokeAsync(ResourceHeader.Controller.ApiId);
+
+        await Layout.ToggleSpinner(false);
+
+        if (ret.IsSuccessStatusCode)
+        {
+            Layout.ShowNotifySuccess(message: $"API{ResourceHeader.Controller.Url} の削除が成功しました。");
+        }
+        else
+        {
+            var errorMsg = ret.ContentString.ToJson();
+            await Layout.ShowMessageDialog("失敗", $"API{ResourceHeader.Controller.Url} の削除が失敗しました。" , "OK", $"HttpStatusCode:{ret.StatusCode} {errorMsg["Detail"]}");
+        }
+    }
+
+    private async Task Flush()
+    {
+        bool? result = await Layout.ShowConfirmDialog("APIフラッシュ",$"APIフラッシュを実行します。\nよろしいですか？");
+
+        if(!result.HasValue || result == false)
+        {
+            DialogService.Close();
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+        try
+        {
+            var ret = Service.ApiFlush();
+
+            if (ret.IsSuccessStatusCode)
+            {
+                await Layout.ToggleSpinner(false);
+                Layout.ShowNotifySuccess(message: "APIフラッシュに成功しました。");
+            }
+            else
+            {
+                await Layout.ToggleSpinner(false);
+                var errorMsg = ret.ContentString.ToJson();
+                await Layout.ShowMessageDialog("失敗", "APIフラッシュが失敗しました。", "OK", $"HttpStatusCode:{ret.StatusCode} {errorMsg["Detail"]}");
+            }
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("失敗", "APIフラッシュが失敗しました。" , "OK", $"メッセージ：{e.Message}");
+        }
+    }
+
+    private async Task AdaptResourceSchema()
+    {
+        bool? result = await Layout.ShowConfirmDialog("永続化層の更新",$"永続化層の更新を実行します。\nよろしいですか？");
+
+        if(!result.HasValue || result == false)
+        {
+            DialogService.Close();
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+        var ret = Service.AdaptResourceSchema(_initialUrl);
+        await Layout.ToggleSpinner(false);
+
+        if (ret.IsSuccessStatusCode)
+        {
+            Layout.ShowNotifySuccess(message: "永続化層の更新に成功しました。");
+        }
+        else
+        {
+            var errorMsg = ret.Error;
+            await Layout.ShowMessageDialog("失敗", "永続化層の更新に失敗しました。" , "OK", $"HttpStatusCode:{ret.StatusCode} {errorMsg?.Detail}");
+        }
+    }
+
+    /// <summary>
+    /// エラーメッセージを表示する。
+    /// </summary>
+    /// <param name="e">例外</param>
+    /// <returns></returns>
+    private async Task ShowError(Exception e) 
+    {
+        await Layout.ShowMessageDialog("失敗", "Message", $"エラーが発生しました。メッセージ：{e.Message}");
+    }
+}

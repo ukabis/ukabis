@@ -1,0 +1,9 @@
+﻿@inject NavigationManager NavManager
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var redirectUri = $"/{NavManager.ToBaseRelativePath(NavManager.Uri)}";
+        NavManager.NavigateTo($"MicrosoftIdentity/Account/SignIn?redirectUri={redirectUri}", forceLoad: true);
+    }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "sensorDeviceId": "hoge1",
+    "thingsId": "hoge1",
+    "datestreamId": "hoge1",
+    "observedPropertyId": "hoge1",
+    "observedPropertyName": "hoge1",
+    "measurementId": "hoge1",
+    "measurementName": "hoge1",
+    "observationId": "hoge1",
+    "phenomenonTime": "hoge1",
+    "observationResult": "hoge1"
+  },
+  {
+    "sensorDeviceId": "hoge2",
+    "thingsId": "hoge2",
+    "datestreamId": "hoge2",
+    "observedPropertyId": "hoge2",
+    "observedPropertyName": "hoge2",
+    "measurementId": "hoge2",
+    "measurementName": "hoge2",
+    "observationId": "hoge2",
+    "phenomenonTime": "hoge2",
+    "observationResult": "hoge2"
+  }
+]

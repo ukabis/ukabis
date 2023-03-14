@@ -1,0 +1,3 @@
+﻿::deep .textarea-json-schema {
+    height: calc(16 * var(--textarea-line-height) + var(--textarea-y-padding));
+}

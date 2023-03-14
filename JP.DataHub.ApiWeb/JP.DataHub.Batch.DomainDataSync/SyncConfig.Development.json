@@ -1,0 +1,316 @@
+{
+  "DBConnection": {
+    "SourceDBConnectionString": "Data Source=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=))(connect_data=(service_name=))(security=(my_wallet_directory=./wallet)(ssl_server_cert_dn=\"CN=adb.ap-tokyo-1.oraclecloud.com, OU=Oracle ADB TOKYO, O=Oracle Corporation, L=Redwood City, ST=California, C=US\")));User Id={0};Password=;",
+    "DestinationDBConnectionString": "Data Source=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=))(connect_data=(service_name=))(security=(my_wallet_directory=./wallet)(ssl_server_cert_dn=\"CN=adb.ap-tokyo-1.oraclecloud.com, OU=Oracle ADB TOKYO, O=Oracle Corporation, L=Redwood City, ST=California, C=US\")));User Id={0};Password=;",
+    "Provider": "Oracle.ManagedDataAccess.Client"
+  },
+  "SyncMapping": {
+    "VendorSync": [
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "VENDOR",
+        "DestinationCatalog": "LOGGING",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [
+          {
+            "TableName": "SYSTEM"
+          }
+        ],
+        "ColumnMapping": []
+      },
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "VENDOR",
+        "DestinationCatalog": "DYNAMICAPI",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [],
+        "ColumnMapping": []
+      },
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "VENDOR",
+        "DestinationCatalog": "DOCUMENT",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [
+          {
+            "TableName": "SYSTEM"
+          },
+          {
+            "TableName": "STAFF"
+          }
+        ],
+        "ColumnMapping": []
+      }
+    ],
+    "SystemSync": [
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "SYSTEM",
+        "DestinationCatalog": "LOGGING",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "ColumnMapping": [],
+        "RelationTable": []
+      },
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "SYSTEM",
+        "DestinationCatalog": "DYNAMICAPI",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [],
+        "ColumnMapping": []
+      },
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "SYSTEM",
+        "DestinationCatalog": "DOCUMENT",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [],
+        "ColumnMapping": []
+      }
+    ],
+    "StaffSync": [
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "STAFF",
+        "DestinationCatalog": "DYNAMICAPI",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "ColumnMapping": [],
+        "RelationTable": []
+      },
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "STAFF",
+        "DestinationCatalog": "DOCUMENT",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "ColumnMapping": [],
+        "RelationTable": []
+      }
+    ],
+    "ControllerSync": {
+      "SourceCatalog": "DYNAMICAPI",
+      "SourceTable": "CONTROLLER",
+      "DestinationCatalog": "LOGGING",
+      "DestinationTable": "CONTROLLER_INFO",
+      "DeleteAction": "Logical",
+      "ColumnMapping": [
+        {
+          "SourceColumnName": "CONTROLLER_ID",
+          "DestinationColumnName": "CONTROLLER_ID"
+        },
+        {
+          "SourceColumnName": "URL",
+          "DestinationColumnName": "CONTROLLER_URL"
+        },
+        {
+          "SourceColumnName": "CONTROLLER_DESCRIPTION",
+          "DestinationColumnName": "CONTROLLER_DESCRIPTION"
+        },
+        {
+          "SourceColumnName": "VENDOR_ID",
+          "DestinationColumnName": "PROVIDER_VENDORID"
+        },
+        {
+          "SourceColumnName": "SYSTEM_ID",
+          "DestinationColumnName": "PROVIDER_SYSTEMID"
+        },
+        {
+          "SourceColumnName": "CONTROLLER_NAME",
+          "DestinationColumnName": "CONTROLLER_NAME"
+        },
+        {
+          "SourceColumnName": "IS_PERSON",
+          "DestinationColumnName": "IS_PERSON"
+        },
+        {
+          "SourceColumnName": "IS_VENDOR",
+          "DestinationColumnName": "IS_VENDOR"
+        },
+        {
+          "SourceColumnName": "IS_CONTAINER_DYNAMIC_SEPARATION",
+          "DestinationColumnName": "IS_CONTAINER_DYNAMIC_SEPARATION"
+        },
+        {
+          "SourceColumnName": "IS_ACTIVE",
+          "DestinationColumnName": "IS_ACTIVE"
+        }
+      ],
+      "RelationTable": []
+    },
+    "ApiSync": {
+      "SourceCatalog": "DYNAMICAPI",
+      "SourceTable": "API",
+      "DestinationCatalog": "LOGGING",
+      "DestinationTable": "API_INFO",
+      "DeleteAction": "Logical",
+      "ColumnMapping": [
+        {
+          "SourceColumnName": "API_ID",
+          "DestinationColumnName": "API_ID"
+        },
+        {
+          "SourceColumnName": "CONTROLLER_ID",
+          "DestinationColumnName": "CONTROLLER_ID"
+        },
+        {
+          "SourceColumnName": "API_DESCRIPTION",
+          "DestinationColumnName": "API_DESCRIPTION"
+        },
+        {
+          "SourceColumnName": "REPOSITORY_GROUP_ID",
+          "DestinationColumnName": "REPOSITORY_GROUP_ID"
+        },
+        {
+          "SourceColumnName": "URL",
+          "DestinationColumnName": "API_URL"
+        }
+      ],
+      "RelationTable": []
+    },
+    "LocaleSync": [
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "LOCALE",
+        "DestinationCatalog": "DYNAMICAPI",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [],
+        "ColumnMapping": []
+      }
+    ],
+    "VendorMultiLanguageSync": [
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "VENDOR_MULTI_LANGUAGE",
+        "DestinationCatalog": "DYNAMICAPI",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [],
+        "ColumnMapping": []
+      }
+    ],
+    "SystemMultiLanguageSync": [
+      {
+        "SourceCatalog": "AUTHORITY",
+        "SourceTable": "SYSTEM_MULTI_LANGUAGE",
+        "DestinationCatalog": "DYNAMICAPI",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "RelationTable": [],
+        "ColumnMapping": []
+      }
+    ],
+    "RepositoryGroupSync": [
+      {
+        "SourceCatalog": "DYNAMICAPI",
+        "SourceTable": "REPOSITORY_GROUP",
+        "DestinationCatalog": "LOGGING",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "ColumnMapping": [],
+        "RelationTable": []
+      }
+    ],
+    "PhysicalRepositorySync": [
+      {
+        "SourceCatalog": "DYNAMICAPI",
+        "SourceTable": "PHYSICAL_REPOSITORY",
+        "DestinationCatalog": "LOGGING",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "ColumnMapping": [],
+        "RelationTable": []
+      }
+    ],
+    "ContainerDynamicSeparationSync": [
+      {
+        "SourceCatalog": "DYNAMICAPI",
+        "SourceTable": "CONTAINER_DYNAMIC_SEPARATION",
+        "DestinationCatalog": "LOGGING",
+        "DestinationTable": "",
+        "DeleteAction": "Logical",
+        "ColumnMapping": [],
+        "RelationTable": []
+      }
+    ]
+  },
+  "DeleteCacheKey": {
+    "VendorSync": {
+      "Id": [
+        {
+          "DeleteTargetName": "VENDOR_ID"
+        }
+      ],
+      "Entity": [
+        {
+          "DeleteTargetName": "VENDOR"
+        }
+      ]
+    },
+    "ApiSync": {
+      "Id": [
+        {
+          "DeleteTargetName": "API_ID"
+        }
+      ],
+      "Entity": [
+        {
+          "DeleteTargetName": "API"
+        }
+      ]
+    },
+    "DataSchemaSync": {
+      "Id": [
+        {
+          "DeleteTargetName": "DATASCHEMA_ID"
+        }
+      ],
+      "Entity": [
+        {
+          "DeleteTargetName": "DATASCHEMA"
+        }
+      ]
+    },
+    "InformationSync": {
+      "Id": [
+        {
+          "DeleteTargetName": "INFORMATION_ID"
+        },
+        {
+          "DeleteTargetName": "INFORMATIONLIST"
+        }
+      ],
+      "Entity": [
+        {
+          "DeleteTargetName": "INFORMATION"
+        }
+      ]
+    },
+    "CommonIpFilterGroupSync": {
+      "Id": [
+        {
+          "DeleteTargetName": "COMMON_IP_FILTER"
+        }
+      ],
+      "Entity": [
+        {
+          "DeleteTargetName": "CONTROLLER"
+        }
+      ]
+    },
+    "RoleSync": {
+      "Entity": [
+        {
+          "DeleteTargetName": "ROLE"
+        }
+      ]
+    }
+  }
+}

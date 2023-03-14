@@ -1,0 +1,111 @@
+﻿@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+@inject IAdminApiService Service
+
+<h5 style="text-align:center">以下のAPIを作成します。</h5>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="Vendor" Text="ベンダー"></RadzenLabel>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="Vendor" Text=@Resource.VendorName></RadzenLabel>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="SystemName" Text="システム"/>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="SystemName" Text=@Resource.SystemName/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="ApiName" Text="API名"/>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="ApiName" Text=@Resource.ApiName/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="Url" Text="URL"/>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="Url" Text=@Resource.Url/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="ApiDescription" Text="API説明"/>
+    </div>
+    <div class="col-8">
+        <RadzenTextArea class="w-100" Disabled=true Value=@Resource.ApiDescription Style="color:black;"/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="SchemaName" Text="モデル名"/>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="SchemaName" Text=@Resource.ModelName/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="DataSchema" Text="データモデル"/>
+    </div>
+    <div class="col-8">
+        <RadzenTextArea class="w-100 textarea-json-schema" Disabled=true Name="JsonSchema" Value=@Resource.DataModel Style="color:black;"/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="SchemaName" Text="リポジトリキー"/>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="SchemaName" Text=@Resource.RepositoryKey/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="RepositoryGroup" Text="リポジトリグループ"/>
+    </div>
+    <div class="col-8">
+        <RadzenLabel Component="SchemaName" Text=@Resource.RepositoryGroupName/>
+    </div>
+</div>
+<div class="row mt-2">
+    <div class="col-4">
+        <RadzenLabel Component="ModelName" Text="メソッド（デフォルト以外）"/>
+    </div>
+    <div class="col-8">
+        <RadzenDataGrid Data="@Resource.MethodList.Where(x=>x.Create)" TItem="ResourceWizardModel.MethodRegisterSelectModel" Style="padding: 0; max-height:470px;">
+            <Columns>
+                <RadzenDataGridColumn Width="180px" TItem="ResourceWizardModel.MethodRegisterSelectModel" Title="メソッド名" Sortable="false">
+                    <Template Context="method">
+                        @method.MethodName
+                    </Template>
+                    <EditTemplate Context="method">
+                        @method.MethodName
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+                <RadzenDataGridColumn TItem="ResourceWizardModel.MethodRegisterSelectModel" Title="説明" Sortable="false">
+                    <Template Context="method">
+                        @method.Description
+                    </Template>
+                    <EditTemplate Context="method">
+                        @method.Description
+                    </EditTemplate>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ResourceWizardModel Resource { get; set; }
+}

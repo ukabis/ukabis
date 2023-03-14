@@ -1,0 +1,11 @@
+﻿{
+  "odata.error": {
+    "code": "Request_BadRequest",
+    "message": {
+      "lang": "en",
+      "value": "One or more properties contains invalid values."
+    },
+    "requestId": "84c1865e-0542-4ef2-93b1-73ae04f56b11",
+    "date": "2019-02-20T02:23:58"
+  }
+}

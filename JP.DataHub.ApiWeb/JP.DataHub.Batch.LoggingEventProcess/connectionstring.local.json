@@ -1,0 +1,23 @@
+{
+  "ConnectionStrings": {
+    // これはトランザクションの管理をするかどうか（基本はする）
+    "IsTransactionManage": true,
+    // TransactionScopeをサポートしているかどうか
+    // Oracle : false
+    // SQL Server : true
+    "TransactionScope": true,
+    // DbConnectionクラスのUnityContainer内でのLifeTimeの指定 デフォルトはPerRequestLifetimeManager
+    // Web系はConnectionが大量に生成されることを避けるため PerRequestに指定している
+    "LifeTimeManager": "PerRequestLifetimeManager",
+    // loggerの接続先
+    "Logging": {
+      "ConnectionString": "Data Source=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcp)(port=1521)(host=localhost))(connect_data=(service_name=)));User Id=;Password=;",
+      "Provider": "Oracle.ManagedDataAccess.Client",
+      "Options": {
+        "Assembly": "JP.DataHub.OracleDbProviderInit",
+        "Type": "OracleDbInit",
+        "FetchSize": "100"
+      }
+    }
+  }
+}

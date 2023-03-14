@@ -1,0 +1,15 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=;AccountKey=;EndpointSuffix=core.windows.net",
+    "AzureServiceBusConnectionStrings": "Endpoint=;SharedAccessKeyName=;SharedAccessKey=",
+    "ServiceBusQueueName": "domaindatasync",
+    "TimerTrigger": "0 0 0 1 * *",
+    "AllSyncQueueName": "domaindataallsync",
+    "AllSyncForceQueueName": "domaindataallsyncforce",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "InstrumentationKey=;IngestionEndpoint=;LiveEndpoint=",
+    "DomainDataSyncStorageConnectionStrings": "DefaultEndpointsProtocol=https;AccountName=;AccountKey=;EndpointSuffix=core.windows.net"
+  }
+}

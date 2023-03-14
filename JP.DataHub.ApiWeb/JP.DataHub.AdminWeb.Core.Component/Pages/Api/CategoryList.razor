@@ -1,0 +1,23 @@
+﻿@using JP.DataHub.AdminWeb.WebAPI.Models;
+
+@inject DialogService DialogService
+<RadzenCard Style="width: 100%; height:80%;" >
+    <div class="row d-flex justify-content-between" style="overflow:scroll;">
+        @foreach (var category in CategoryInfoList)
+        {
+            <div class="col-6">
+                <RadzenCheckBox TValue="bool" @bind-Value="category.IsActive"></RadzenCheckBox>
+                <RadzenLabel class="mx-2" Text="@category.CategoryName" Style="vertical-align: middle;"></RadzenLabel>
+            </div>
+        }
+    </div>
+</RadzenCard>
+<div class="row mt-4">
+    <div class="col text-center">
+        <RadzenButton Text="決定" ButtonStyle="ButtonStyle.Primary" Click="@((args) => { DialogService.Close(CategoryInfoList); })"></RadzenButton>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public IEnumerable<ControllerCategoryInfomationModel> CategoryInfoList { get; set; }
+}

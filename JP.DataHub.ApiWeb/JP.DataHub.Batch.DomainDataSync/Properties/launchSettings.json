@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "JP.DataHub.Batch.DomainDataSync": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7165",
+      "launchBrowser": false
+    }
+  }
+}

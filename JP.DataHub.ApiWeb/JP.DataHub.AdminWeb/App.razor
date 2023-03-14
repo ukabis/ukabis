@@ -1,0 +1,35 @@
+﻿@using System.Reflection
+@using JP.DataHub.AdminWeb.Shared
+@using JP.DataHub.AdminWeb.Core.Component.Pages.Invitation
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="@_additionalAssemblies">
+        <Found Context="routeData">
+            @if (routeData.PageType == typeof(Registered))
+            {
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(SimpleLayout)" />
+            }
+            else
+            {
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        <RedirectToLogin />
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            }
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    private Assembly[] _additionalAssemblies = new Assembly[]
+    {
+        Assembly.Load("JP.DataHub.AdminWeb.Core.Component")
+    };
+}

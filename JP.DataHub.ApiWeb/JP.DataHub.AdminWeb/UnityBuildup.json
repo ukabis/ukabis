@@ -1,0 +1,13 @@
+{
+  "Buildup": [
+    "JP.DataHub.Com",
+    "JP.DataHub.Mvc",
+    "JP.DataHub.ApiWeb",
+    "JP.DataHub.Infrastructure.Core",
+    "JP.DataHub.Service.Core",
+    "JP.DataHub.Blazor.Core",
+    "JP.DataHub.AdminWeb.Core",
+    "JP.DataHub.AdminWeb.Service",
+    "JP.DataHub.AdminWeb.WebAPI"
+  ]
+}

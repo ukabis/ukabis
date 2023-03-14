@@ -1,0 +1,12 @@
+{
+  "Buildup": [
+    "JP.DataHub.Com",
+    "JP.DataHub.Mvc",
+    "JP.DataHub.ManageApi",
+    "JP.DataHub.Infrastructure.Core",
+    "JP.DataHub.Service.Core",
+    "JP.DataHub.ManageApi.Service",
+    "JP.DataHub.ManageApi.Infrastructure",
+    "JP.DataHub.Data.Oracle"
+  ]
+}

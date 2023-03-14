@@ -1,0 +1,33 @@
+﻿{
+  "List": [
+    {
+      "ServerName": "default_server",
+      "Type": "default_server",
+      "AuthenticationType": "vendor",
+      "EnvironmentList": [
+        {
+          "EnvironmentName": "DevelopAzure",
+          "EnvironmentId": "",
+          "Url": "https://localhost:44356",             // FIXME: デプロイした開発環境のURLに変更する
+          "DynamicApiUrl": "https://localhost:44322",   // FIXME; デプロイした開発環境のURLに変更する
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": "",
+              "ClientSecret": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "https://localhost:44356/Token",   // FIXME; デプロイした開発環境のURLに変更する
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

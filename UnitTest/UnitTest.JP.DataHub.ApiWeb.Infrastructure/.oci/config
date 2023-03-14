@@ -1,0 +1,6 @@
+[DEFAULT]
+user=ocid1.user.oc1..aaaaaaaarawnuyxdybrxbkywu4djklsubf6how7efdft6fzvgssc7ncbw2rq
+fingerprint=cf:a6:92:f6:c0:c1:8d:f5:64:30:6e:05:72:fc:09:b4
+tenancy=ocid1.tenancy.oc1..aaaaaaaar2dh4ouwmvwcvr6lkdbyz7bnncf37twopjc3vrkecyx4ib6ntlna
+region=ap-tokyo-1
+key_file=ukabis_api_key.pem

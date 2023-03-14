@@ -1,0 +1,67 @@
+﻿::deep .textarea-method-description {
+    height: calc(8 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+::deep .textarea-method-gateway-relay-header {
+    height: calc(2 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+::deep .textarea-method-query {
+    height: calc(20 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+::deep .textarea-method-script {
+    height: calc(20 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+::deep .textarea-method-sample-code {
+    height: calc(20 * var(--textarea-line-height) + var(--textarea-y-padding));
+}
+
+::deep .button-method-sample-code {
+    min-width: 150px;
+}
+
+::deep ul[role=tablist] {
+    flex-wrap: wrap;
+}
+
+::deep .grid-repository-group, ::deep .grid-access-control {
+    max-height: var(--grid-max-height);
+    overflow-y: auto;
+}
+
+/* スピナー */
+.overlay {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    min-height: 100vh;
+    background: rgba(255, 255, 255, .2);
+    z-index: 2147483647;
+}
+
+.spinner {
+    border: 16px solid silver;
+    border-top: 16px solid #337AB7;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    animation: spin 1000ms linear infinite;
+    top: 45%;
+    left: 0;
+    right: 0;
+    margin: auto;
+    position: absolute;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg)
+    }
+
+    100% {
+        transform: rotate(360deg)
+    }
+}

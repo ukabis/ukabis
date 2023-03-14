@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;LocalStaging</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="AttachFileModelGenerator.cs" />
+    <Compile Remove="AuthorityModelGenerator.cs" />
+    <Compile Remove="DocumentModelGenerator.cs" />
+    <Compile Remove="DynamicApiModelGenerator.cs" />
+    <Compile Remove="InformationModelGenerator.cs" />
+    <Compile Remove="LoggingModelGenerator.cs" />
+    <Compile Remove="ManagementModelGenerator.cs" />
+    <Compile Remove="TrailModelGenerator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AttachFileModelGenerator.tt" />
+    <None Remove="AuthorityModelGenerator.tt" />
+    <None Remove="DocumentModelGenerator.tt" />
+    <None Remove="DynamicApiModelGenerator.tt" />
+    <None Remove="InformationModelGenerator.tt" />
+    <None Remove="LoggingModelGenerator.tt" />
+    <None Remove="ManagementModelGenerator.tt" />
+    <None Remove="TrailModelGenerator.tt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="2.17.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.17.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.70" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com.csproj" />
+    <ProjectReference Include="..\JP.DataHub.Api.Core\JP.DataHub.Api.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Resources\InfrastructureMessages.Designer.cs">
+      <DependentUpon>InfrastructureMessages.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\InfrastructureMessages.resx">
+      <LastGenOutput>InfrastructureMessages.Designer.cs</LastGenOutput>
+      <Generator>ResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

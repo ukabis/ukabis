@@ -1,0 +1,169 @@
+﻿@using JP.DataHub.AdminWeb.Core.Component.Component
+@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+@using System.Text.RegularExpressions
+@inherits AdminWebBasePage
+@inject IAdminApiService Service
+
+<RadzenTemplateForm TItem="ResourceWizardModel" EditContext="@_baseSetting">
+    <ObjectGraphDataAnnotationsValidator />
+    <ValidationSummary />
+    <h5 style="text-align:center">作成するAPIの基本情報を設定してください</h5>
+    <div class="p-2 border">
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="Vendor" Text="ベンダー" />
+            </div>
+            <div class="col-8">
+                <RadzenLabel Component="Vendor" Text=@(Vendor.VendorName) />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="System" Text="システム" />
+            </div>
+            <div class="col-8">
+                <RadzenDropDown class="w-100" Change="ChangeSystem" TValue="string" Data=@(Vendor.SystemList) TextProperty="SystemName" ValueProperty="SystemId" @bind-Value="@Resource.SystemId" />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="ApiName" Text="API名" />
+            </div>
+            <div class="col-8">
+                <RadzenTextBox class="w-100" Name="ApiName" @bind-Value="Resource.ApiName" />
+                <RadzenRequiredValidator Component="ApiName" Text="@ValidationMessageExtensions.RequiredValidationMessage" Style="display: block; font-size:16px; color:red;" />
+                <RadzenLengthValidator Component="ApiName" Max="1000" Text="@(1000.ToMaxLengthValidationMessage())" Style="display: block; font-size:16px; color:red;" />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="URL" Text="URL" />
+            </div>
+            <div class="col-8">
+                <RadzenTextBox class="w-100" Name="Url" @bind-Value="Resource.Url" />
+                <RadzenRequiredValidator Component="Url" Text="@ValidationMessageExtensions.RequiredValidationMessage" Style="display: block; font-size:16px; color:red;" />
+                <RadzenLengthValidator Component="Url" Max="UrlMaxLength" Text="@(UrlMaxLength.ToMaxLengthValidationMessage())" Style="display: block; font-size:16px; color:red;" />
+                <RadzenRegexValidator Component="Url" Pattern="(^$)|(^/[-/_a-zA-Z0-9]+[a-zA-Z0-9]$)" Text="@ValidationMessageExtensions.InvalidUrlMessage" Style="display: block; font-size:16px; color:red;" />
+                <FunctionValidator Component="Url" Func="ValidateUrlPrefix" Text="URLは「/API/Individual/」から始めてください。" Style="display: block; font-size:16px; color:red;" />
+                <FunctionValidator Component="Url" Func="ValidateUrlFormat" Text="URLは「/API/Individual/ベンダー名/API名」の形式で入力してください。" Style="display: block; font-size:16px; color:red;" />
+                <FunctionValidator Component="Url" Func="ValidateUrlIsDuplicate" Text="指定されたURLは既に使用されています。" Style="display: block; font-size:16px; color:red;" />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="Description" Text="説明" />
+            </div>
+            <div class="col-8">
+                <MarkdownEditor TextAreaCssClass="w-100 textarea-api-description" TextAreaName="Description" @bind-Text="Resource.ApiDescription" />
+            </div>
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+
+@code {
+    private static readonly int UrlMaxLength = 4000;
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ResourceWizardModel Resource { get; set; }
+
+    [Parameter]
+    public VendorSimpleModel Vendor { get; set; }
+
+    private EditContext _baseSetting;
+
+    protected override void OnInitialized()
+    {
+        _baseSetting = new EditContext(Resource);
+        base.OnInitialized();
+    }
+
+    private void ChangeSystem()
+    {
+        Resource.SystemName = Vendor.SystemList.Single(x => x.SystemId == Resource.SystemId).SystemName;
+    }
+
+    public bool Validate()
+    {
+        return _baseSetting.Validate();
+    }
+
+    /// <summary>
+    /// URLの先頭を検証します。
+    /// </summary>
+    /// <returns>true/先頭が適切/false:先頭文字列が不適切</returns>
+    private bool ValidateUrlPrefix()
+    {
+        // 必須エラーはRequiredValidatorで行う
+        if (string.IsNullOrEmpty(Resource.Url)) return true;
+
+        if (!IsSystemAdministrator())
+        {
+            if (!Resource.Url.StartsWith("/API/Individual/"))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// URLの形式を検証します。
+    /// </summary>
+    /// <returns>true:形式が適切/false:形式が不適切</returns>
+    private bool ValidateUrlFormat()
+    {
+        // 必須エラーはRequiredValidatorで行う
+        if (string.IsNullOrEmpty(Resource.Url)) return true;
+
+        if (!IsSystemAdministrator())
+        {
+            var tmpUrl = $"/API/Individual/ベンダー名/API名";
+            if (Resource.Url.Split('/').Length < tmpUrl.Split('/').Length)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// URLが重複しているかを検証します。
+    /// </summary>
+    /// <returns>true:重複していない/false:重複している</returns>
+    private bool ValidateUrlIsDuplicate()
+    {
+        // 必須エラーはRequiredValidatorで行う
+        if (string.IsNullOrEmpty(Resource.Url)) return true;
+
+        // 文字数エラーはLengthValidatorで行う
+        // (ManageAPIのバリデーションに引っかかるので、文字数エラーの場合は重複チェックリクエストは行わない)
+        if (Resource.Url.Length > UrlMaxLength) return true;
+
+        // フォーマットエラーはRegexValidatorで行う
+        if (!Regex.IsMatch(Resource.Url, "^/[-/_a-zA-Z0-9]+[a-zA-Z0-9]$")) return true;
+
+        RegisterResourceApiModel model = new()
+        {
+            VendorId = Resource.VendorId,
+            SystemId = Resource.SystemId,
+            Url = Resource.Url
+        };
+
+        try
+        {
+            //重複している場合trueが返ってくる
+            var result = Service.IsDuplicateController(model).Throw(r => !r.IsSuccessStatusCode, "URLが不適切です。").Result;
+            return !result;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}

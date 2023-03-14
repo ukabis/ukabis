@@ -1,0 +1,15 @@
+{
+  "Production": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Vendor": {
+      "ClientId": "",
+      "ClientSecret": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  }
+
+}

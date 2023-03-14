@@ -1,0 +1,183 @@
+[
+  {
+    "ServerName": "default_server",
+    "Type": "default_server",
+    "AuthenticationType": "vendor",
+    "EnvironmentList": [
+      {
+        "EnvironmentName": "開発",
+        "EnvironmentId": "",
+        "Url": "https://localhost:44322",
+        "Url2": "https://localhost:44356",
+        "ServerAuthenticationList": {
+          "OpenId": {
+            "Type": "OpenId",
+            "Url": "",
+            "Scope": "",
+            "ClientId": ""
+          },
+          "Vendor": {
+            "Type": "Vendor",
+            "Url": "https://localhost:44322/Token",
+            "ClientId": "",
+            "ClientSecret": "",
+            "AdminKey": "",
+            "VendorSystemList": [
+              {
+                "Name": "SmartFoodChainAdmin",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChainPortal",
+                "ClientId": "",
+                "ClientSecret": "test123!",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChain2TestSystem",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChain2TestSystemB",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChain2TestSystemC",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChainDataOfferOnly",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChainDataUseOnly",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChainDataNotAccess",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "ManageApi",
+                "Url": "https://localhost:44356/Token",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "EnvironmentName": "AzureDotnet6開発",
+        "EnvironmentId": "CD88F0B9-D281-4E36-81E8-403A0CD083CC",
+        "Url": "https://dev-datahub6-webapi.azurewebsites.net",
+        "Url2": "https://dev-datahub6-manageapiweb.azurewebsites.net",
+        "ServerAuthenticationList": {
+          "OpenId": {
+            "Type": "OpenId",
+            "Url": "https://datahubjp.b2clogin.com/datahubjp.onmicrosoft.com/oauth2/v2.0/token?p=b2c_1_jpdatahub_ropc_auth",
+            "Scope": "https://datahubjp.onmicrosoft.com/datahubapi.develop/read https://datahubjp.onmicrosoft.com/datahubapi.develop/write openid offline_access",
+            "ClientId": "1cda4f00-49e7-4e5d-ba00-4929559b3dfd"
+          },
+          "Vendor": {
+            "Type": "Vendor",
+            "Url": "https://dev-datahub6-webapi.azurewebsites.net/Token",
+            "ClientId": "b3f3d469-e244-4ddd-8510-2a04e47be547",
+            "ClientSecret": "test123!",
+            "AdminKey": "SmartFoodChain",
+            "VendorSystemList": [
+              {
+                "Name": "SmartFoodChainAdmin",
+                "ClientId": "b3f3d469-e244-4ddd-8510-2a04e47be547",
+                "ClientSecret": "test123!",
+                "VendorId": "b5c74429-7862-4893-91cf-35a64ff30bbc",
+                "SystemId": "e2b171ed-c102-4dfd-b01e-d663a9db6a11"
+              },
+              {
+                "Name": "SmartFoodChainPortal",
+                "ClientId": "18e6d1ba-ea73-4e81-bc65-71049d66293d",
+                "ClientSecret": "test123!",
+                "VendorId": "c59f1c22-92f8-42f2-a6ae-e6712215eb58",
+                "SystemId": "d64766e4-4dbe-4020-852a-683719712e95"
+              },
+              {
+                "Name": "SmartFoodChain2TestSystem",
+                "ClientId": "b0cba246-f58f-4bbb-ab8a-f19df1700335",
+                "ClientSecret": "test123!",
+                "VendorId": "c59f1c22-92f8-42f2-a6ae-e6712215eb58",
+                "SystemId": "852eae10-0e33-45a3-8902-c8ca1d0a4380"
+              },
+              {
+                "Name": "SmartFoodChain2TestSystemB",
+                "ClientId": "20ce6878-5ca1-461d-b7ea-2f236bb29b9f",
+                "ClientSecret": "test123!",
+                "VendorId": "cc0a8c07-ae00-4dd2-8e7a-524ca6de5fa7",
+                "SystemId": "1221e276-131a-4dc2-8636-a441ca9a6db1"
+              },
+              {
+                "Name": "SmartFoodChain2TestSystemC",
+                "ClientId": "87221676-42f0-4aec-ac91-1d3f132e3119",
+                "ClientSecret": "test123!",
+                "VendorId": "2405549e-141f-4799-a020-6450cff88987",
+                "SystemId": "12b9853a-2096-443c-aec3-4b12b5dd9a89"
+              },
+              {
+                "Name": "SmartFoodChainDataOfferOnly",
+                "ClientId": "23278a86-15e0-4550-b705-ecdabcb4f4f6",
+                "ClientSecret": "test123!",
+                "VendorId": "7af4aa5e-41d8-4531-8a19-4f8ae1624396",
+                "SystemId": "7f079509-39f7-4ea1-9173-748759c902db"
+              },
+              {
+                "Name": "SmartFoodChainDataUseOnly",
+                "ClientId": "6e0b5afa-e26c-4ca4-b30d-4cc4391c31ed",
+                "ClientSecret": "test123!",
+                "VendorId": "3db2f925-d311-4a09-8bc7-712d4c4e7ed5",
+                "SystemId": "271a2672-2212-46bd-a1ed-13739f7d0337"
+              },
+              {
+                "Name": "SmartFoodChainDataNotAccess",
+                "ClientId": "b4c438a8-61fe-4009-9158-8fbae25677a5",
+                "ClientSecret": "test123!",
+                "VendorId": "1d3ba5bd-649a-4332-9983-13336c226858",
+                "SystemId": "5c988b54-d655-4827-85f4-41d5dd4fbc4b"
+              },
+              {
+                "Name": "ManageApi",
+                "Url": "https://dev-datahub6-manageapiweb.azurewebsites.net/Token",
+                "ClientId": "b3f3d469-e244-4ddd-8510-2a04e47be547",
+                "ClientSecret": "test123!",
+                "VendorId": "b5c74429-7862-4893-91cf-35a64ff30bbc",
+                "SystemId": "e2b171ed-c102-4dfd-b01e-d663a9db6a11"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,32 @@
+﻿{
+  "List": [
+    {
+      "ServerName": "default_server",
+      "Type": "default_server",
+      "AuthenticationType": "vendor",
+      "EnvironmentList": [
+        {
+          "EnvironmentName": "DevelopAzure",
+          "EnvironmentId": "",
+          "Url": "",
+          "DynamicApiUrl": "",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

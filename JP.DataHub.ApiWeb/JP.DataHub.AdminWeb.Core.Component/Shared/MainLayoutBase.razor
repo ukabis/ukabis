@@ -1,0 +1,135 @@
+﻿@using System.Security.Claims
+@using JP.DataHub.AdminWeb.Core.Component.Pages.Common;
+@using JP.DataHub.AdminWeb.Core.Settings
+@using JP.DataHub.Com.Unity
+@using Unity
+@using JP.DataHub.MVC.Authentication;
+
+@inject DialogService DialogService
+@inject NotificationService NotificationService
+
+@inherits LayoutComponentBase
+
+<PageTitle>@Title</PageTitle>
+
+<CascadingValue Value="this">
+    @Body
+</CascadingValue>
+<RadzenDialog />
+<RadzenNotification />
+<RadzenContextMenu />
+
+@if (ShowSpinner)
+{
+    <div class="overlay">
+        <div class="spinner"></div>
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private bool ShowSpinner { get; set; } = false;
+
+    public string OpenId { get; private set; }
+
+    public string Email { get; private set; }
+
+    public string Name {  get; private set; }
+
+    public string Title { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthenticationStateTask).User;
+        string? email = user.FindFirstValue("emails");
+        if (email == null)
+        {
+            // Oracle Identity Domainsの場合
+            this.OpenId = user.GetNameIdentifier();
+            this.Email = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+        else
+        {
+            // Azure ADB2Cの場合
+            this.OpenId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            this.Email = user.FindFirstValue("emails");
+        }
+        this.Name = user.FindFirstValue("name");
+    }
+
+    public async Task ToggleSpinner(bool visible)
+    {
+        await Task.Yield();
+        this.ShowSpinner = visible;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// OKボタンだけのメッセージダイアログを出力
+    /// errorDetail はnull 可能
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="okBtnText"></param>
+    /// <param name="errorDetail"></param>
+    /// <returns></returns>
+    public async Task ShowMessageDialog(string title, string message, string okBtnText = "OK", string errorDetail = null)
+    {
+        //スピナーが回ってるとボタンが押せなくなるので、保険でスピナー消す
+        await this.ToggleSpinner(false);
+
+        // エラー詳細は設定があれば表示
+        var visibleError = UnityCore.UnityContainer.Resolve<ErrorHandlingSettings>()?.ShowDetails ?? false;
+        await DialogService.OpenAsync<ModalDialogOkbtnOnly>(
+            title, 
+            new Dictionary<string, object>()
+            {
+                { "Message", message },
+                { "ErrorMessage", visibleError ? errorDetail : null },
+                { "OkBtnMessage", okBtnText }
+            }
+        );        
+    }
+
+    /// <summary>
+    /// OK/キャンセルボタンのあるコンファームダイアログを表示する
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="okBtnText"></param>
+    /// <param name="cancelBtnText"></param>
+    /// <returns></returns>
+    public async Task<bool?> ShowConfirmDialog(string title, string message, string okBtnText = "OK", string cancelBtnText = "キャンセル")
+    {
+        //スピナーが回ってるとボタンが押せなくなるので、保険でスピナー消す
+        await this.ToggleSpinner(false);
+        return await DialogService.OpenAsync<ModalDialog>(
+            title,
+            new Dictionary<string, object>()
+            {
+                { "Message", message },
+                { "OkBtnMessage", okBtnText },
+                { "NotOkBtnMessage", cancelBtnText },
+            }
+        );
+    }
+
+    /// <summary>
+    /// NotifyをSuccessで表示する
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="message"></param>
+    /// <param name="durationSec"></param>
+    public void ShowNotifySuccess(string title = null, string message = null, int durationSec = 4)
+    {
+        NotificationService.Notify(new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = title,
+            Detail = message,
+            Duration = durationSec * 1000
+        });
+    }
+}

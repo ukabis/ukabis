@@ -1,0 +1,34 @@
+{
+  "test1": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "test2": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "test3": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  },
+  "test4": {
+    "OpenId": {
+      "Account": "",
+      "Password": ""
+    },
+    "Type": "AuthenticationInfo",
+    "AuthenticationInfoId": ""
+  }
+}

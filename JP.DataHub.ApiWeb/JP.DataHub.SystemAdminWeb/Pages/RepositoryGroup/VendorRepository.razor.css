@@ -1,0 +1,10 @@
+﻿.rz-datatable-thead th .rz-column-title, .rz-grid-table thead th .rz-column-title {
+    text-transform: lowercase !important
+}
+
+.tasks-block {
+    max-height: 750px;
+    max-width: 1600px;
+    overflow: scroll;
+    -webkit-overflow-scrolling: touch;
+}

@@ -1,0 +1,205 @@
+﻿@page "/Invitation/Register"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Http
+@using Microsoft.Identity.Web
+@using JP.DataHub.Com.Unity
+@using JP.DataHub.MVC.Authentication
+@using JP.DataHub.Blazor.Core.Pages
+@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+@using JP.DataHub.AdminWeb.WebAPI.Models
+@implements IDisposable
+@inherits AdminWebBasePage
+@inject IHttpContextAccessor httpContextAccessor
+@inject IUserInvitationService userInvitationService
+@inject ITokenAcquisition tokenAcquisition 
+@inject PersistentComponentState applicationState
+
+<RadzenCard>
+    <div class="row justify-content-center m-5">
+        <div class="col-6 text-center">
+            @if (invitationResult != null)
+            {
+                <h2>@(invitationResult.IsRegistered ? "登録ありがとうございました" : "エラー")</h2>
+                <p>@invitationResult.Message</p>
+
+                @if (invitationResult.IsRegistered)
+                {
+                    <RadzenButton Text="API管理画面を開く" Size="ButtonSize.Small" class="mt-3" Click="@(args => ToIndex())"></RadzenButton>
+                }
+            }
+        </div>
+    </div>
+</RadzenCard>
+
+@code {
+    public static string InviteIdCookieName = "InvitedId";
+
+    [SupplyParameterFromQuery]
+    [Parameter]
+    public string InviteId { get; set; }
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    private PersistingComponentStateSubscription persistingSubscription;
+    private InvitationResult invitationResult;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        // 処理結果を記録するためのコールバックを設定
+        persistingSubscription = applicationState.RegisterOnPersisting(Persist);
+
+        // 記録された処理結果を復元(プリレンダリングの処理結果でそのまま再描画)
+        if (applicationState.TryTakeFromJson<InvitationResult>(nameof(InvitationResult), out var result))
+        {
+            invitationResult = result;
+            return;
+        }
+
+        try
+        {
+            await Layout.ToggleSpinner(true);
+
+            invitationResult = new InvitationResult();
+            if (!Guid.TryParse(InviteId, out _))
+            {
+                invitationResult.IsRegistered = false;
+                invitationResult.Message = "利用者登録が正しく行われませんでした。";
+                return;
+            }
+
+            var user = AuthenticationStateProvider.GetAuthenticationStateAsync().Result?.User;
+            if (user?.Identity?.IsAuthenticated != true)
+            {
+                // 招待メールのリンク押下時はCookieに招待IDを保存してログイン画面を表示
+                httpContextAccessor.HttpContext?.Response.Cookies.Append(InviteIdCookieName, InviteId);
+                await httpContextAccessor.HttpContext?.ChallengeAsync();
+                return;
+            }
+            else
+            {
+                // ADB2Cに登録できたらOpenIdとEmailを取得
+                var identityInfo= GetIdentityInfo(user);
+                if(!identityInfo.HasValue)
+                {
+                    // B2Cに登録できたが、OpenIdが取得できない場合(基本あり得ない)
+                    invitationResult.IsRegistered = false;
+                    invitationResult.Message = "ユーザー認証が正しく行えませんでした。しばらく待ってから再度実施して下さい。";
+                    return;
+                }
+
+                var openId = identityInfo.Value.OpenId;
+                var email = identityInfo.Value.Email;
+
+                // API管理側にスタッフを登録する
+                var response = userInvitationService.AddInvitedUser(new AddInvitedUserModel() 
+                { 
+                    InvitationId = InviteId, 
+                    OpenId = openId,
+                    MailAddress = email
+                });
+
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.NotFound: 
+                        // 招待情報が見つからない
+                        invitationResult.IsRegistered = false;
+                        invitationResult.Message = "有効なトークンではありません。再度招待を依頼して下さい。";
+                        return;
+                    case HttpStatusCode.BadRequest:
+                        // 有効期限切れ
+                        invitationResult.IsRegistered = false;
+                        invitationResult.Message = "有効期限が切れています。再度招待を依頼して下さい。";
+                        return;
+                    case HttpStatusCode.NoContent:
+                        // 登録済み(管理画面へのリンク表示)
+                        invitationResult.IsRegistered = true;
+                        invitationResult.Message = "ユーザは既に登録済みです。";
+                        break;
+                    case HttpStatusCode.Created:
+                        invitationResult.IsRegistered = true;
+                        invitationResult.Message = "登録完了しました。";
+                        break;
+                    default:
+                        invitationResult.IsRegistered = false;
+                        throw new Exception("予期せぬエラーが発生しました。");
+                }
+
+                // Cookieから招待IDを削除
+                httpContextAccessor.HttpContext?.Response.Cookies.Delete(InviteIdCookieName);
+
+                // ユーザ権限を再度取得するためにセッション情報を削除
+                // (サインアップ後に直接トップ画面に遷移することがあり、その場合は権限付与前の状態を保持してしまうため)
+                httpContextAccessor.HttpContext?.Session.Clear();
+            }
+        }
+        catch (Exception ex)
+        {
+            invitationResult.Message = ex.Message;
+
+            // Cookieから招待IDを削除
+            httpContextAccessor.HttpContext?.Response.Cookies.Delete(InviteIdCookieName);
+        }
+        finally
+        {
+            await Layout.ToggleSpinner(false);            
+        }
+    }
+
+    private Task Persist()
+    {
+        applicationState.PersistAsJson(nameof(InvitationResult), invitationResult);
+        return Task.CompletedTask;
+    }
+
+    private (string OpenId, string Email)? GetIdentityInfo(ClaimsPrincipal user)
+    {
+        var identity = (System.Security.Claims.ClaimsIdentity)user.Identity;
+        if (identity.IsAuthenticated)
+        {
+            // 「emails」というクレームが存在する場合、Azure ADB2Cで認証を行ったものと判断し、NameIdentifierに設定されているGUIDをopenIdとして扱う
+            // 「emails」というクレームが存在しない場合、Oracle Identity Domainsで認証を行ったものと判断し、
+            // NameIdentifierに設定されている値はメールアドレスとして扱い、user_idに設定されている値をGUIDフォーマットに変換してopenIdとして扱う
+            String openId;
+            String email;
+            Claim emailClaim = identity.FindFirst("emails");
+            if (emailClaim == null)
+            {
+                // Oracle Identity Domainsの場合
+                openId = user.GetNameIdentifier();
+                email = identity.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
+            }
+            else
+            {
+                // Azure ADB2Cの場合
+                openId = identity.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value;
+                email = emailClaim.Value;
+            }
+            return (openId, email);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private void ToIndex()
+    {
+        NavManager.NavigateTo("/", true);
+    }
+
+    void IDisposable.Dispose()
+    {
+        persistingSubscription.Dispose();
+    }
+
+
+    private class InvitationResult
+    {
+        public bool IsRegistered { get; set; }
+        public string Message { get; set; }
+    }
+}

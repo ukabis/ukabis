@@ -1,0 +1,8 @@
+{
+  "Buildup": [
+    "JP.DataHub.Com",
+    "JP.DataHub.Infrastructure.Core",
+    "JP.DataHub.UnitTest.Com",
+    "IT.JP.DataHub.ManageApi"
+  ]
+}

@@ -1,0 +1,61 @@
+﻿@using JP.DataHub.AdminWeb.WebAPI.Models;
+
+@inject DialogService DialogService
+
+@* タグTree *@
+<RadzenCard Style="width: 100%; height:auto; max-height:85%;">
+    <RadzenTree>
+        <RadzenTreeItem Expanded="true">
+            <ChildContent>
+                @foreach (var field in FiledInfoList)
+                {
+                    <RadzenTreeItem Text="ResourceItem" Value="field">
+                        <Template>
+                            <span>
+                                <RadzenCheckBox TValue="bool" @bind-Value="field.IsActive" Change="(args => OnChange(args, field))"></RadzenCheckBox>
+                                <RadzenLabel class="mx-2" Text="@field.FieldName"></RadzenLabel>
+                            </span>
+                        </Template>
+                        <ChildContent>
+                            @foreach (var fChild in field.Children)
+                            {
+                                <RadzenTreeItem Text="MethodItem" Value="fChild">
+                                    <Template>
+                                        <span class="w-100 position-relative">
+                                            <RadzenCheckBox TValue="bool" @bind-Value="fChild.IsActive" Change="(args => OnChange(args, fChild))"></RadzenCheckBox>
+                                            <RadzenLabel class="mx-2 treenode-label-text" Text="@fChild.FieldName"></RadzenLabel>
+                                        </span>
+                                    </Template>
+                                </RadzenTreeItem>
+                            }
+                        </ChildContent>
+                    </RadzenTreeItem>
+                }
+            </ChildContent>
+        </RadzenTreeItem>
+    </RadzenTree>
+</RadzenCard>
+<div class="row mt-4">
+    <div class="col text-center">
+        <RadzenButton Text="決定" ButtonStyle="ButtonStyle.Primary" Click="@((args) => { DialogService.Close(new { Info = FiledInfoList, Flat = FieldListFlat }); })"></RadzenButton>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<ApiResourceFieldQueryModel> FiledInfoList { get; set; }
+
+    [Parameter]
+    public List<ApiResourceFieldQueryModel> FieldListFlat { get; set; }
+
+    private void OnChange(bool? isActive, ApiResourceFieldQueryModel field)
+    {
+        if(isActive.HasValue)
+        {
+            var fieldFlat = FieldListFlat.Where(x => x.FieldId == field.FieldId).FirstOrDefault();
+            if(fieldFlat != null)
+                fieldFlat.IsActive = isActive.Value;
+        }
+    }
+
+}

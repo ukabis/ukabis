@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- MSTest adapter -->
+  <TestRunParameters>
+	  <!--次の行を無効(コメント)にするとローカルに向いてテストする-->
+	  <Parameter name="TestEnvironment" value="DevelopAzure" />
+  </TestRunParameters>
+</RunSettings>

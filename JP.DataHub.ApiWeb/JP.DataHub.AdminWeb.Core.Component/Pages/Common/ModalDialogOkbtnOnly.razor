@@ -1,0 +1,27 @@
+﻿@inject DialogService DialogService
+
+<div>
+    <p class="mb-2" style="font-size: 18px">@Message</p>
+    @if(!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <RadzenCard class="mb-2">
+            <p>@ErrorMessage</p>
+        </RadzenCard>
+    }
+    <div class="row">
+        <div class="col">
+            <RadzenButton Text="@OkBtnMessage" Click="@((args) => { DialogService.Close(true); })" Class="me-1" Style="width: 150px;" />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Message { get; set;}
+
+    [Parameter]
+    public string ErrorMessage { get; set; }
+
+    [Parameter]
+    public string OkBtnMessage {get; set;}
+}

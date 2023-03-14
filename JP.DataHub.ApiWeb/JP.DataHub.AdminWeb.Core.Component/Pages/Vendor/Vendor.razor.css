@@ -1,0 +1,23 @@
+﻿.treenode-label-text {
+    display: inline-block;
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+::deep .rz-treenode .rz-treenode-content .rz-treenode-label {
+    width: 100%;
+}
+
+::deep .rz-treenode .rz-treenode-content .rz-treenode-label i {
+    margin: 0;
+}
+
+::deep .empty-child .rz-treenode .rz-treenode-content .rz-tree-toggler {
+    display: none;
+}
+
+::deep .vendor-tree {
+    height: calc(100% - 3.5rem);
+}

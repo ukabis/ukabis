@@ -1,0 +1,10 @@
+{
+  "Buildup": [
+    "JP.DataHub.Com",
+    "JP.DataHub.Infrastructure.Core",
+    "JP.DataHub.ApiWeb.Interface",
+    "JP.DataHub.ApiWeb.Domain",
+    "JP.DataHub.ApiWeb.Infrastructure",
+    "JP.DataHub.Data.Oracle"
+  ]
+}

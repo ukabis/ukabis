@@ -1,0 +1,85 @@
+﻿@using JP.DataHub.AdminWeb.WebAPI.Models;
+@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+
+@inject DialogService DialogService
+
+<EditForm EditContext="@_editContext" OnValidSubmit="@Close">
+    <ObjectGraphDataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <div class="row mb-2">
+            <div class="col-4">
+                <RadzenLabel Component="Title" Text="タイトル"></RadzenLabel>
+            </div>
+            <div class="col">
+                <RadzenTextBox Name="Title" @bind-Value="@MethodLink.Title" class="w-100"></RadzenTextBox>
+                <ValidationMessage For="@(() => MethodLink.Title)" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4">
+                <RadzenLabel Component="Url" Text="URL"></RadzenLabel>
+            </div>
+            <div class="col">
+                <RadzenTextBox Name="Url" @bind-Value="@MethodLink.Url" class="w-100"></RadzenTextBox>
+                <ValidationMessage For="@(() => MethodLink.Url)" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4">
+                <RadzenLabel Component="Detail" Text="説明"></RadzenLabel>
+            </div>
+            <div class="col">
+                <RadzenTextArea Name="Detail" @bind-Value="@MethodLink.Detail" Rows="5" class="w-100"></RadzenTextArea>
+                <ValidationMessage For="@(() => MethodLink.Detail)" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4">
+                <RadzenLabel Component="IsVisible" Text="表示状態"></RadzenLabel>
+            </div>
+            <div class="col">
+                <RadzenRadioButtonList Name="IsVisible" @bind-Value="@MethodLink.IsVisivle" TValue="bool">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="表示" Value="true" TValue="bool" />
+                        <RadzenRadioButtonListItem Text="非表示" Value="false" TValue="bool" />
+                    </Items>
+                </RadzenRadioButtonList>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col text-center">
+                @if (IsNew)
+                {
+                    <RadzenButton class="button-method-link" Text="追加" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit"></RadzenButton>
+                }
+                else
+                {
+                    <RadzenButton class="button-method-link" Text="決定" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit"></RadzenButton>
+                    <RadzenButton class="button-method-link" Text="閉じる" ButtonStyle="ButtonStyle.Secondary" Click="@((args) => DialogService.Close())"></RadzenButton>
+                }
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private EditContext _editContext;
+
+    [Parameter]
+    public ApiModel.MethodLinkModel MethodLink { get; set; }
+
+    [Parameter]
+    public bool IsNew { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _editContext = new EditContext(MethodLink);
+    }
+
+    private void Close()
+    {
+        DialogService.Close(MethodLink);
+    }
+}

@@ -1,0 +1,220 @@
+﻿@page "/vendor_repository_group"
+@using System.Linq
+
+@attribute [Authorize(Policy = "VendorRepositoryGroup")]
+
+@inherits AdminWebBasePage
+@inject DialogService DialogService
+
+
+<div class="row h-100" style="overflow-y: scroll;">
+    <div class="row">
+        <div class="col">
+            <h4>ベンダー</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <RadzenDataGrid Data="_vendorRepositoryGroupList" TItem="VendorRepositoryGroupListModel" ColumnWidth="150px" AllowPaging="true" PageSize=15 AllowSorting="true" Style="height: 800px;">
+                <Columns>
+                    <RadzenDataGridColumn TItem="VendorRepositoryGroupListModel" Property="VendorId" Width="150px" TextAlign="TextAlign.Center" Frozen="true">
+                        <Template>
+                            <p style="white-space: pre-wrap">
+                                @_vendors.Find(x => x.VendorId == context.VendorId).VendorName
+                            </p>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    @foreach (var rep in _repositoryGroupList)
+                    {
+                        <RadzenDataGridColumn TItem="VendorRepositoryGroupListModel" Property="VendorRepositoryGroupItems" Title="@rep.RepositoryGroupName" Width="150px" TextAlign="TextAlign.Center" Sortable="false">
+                            <Template>
+                                <!-- APIで使用中のリポジトリは変更不可 -->
+                                @if (context.VendorRepositoryGroupItems.Find(x => x.RepositoryGroupId == rep.RepositoryGroupId).Used)
+                                {
+                                    <RadzenCheckBox TValue="bool" @bind-Value="@(context.VendorRepositoryGroupItems.Find(x => x.RepositoryGroupId == rep.RepositoryGroupId).IsEnable)" Disabled="true"></RadzenCheckBox>
+                                }
+                                else
+                                {
+                                    <RadzenCheckBox TValue="bool" @bind-Value="@(context.VendorRepositoryGroupItems.Find(x => x.RepositoryGroupId == rep.RepositoryGroupId).IsEnable)" Disabled="false"></RadzenCheckBox>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                    }
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+    <div>
+        <AuthorizeView Policy="@(FunctionPolicy.VendorRepositoryGroupWrite.ToString())">
+            <div class="text-center mt-3">
+                <RadzenButton Click="Save" ButtonStyle="ButtonStyle.Primary" Text="保存"></RadzenButton>
+            </div>
+        </AuthorizeView>
+    </div>
+</div>
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Inject]
+    protected IAdminRepositoryGroupService ReposiotryGroupService { get; set; }
+
+    [Inject]
+    protected IAdminVendorService VendorService {get;set;}
+
+    private List<RepositoryGroupModel> _repositoryGroupList = new();
+
+    private List<VendorRepositoryGroupListModel> _vendorRepositoryGroupList = new();
+
+    private List<VendorSimpleModel> _vendors = new();
+
+    /// <summary>
+    /// 初期レンダリング
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Layout.ToggleSpinner(true);
+        }
+    }
+
+    /// <summary>
+    /// 初期化
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnAfterInitializeAsync()
+    {
+        await Layout.ToggleSpinner(true);
+        try
+        {
+            var task1 = ReposiotryGroupService.GetVendorRepositoryGroupListAsync();
+            var task2 = ReposiotryGroupService.GetRepositoryGroupListAsync();
+            var task3 = VendorService.GetVendorSimpleListAsync();
+            _vendorRepositoryGroupList = task1?.Result?.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "ベンダーリポジトリグループ一覧の取得に失敗しました。")
+                           .Result;
+            _repositoryGroupList = task2?.Result?.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "リポジトリグループ一覧の取得に失敗しました。")
+                           .Result;
+            _vendors = task3?.Result?.Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "ベンダー一覧の取得に失敗しました。")
+                           .Result;
+            CreateRepositoryGroupList();
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("ベンダーリポジトリグループ", "エラーが発生しました。", errorDetail: e.ToString());
+        }
+        await Layout.ToggleSpinner(false);
+    }
+
+    /// <summary>
+    /// bind用にベンダーリポジトリグループの一覧作成
+    /// </summary>
+    private void CreateRepositoryGroupList()
+    {
+        // ひとつもベンダーリポジトリをもたないベンダーをベンダーリポジトリに追加
+        _vendors.ForEach(v =>
+        {
+            if (_vendorRepositoryGroupList.Any(x => x.VendorId == v.VendorId) == false)
+            {
+                _vendorRepositoryGroupList.Add(new VendorRepositoryGroupListModel
+                    {
+                        VendorId = v.VendorId,
+                        VendorRepositoryGroupItems = new()
+                    });
+            }
+        });
+
+        // bind用に各リポジトリを追加(すでにあるものは有効フラグを立てる)
+        // また、ベンダー自体が無効なものはリストから除外
+        List<VendorRepositoryGroupListModel> list = new();
+        _vendorRepositoryGroupList.ForEach(vr =>
+        {
+            if (!_vendors.Any(v => v.VendorId == vr.VendorId))
+            {
+                return;
+            }
+            list.Add(vr);
+            _repositoryGroupList.ForEach(r =>
+            {
+                if (vr.VendorRepositoryGroupItems.Any(i => i.RepositoryGroupId == r.RepositoryGroupId))
+                {
+                    var target = vr.VendorRepositoryGroupItems.Find(x => x.RepositoryGroupId == r.RepositoryGroupId);
+                    target.IsEnable = true;
+                }
+                else
+                {
+                    vr.VendorRepositoryGroupItems.Add(new VendorRepositoryGroupListItemsModel
+                        {
+                            RepositoryGroupId = r.RepositoryGroupId,
+                            RepositoryGroupName = r.RepositoryGroupName
+                        });
+                }
+            });
+            vr.VendorRepositoryGroupItems = vr.VendorRepositoryGroupItems.OrderBy(x => x.RepositoryGroupId).ToList();
+        });
+        _vendorRepositoryGroupList = list;
+    }
+
+    /// <summary>
+    /// 保存処理 (有効なものだけ送信する)
+    /// </summary>
+    private async Task Save()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("ベンダーリポジトリグループ保存", "ベンダーリポジトリグループの保存を行います。よろしいですか？");
+        if (confirmResult != true)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        try
+        {
+            var candidates = FilterRegisterVendorRepositoryList();
+
+            if (candidates.Any())
+            {
+                ReposiotryGroupService.ActivateVendorRepositoryGroupList(candidates)
+                                      .Throw(x => !x.IsSuccessStatusCode, x => $"ベンダーリポジトリグループの登録に失敗しました。");
+            }
+        }
+        catch (Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("ベンダーリポジトリグループ", "エラーが発生しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "ベンダーリポジトリグループを保存しました。");
+    }
+
+    /// <summary>
+    /// 登録用の有効なベンダーリポジトリグループを抽出する
+    /// </summary>
+    /// <returns></returns>
+    private List<ActivateVendorRepositoryGroupModel> FilterRegisterVendorRepositoryList()
+    {
+        var enabledHasVendorRepositoryGroupList = _vendorRepositoryGroupList.Where(x => x.VendorRepositoryGroupItems.Any(vri => vri.IsEnable)).ToList();
+        List<ActivateVendorRepositoryGroupModel> result = new();
+        enabledHasVendorRepositoryGroupList.ForEach(x =>
+        {
+            x.VendorRepositoryGroupItems.ForEach(item =>
+            {
+                if (item.IsEnable)
+                {
+                    result.Add(new ActivateVendorRepositoryGroupModel
+                        {
+                            VendorId = x.VendorId,
+                            RepositoryGroupId = item.RepositoryGroupId,
+                            Active = true
+                        });
+                }
+            });
+        });
+        return result;
+    }
+}

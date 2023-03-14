@@ -1,0 +1,699 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccessControlAuthFailed" xml:space="preserve">
+    <value>AccessControl Authentication is failed</value>
+  </data>
+  <data name="AccessControlAuthFailed_Detail" xml:space="preserve">
+    <value>HTTP Header: Please specify the value of the correct access control to the X-AccessBeyondVendorKey.</value>
+  </data>
+  <data name="AdminAuthFailed" xml:space="preserve">
+    <value>Admin Authentication is failed</value>
+  </data>
+  <data name="AdminAuthFailed_Detail" xml:space="preserve">
+    <value>HTTP Header: Please specify the keyword of the correct administrator for authentication in X-Admin.</value>
+  </data>
+  <data name="AggregateException" xml:space="preserve">
+    <value>AggregateException</value>
+  </data>
+  <data name="AnInternalServerErrorHasOccurred" xml:space="preserve">
+    <value>Internal server error has occurred.</value>
+  </data>
+  <data name="ApiException" xml:space="preserve">
+    <value>Api Exception</value>
+  </data>
+  <data name="APIIPFilter" xml:space="preserve">
+    <value>API IP-Filter</value>
+  </data>
+  <data name="ArgumentNullException" xml:space="preserve">
+    <value>ArgumentNull Exception</value>
+  </data>
+  <data name="AsyncApiNotEndException" xml:space="preserve">
+    <value>AsyncApi NotEnd Exception</value>
+  </data>
+  <data name="AsyncApiResultNotFoundException" xml:space="preserve">
+    <value>AsyncApi Result NotFound Exception</value>
+  </data>
+  <data name="AsyncDynamicApiError" xml:space="preserve">
+    <value>An unexpected error occurred while executing the async dynamic API.</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_Mismatch" xml:space="preserve">
+    <value>Mismatch between attachfile and blockchain</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_Mismatch_Detail" xml:space="preserve">
+    <value>The value recorded in the block chain and the attached file does not match.</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoBlockchainHash" xml:space="preserve">
+    <value>Not found attachfile hash in blockchain</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoBlockchainHash_Detail" xml:space="preserve">
+    <value>The hash value of the attachment of the ID that is specified on the block chain has not been recorded.</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoSource" xml:space="preserve">
+    <value>Not found in the attachfile repository</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoSource_Detail" xml:space="preserve">
+    <value>Data of the attached file of the specified ID on the repository has not been recorded.</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_Disable" xml:space="preserve">
+    <value>Document history is disable</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_Disable_Detail" xml:space="preserve">
+    <value>Function of the history of the DynamicApi is invalid.</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_VersionNotFound" xml:space="preserve">
+    <value>Not found for specifed version</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_VersionNotFound_Detail" xml:space="preserve">
+    <value>Not specified version of history does not exist</value>
+  </data>
+  <data name="BlockchainValidate_Mismatch" xml:space="preserve">
+    <value>Mismatch between repository and blockchain</value>
+  </data>
+  <data name="BlockchainValidate_Mismatch_Detail" xml:space="preserve">
+    <value>The value recorded in the block chain and the repository does not match.</value>
+  </data>
+  <data name="BlockchainValidate_NoBlockchainHash" xml:space="preserve">
+    <value>Not found in blockchain</value>
+  </data>
+  <data name="BlockchainValidate_NoBlockchainHash_Detail" xml:space="preserve">
+    <value>Data of the ID that is specified on the block chain has not been recorded.</value>
+  </data>
+  <data name="BlockchainValidate_NoSource" xml:space="preserve">
+    <value>Not found in the repository</value>
+  </data>
+  <data name="BlockchainValidate_NoSource_Detail" xml:space="preserve">
+    <value>Data of the ID that is specified on the repository has not been recorded.</value>
+  </data>
+  <data name="BlockedRequestedContentTypeOrFileTypeByList" xml:space="preserve">
+    <value>Blocked Request</value>
+  </data>
+  <data name="BlockedRequestedContentTypeOrFileTypeByList_Detail" xml:space="preserve">
+    <value>Blocked Request ContentType or FileType By List.</value>
+  </data>
+  <data name="CantCallInternalCallsFromOutside" xml:space="preserve">
+    <value>Can't call internal calls from outside.</value>
+  </data>
+  <data name="ClientCertificateAuthenticationRequired" xml:space="preserve">
+    <value>ClientCertificateAuthentication is required</value>
+  </data>
+  <data name="ClientCertificateAuthenticationRequired_Detail" xml:space="preserve">
+    <value>Require Client Certification Setting</value>
+  </data>
+  <data name="ClientCertificateExpired" xml:space="preserve">
+    <value>ClientCertificate is expired</value>
+  </data>
+  <data name="ClientCertificateExpired_Detail" xml:space="preserve">
+    <value>Require Valid ExpirationDate Client Certification</value>
+  </data>
+  <data name="ClientCertificateNotFoundOrVendorSystemUnusable" xml:space="preserve">
+    <value>Not Found ClientCertificate or Vendor or System is not available</value>
+  </data>
+  <data name="ClientCertificateNotFoundOrVendorSystemUnusable_Detail" xml:space="preserve">
+    <value>Require Valid Client Certification</value>
+  </data>
+  <data name="ClientIdNotFoundOrVendorSystemUnusable" xml:space="preserve">
+    <value>ClientId can not be found, the vendor or the system can not be used.</value>
+  </data>
+  <data name="ClientIdNotFoundOrVendorSystemUnusable_Detail" xml:space="preserve">
+    <value>Please re-acquire the access token for the vendor system authentication.</value>
+  </data>
+  <data name="ContainerDynamicSeparationRepositoryNotFound" xml:space="preserve">
+    <value>ContainerDynamicSeparationRepository is not found</value>
+  </data>
+  <data name="ContainerDynamicSeparationRequiredDependency" xml:space="preserve">
+    <value>ContainerDynamicSeparation required dependency</value>
+  </data>
+  <data name="CsvParseFailed" xml:space="preserve">
+    <value>This API does not support CSV.</value>
+  </data>
+  <data name="DataEncryptionError" xml:space="preserve">
+    <value>Data encryption error</value>
+  </data>
+  <data name="DataEncryptionError_CommonKeyNotFound" xml:space="preserve">
+    <value>The common key cannot be found.</value>
+  </data>
+  <data name="DataEncryptionError_DecryptionFailed" xml:space="preserve">
+    <value>Data decryption failed.</value>
+  </data>
+  <data name="DataIsAlreadyRegistered" xml:space="preserve">
+    <value>data is already registered.</value>
+  </data>
+  <data name="DefinedInVendorNotUsedFlag" xml:space="preserve">
+    <value>This API can not be called because it is not a data provided.</value>
+  </data>
+  <data name="DefinedInVendorNotUsedFlag_Detail" xml:space="preserve">
+    <value>Resources defined in-house, you must set the data provided. Please check the vendor setting.</value>
+  </data>
+  <data name="DefinedOtherVendorNotUsedFlag" xml:space="preserve">
+    <value>This API can not be called because it is not data available.</value>
+  </data>
+  <data name="DefinedOtherVendorNotUsedFlag_Detail" xml:space="preserve">
+    <value>Resources that other companies have been defined, you must set the data use. Please check the vendor setting.</value>
+  </data>
+  <data name="DeleteWasSuccessful" xml:space="preserve">
+    <value>Delete was successful.</value>
+  </data>
+  <data name="DocumentHasBeenDeleted" xml:space="preserve">
+    <value>document has been deleted.</value>
+  </data>
+  <data name="DoesNotExistDataToBeUpdatedIs" xml:space="preserve">
+    <value>Does not exist data to be updated is.</value>
+  </data>
+  <data name="DoesNotExistDataToBeUpdatedIs_Detail" xml:space="preserve">
+    <value>Does not exist data to be updated is. Data of the object has already been deleted possibilities.</value>
+  </data>
+  <data name="Exception" xml:space="preserve">
+    <value>Exception</value>
+  </data>
+  <data name="ExceptionOccured" xml:space="preserve">
+    <value>Exception occured</value>
+  </data>
+  <data name="ExistStaffAccount" xml:space="preserve">
+    <value>Account is already in use.</value>
+  </data>
+  <data name="ExternalAttachiFileError" xml:space="preserve">
+    <value>External attach file error occured.</value>
+  </data>
+  <data name="ExternalAttachiFileError_ConnectionFailed" xml:space="preserve">
+    <value>Failed to connect specified external data source.</value>
+  </data>
+  <data name="ExternalAttachiFileError_DocumentHistoryUnsupported" xml:space="preserve">
+    <value>External attach file cannot be used with APIs that have the history function enabled.</value>
+  </data>
+  <data name="ExternalAttachiFileError_FileInfoMissing" xml:space="preserve">
+    <value>File information of external attach file required.</value>
+  </data>
+  <data name="ExternalAttachiFileError_FileNotFound" xml:space="preserve">
+    <value>File not found in specified external data source.</value>
+  </data>
+  <data name="ExternalAttachiFileError_InvalidFileInfo" xml:space="preserve">
+    <value>Invalid file information of external attach file.</value>
+  </data>
+  <data name="ExternalAttachiFileError_UnnecessaryUpload" xml:space="preserve">
+    <value>No need to upload external attach file.</value>
+  </data>
+  <data name="FailedWithDriveOutTransparentAPI" xml:space="preserve">
+    <value>Failed with DriveOut transparent API.</value>
+  </data>
+  <data name="FailedWithDriveOutTransparentAPI_Detail" xml:space="preserve">
+    <value>In the process of DriveOut transparent API, history information could not be obtained. There is a possibility of the document that history does not exist.</value>
+  </data>
+  <data name="FileIdIsInvalid" xml:space="preserve">
+    <value>Invalid FileID.</value>
+  </data>
+  <data name="FileIdNoSettingRequired" xml:space="preserve">
+    <value>FileId No setting required</value>
+  </data>
+  <data name="FileIdRequired" xml:space="preserve">
+    <value>FileId Required</value>
+  </data>
+  <data name="FileIdRequired_Detail" xml:space="preserve">
+    <value>Please specify the FileID.</value>
+  </data>
+  <data name="FileIsRequired" xml:space="preserve">
+    <value>File is required.</value>
+  </data>
+  <data name="ForeignKeyException" xml:space="preserve">
+    <value>ForeignKeyException</value>
+  </data>
+  <data name="FromNotFoundQuery" xml:space="preserve">
+    <value>from not Found Query</value>
+  </data>
+  <data name="GatewayURLDefinedError" xml:space="preserve">
+    <value>The Gateway destination URL that are defined there is a possibility that there is an error.</value>
+  </data>
+  <data name="HasDefinedKeywordDataSchemaException" xml:space="preserve">
+    <value>The property name is invalid. A system-defined keyword has been specified.</value>
+  </data>
+  <data name="HistoryDataNotFound" xml:space="preserve">
+    <value>history data not found.</value>
+  </data>
+  <data name="HistoryDatNotFound" xml:space="preserve">
+    <value>history data not found.</value>
+  </data>
+  <data name="HttpMethodTypeDoesNotMatch" xml:space="preserve">
+    <value>Http method type does not match</value>
+  </data>
+  <data name="HttpMethodTypeDoesNotMatch_Detail" xml:space="preserve">
+    <value>Requested Http method type is not supported.</value>
+  </data>
+  <data name="HttpMethodTypeDoesNotSupport" xml:space="preserve">
+    <value>Requested Http method type is not supported.</value>
+  </data>
+  <data name="HttpResponseException" xml:space="preserve">
+    <value>HttpResponseException</value>
+  </data>
+  <data name="IdDoesNotMatch" xml:space="preserve">
+    <value>id does not match.</value>
+  </data>
+  <data name="IdIsRequired" xml:space="preserve">
+    <value>id is required.</value>
+  </data>
+  <data name="IMadeASearchByODataDidNotHaveTheData" xml:space="preserve">
+    <value>I made a search by OData did not have the data.</value>
+  </data>
+  <data name="InvalidAccountFormatException" xml:space="preserve">
+    <value>Invalid AccountFormat</value>
+  </data>
+  <data name="InvalidApiQuerySql_ResourceIdSpecified" xml:space="preserve">
+    <value>Invalid table format.</value>
+  </data>
+  <data name="InvalidApiQuerySql_SelectInvalidColumn" xml:space="preserve">
+    <value>Invalid select column.</value>
+  </data>
+  <data name="InvalidApiQuerySql_TableJoinNotAllowed" xml:space="preserve">
+    <value>Joining of the specified table is not allowed.</value>
+  </data>
+  <data name="InvalidApiQuerySql_TableNotFound" xml:space="preserve">
+    <value>Specified table not found.</value>
+  </data>
+  <data name="InvalidApiQuerySql_TableToJoinNotFound" xml:space="preserve">
+    <value>Specified table to join not found.</value>
+  </data>
+  <data name="InvalidAttachFileName" xml:space="preserve">
+    <value>Attach file name is invalid.</value>
+  </data>
+  <data name="InvalidCastException" xml:space="preserve">
+    <value>Invalid Cast Exception</value>
+  </data>
+  <data name="InvalidMethodType" xml:space="preserve">
+    <value>Invalid MethodType</value>
+  </data>
+  <data name="InvalidResourceAgreement" xml:space="preserve">
+    <value>AgreeDescription is required.</value>
+  </data>
+  <data name="InvalidResourceAgreement_Detail" xml:space="preserve">
+    <value>AgreeDescription is required to enable resource agreement.</value>
+  </data>
+  <data name="InvalidTypeExpectedObject_ButGotArray" xml:space="preserve">
+    <value>Data to be updated is invalid. Array was specified, not the object.</value>
+  </data>
+  <data name="InvalidXVersion" xml:space="preserve">
+    <value>Invalid X-Version</value>
+  </data>
+  <data name="InvaliOtherResourceSqlAccessRepositoryType" xml:space="preserve">
+    <value>Repository type where table join is not possible</value>
+  </data>
+  <data name="InvaliOtherResourceSqlAccessRepositoryType_Detail" xml:space="preserve">
+    <value>Table joins are only possible in RDBMS repositories</value>
+  </data>
+  <data name="IsTransparentApiIncorrect" xml:space="preserve">
+    <value>IsTransparentApi is incorrect.</value>
+  </data>
+  <data name="ItWasExecutedODataDelete" xml:space="preserve">
+    <value>It was executed ODataDelete.</value>
+  </data>
+  <data name="KeyMissMatch" xml:space="preserve">
+    <value>Key Miss Match</value>
+  </data>
+  <data name="KeyMissMatch_Detail" xml:space="preserve">
+    <value>Information that matches the Key was not found. Data of the object has already been deleted possibilities.</value>
+  </data>
+  <data name="KeyPropertyIsRequiredInRequestData" xml:space="preserve">
+    <value>Key Property is required in request data</value>
+  </data>
+  <data name="LoggingRequestResponseConnectionDoesNotExistOrIsFull" xml:space="preserve">
+    <value>Logging RequestResponse Connection does not exist or is full</value>
+  </data>
+  <data name="MethodIPFilter" xml:space="preserve">
+    <value>Method IP-Filter</value>
+  </data>
+  <data name="MethodTypeDoesNotMatch" xml:space="preserve">
+    <value>Method type does not match.</value>
+  </data>
+  <data name="MethodTypeDoesNotMatch_Detail" xml:space="preserve">
+    <value>Requested Http method type is not supported.</value>
+  </data>
+  <data name="MethodTypeIsIncorrect" xml:space="preserve">
+    <value>MethodType is incorrect</value>
+  </data>
+  <data name="MissingRepositoryKey" xml:space="preserve">
+    <value>Missing Repository Key</value>
+  </data>
+  <data name="NoDataFound" xml:space="preserve">
+    <value>No data found.</value>
+  </data>
+  <data name="NotAgreedAndApproved" xml:space="preserve">
+    <value>Not consent and approval.</value>
+  </data>
+  <data name="NotAgreedAndApproved_Detail" xml:space="preserve">
+    <value>Your vendor, or does not consent for this resource, or because the administrator has not approved, you will not be able to use the resources.</value>
+  </data>
+  <data name="NotAllowedForSystem" xml:space="preserve">
+    <value>This api is not allowed for the System</value>
+  </data>
+  <data name="NotAllowedForSystem_Detail" xml:space="preserve">
+    <value>The use of this API is not allowed.</value>
+  </data>
+  <data name="NotFoundException" xml:space="preserve">
+    <value>NotFound Exception</value>
+  </data>
+  <data name="NotImplementedException" xml:space="preserve">
+    <value>NotImplemented Exception</value>
+  </data>
+  <data name="NotMatchUploadedFilePosition" xml:space="preserve">
+    <value>not match uploaded file position</value>
+  </data>
+  <data name="NotParseCsvException" xml:space="preserve">
+    <value>NotParseCsvException</value>
+  </data>
+  <data name="ODataException" xml:space="preserve">
+    <value>ODataException</value>
+  </data>
+  <data name="ODataPatchNotFound" xml:space="preserve">
+    <value>There is no update target for ODataPatch.</value>
+  </data>
+  <data name="ODataPatchRequestInvalid" xml:space="preserve">
+    <value>ODataPatch request is invalid.</value>
+  </data>
+  <data name="ODataPatchRequestInvalid_AdditionalConditionInvalid" xml:space="preserve">
+    <value>Additional search conditions are invalid.</value>
+  </data>
+  <data name="ODataPatchRequestInvalid_UneditableProperty" xml:space="preserve">
+    <value>Request contains one or more uneditable properties.</value>
+  </data>
+  <data name="ODataPatchUnavailable" xml:space="preserve">
+    <value>ODataPatch unavailable.</value>
+  </data>
+  <data name="ODataPatchUnavailable_NotSupportedRepository" xml:space="preserve">
+    <value>To use ODataPatch, you need to select a repository that supports ODataPatch.</value>
+  </data>
+  <data name="ODataPatchUnavailable_OptimisticConcurrencyEnabled" xml:space="preserve">
+    <value>ODataPatch is not available for APIs with optimistic concurrency enabled. To disable optimistic concurrency and use ODataPatch, execute the API with X-NoOptimistic header true.</value>
+  </data>
+  <data name="ODataPatchUnavailable_UnsaportedFeaturesEnabled" xml:space="preserve">
+    <value>ODataPatch is not available because one or more features are enabled.</value>
+  </data>
+  <data name="OneOrMoreErrorsOccurred" xml:space="preserve">
+    <value>one or more errors occurred.</value>
+  </data>
+  <data name="OneOrMoreJsonValidationErrorsOccurred" xml:space="preserve">
+    <value>one or more Json Validation errors occurred.</value>
+  </data>
+  <data name="OpenidAccessControlAuthFailed_Detail" xml:space="preserve">
+    <value>Not allowed for openid.</value>
+  </data>
+  <data name="OpenIdAccessTokenExpired" xml:space="preserve">
+    <value>AuthorizationAccessToken is expired</value>
+  </data>
+  <data name="OpenIdAccessTokenExpired_Detail" xml:space="preserve">
+    <value>AuthorizationAccessToken is expired</value>
+  </data>
+  <data name="OpenIdAccessTokenInvalid" xml:space="preserve">
+    <value>AuthorizationAccessToken is Invalid</value>
+  </data>
+  <data name="OpenIdAccessTokenInvalid_Detail" xml:space="preserve">
+    <value>AuthorizationAccessToken is Invalid</value>
+  </data>
+  <data name="OpenIdAuthRequired" xml:space="preserve">
+    <value>OpenId authentication is required</value>
+  </data>
+  <data name="OpenIdAuthRequired_Detail" xml:space="preserve">
+    <value>HTTP Header: Please specify the access token for the OpenID authentication Authorization.</value>
+  </data>
+  <data name="OpenIdNotAllowedCA" xml:space="preserve">
+    <value>This api is not allowed for the Certification Authority</value>
+  </data>
+  <data name="OpenIdNotAllowedCA_Detail" xml:space="preserve">
+    <value>Please to get an access token for the OpenID authentication from authorized certificate authority.</value>
+  </data>
+  <data name="OpenIdUserOperationException" xml:space="preserve">
+    <value>OpenId User Operation Exception</value>
+  </data>
+  <data name="OperatingVendorUserOnly" xml:space="preserve">
+    <value>API unavailable</value>
+  </data>
+  <data name="OperatingVendorUserOnly_Detail" xml:space="preserve">
+    <value>This API is not available.</value>
+  </data>
+  <data name="QueryResultsDidNotHaveData." xml:space="preserve">
+    <value>Query results did not have data.</value>
+  </data>
+  <data name="QuerySyntaxError" xml:space="preserve">
+    <value>There is an error in the Query syntax. {0}</value>
+  </data>
+  <data name="QuerySyntaxErrorException" xml:space="preserve">
+    <value>QuerySyntaxErrorException</value>
+  </data>
+  <data name="ReferenceFailureToRollBackDueToNotifyOfUpdateFilure" xml:space="preserve">
+    <value>Reference, failure to roll back due to Notify of update failure</value>
+  </data>
+  <data name="ReferenceFailureToRollBackDueToNotifyOfUpdateFilure_Detail" xml:space="preserve">
+    <value>Reference, was to update the external resources by the Notify function. But, due to the failure to update with respect to the external resources, it was attempted to roll back, failed. Roll back is necessary information will be described below.</value>
+  </data>
+  <data name="RepositoryKeyHasNotBeenSet" xml:space="preserve">
+    <value>Repository key has not been set.</value>
+  </data>
+  <data name="RepositoryKeyHasNotBeenSet_Detail" xml:space="preserve">
+    <value>Repository key has not been set.</value>
+  </data>
+  <data name="RequestBodyIsArrayOnly" xml:space="preserve">
+    <value>Request Body is Array Only</value>
+  </data>
+  <data name="RequestBodyIsEmpty" xml:space="preserve">
+    <value>Request Body is empty</value>
+  </data>
+  <data name="ResourceIsNotPublic" xml:space="preserve">
+    <value>Resource is not public.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable" xml:space="preserve">
+    <value>Resource schema is not adaptable</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable1" xml:space="preserve">
+    <value>Resource schema is not adaptable</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_AllowAdditionalProperties" xml:space="preserve">
+    <value>additionalProperties can't be true.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_CombiningSchemas" xml:space="preserve">
+    <value>Top-level allOf / anyOf / oneOf is not available.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_InvalidPropertyName" xml:space="preserve">
+    <value>The property name contains characters that cannot be used.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_ModifyExistingProperties" xml:space="preserve">
+    <value>Existing properties can't be modified.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_NoProperties" xml:space="preserve">
+    <value>There are no properties.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_OneOrMoreErrorsOccurred" xml:space="preserve">
+    <value>One or more errors occurred.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_PropertyNameTooLong" xml:space="preserve">
+    <value>The property name is too long.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_PropertyTypeRequired" xml:space="preserve">
+    <value>Property type is required.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_ResourceSchemaRequired" xml:space="preserve">
+    <value>Resource schema is required.</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_TooMatchProperties" xml:space="preserve">
+    <value>There are too many columns.</value>
+  </data>
+  <data name="RoslynScriptRuntimeException" xml:space="preserve">
+    <value>RoslynScriptRuntimeException</value>
+  </data>
+  <data name="SendMailTamplateCd" xml:space="preserve">
+    <value>sendMailTamplateCd</value>
+  </data>
+  <data name="SqlDataBaseException" xml:space="preserve">
+    <value>Sql DataBase Exception</value>
+  </data>
+  <data name="SyntaxErrorOfOData" xml:space="preserve">
+    <value>Syntax error of OData</value>
+  </data>
+  <data name="SyntaxErrorOfOData_Detail" xml:space="preserve">
+    <value>Or OData of syntax is wrong, it is used is unsupported syntax of OData.</value>
+  </data>
+  <data name="SyntaxErrorOfOData_InvalidFilterColumn" xml:space="preserve">
+    <value>Invalid filter column.</value>
+  </data>
+  <data name="SyntaxErrorOfOData_InvalidFilterValue" xml:space="preserve">
+    <value>Invalid filter value.</value>
+  </data>
+  <data name="SyntaxErrorOfOData_NotSupportedODataOperation" xml:space="preserve">
+    <value>{0} is not supported.</value>
+  </data>
+  <data name="ThisURLDoesNotSupportDocumentHistory" xml:space="preserve">
+    <value>This URL does not support document history.</value>
+  </data>
+  <data name="ToAuthenticateTheOpenIdHasFailed" xml:space="preserve">
+    <value>To authenticate the OpenId has failed</value>
+  </data>
+  <data name="TooMachData" xml:space="preserve">
+    <value>Too Mach data.</value>
+  </data>
+  <data name="TypeOfVersionIsIntOrGuid" xml:space="preserve">
+    <value>Type of version is int or guid.</value>
+  </data>
+  <data name="UpdateHistoryNotFound" xml:space="preserve">
+    <value>update history not found</value>
+  </data>
+  <data name="VendorOrSystemUnspecified" xml:space="preserve">
+    <value>Vendor Or System Unspecified</value>
+  </data>
+  <data name="VendorSystemAccessTokenIdMissing" xml:space="preserve">
+    <value>AccessTokenId is missing.</value>
+  </data>
+  <data name="VendorSystemAccessTokenNotFound" xml:space="preserve">
+    <value>VendorSystem AccessToken is not found</value>
+  </data>
+  <data name="VendorSystemAccessTokenNotFound_Detail" xml:space="preserve">
+    <value>Please re-acquire the access token for the vendor system authentication.</value>
+  </data>
+  <data name="VendorSystemAuthRequired" xml:space="preserve">
+    <value>VendorSystem Authentication is required</value>
+  </data>
+  <data name="VendorSystemAuthRequired_Detail" xml:space="preserve">
+    <value>HTTP Header: Please specify the access token for the vendor system authentication to X-Authorization.</value>
+  </data>
+  <data name="VendorSystemTokenExpired" xml:space="preserve">
+    <value>VendorSystem AccessToken is expired</value>
+  </data>
+  <data name="VendorSystemTokenInvalid" xml:space="preserve">
+    <value>VendorSystem AccessToken is invalid</value>
+  </data>
+  <data name="VersionDoesNotExistInHistory" xml:space="preserve">
+    <value>Version does not exist in history.</value>
+  </data>
+  <data name="VersionIsRequired" xml:space="preserve">
+    <value>version is required.</value>
+  </data>
+  <data name="WeCallTheGatewayDidNotHaveTheData" xml:space="preserve">
+    <value>We call the Gateway did not have the data.</value>
+  </data>
+  <data name="WrongInternalCallingKeyword" xml:space="preserve">
+    <value>Wrong internal calling keyword.</value>
+  </data>
+  <data name="XReferenceHeaderIsInvalid" xml:space="preserve">
+    <value>X-Reference header is invalid.</value>
+  </data>
+  <data name="XVersionNotFoundException" xml:space="preserve">
+    <value>Xversion NotFound Exception</value>
+  </data>
+  <data name="YouCanNotUseIt" xml:space="preserve">
+    <value>You can not use it</value>
+  </data>
+  <data name="YouCanNotUseIt_Detail" xml:space="preserve">
+    <value>Not available for the attachment feature is not enabled.</value>
+  </data>
+</root>

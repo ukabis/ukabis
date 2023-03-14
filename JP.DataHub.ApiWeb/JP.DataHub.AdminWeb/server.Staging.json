@@ -1,0 +1,33 @@
+﻿{
+  "List": [
+    {
+      "ServerName": "default_server",
+      "Type": "default_server",
+      "AuthenticationType": "vendor",
+      "EnvironmentList": [
+        {
+          "EnvironmentName": "Staging",
+          "EnvironmentId": "",
+          "Url": "",
+          "DynamicApiUrl": "",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": "",
+              "ClientSecret": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

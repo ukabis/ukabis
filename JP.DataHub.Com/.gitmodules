@@ -1,0 +1,9 @@
+[submodule "Unity"]
+	path = Unity
+	url = https://nextscape.backlog.jp/git/AGRI_ICT/Unity.git
+[submodule "UnityInterceptor"]
+	path = UnityInterceptor
+	url = https://nextscape.backlog.jp/git/JP_DATAHUB_NET/UnityInterceptor.git
+[submodule "UnityContainer"]
+	path = UnityContainer
+	url = https://nextscape.backlog.jp/git/JP_DATAHUB_NET/UnityContainer.git

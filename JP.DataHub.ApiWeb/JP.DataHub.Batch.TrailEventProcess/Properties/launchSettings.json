@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "JP.DataHub.Batch.TrailEventProcess": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7039",
+      "launchBrowser": false
+    }
+  }
+}

@@ -1,0 +1,130 @@
+[
+  {
+    "ServerName": "default_server",
+    "Type": "default_server",
+    "AuthenticationType": "vendor",
+    "EnvironmentList": [
+      {
+        "EnvironmentName": "開発",
+        "EnvironmentId": "",
+        "Url": "https://localhost:44356",
+        "Url2": "https://localhost:44322",
+        "ServerAuthenticationList": {
+          "OpenId": {
+            "Type": "OpenId",
+            "Url": "",
+            "Scope": "",
+            "ClientId": ""
+          },
+          "Vendor": {
+            "Type": "Vendor",
+            "Url": "https://localhost:44356/Token",
+            "ClientId": "",
+            "ClientSecret": "",
+            "AdminKey": "",
+            "VendorSystemList": [
+              {
+                "Name": "SmartFoodChainAdmin",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChainPortal",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChain2TestSystem",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "DynamicApi",
+                "Url": "https://localhost:44322/Token",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "DynamicApi2",
+                "Url": "https://localhost:44322/Token",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              }
+            ]
+          }
+        }
+      },
+      {
+        "EnvironmentName": "AzureDotnet6開発",
+        "EnvironmentId": "",
+        "Url": "",
+        "Url2": "",
+        "ServerAuthenticationList": {
+          "OpenId": {
+            "Type": "OpenId",
+            "Url": "",
+            "Scope": "",
+            "ClientId": ""
+          },
+          "Vendor": {
+            "Type": "Vendor",
+            "Url": "",
+            "ClientId": "",
+            "ClientSecret": "",
+            "AdminKey": "",
+            "VendorSystemList": [
+              {
+                "Name": "SmartFoodChainAdmin",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChainPortal",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "SmartFoodChain2TestSystem",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "DynamicApi",
+                "Url": "",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              },
+              {
+                "Name": "DynamicApi2",
+                "Url": "",
+                "ClientId": "",
+                "ClientSecret": "",
+                "VendorId": "",
+                "SystemId": ""
+              }
+            ]
+
+          }
+        }
+      }
+    ]
+  }
+]

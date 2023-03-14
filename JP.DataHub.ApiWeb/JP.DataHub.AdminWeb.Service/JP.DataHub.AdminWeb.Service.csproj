@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;LocalStaging</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Service.Interface\JP.DataHub.AdminWeb.Service.Interface.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.WebAPI\JP.DataHub.AdminWeb.WebAPI.csproj" />
+  </ItemGroup>
+
+</Project>

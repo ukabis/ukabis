@@ -1,0 +1,63 @@
+﻿<RadzenLabel Text="履歴"></RadzenLabel>
+<AuthorizeView Policy="@(FunctionPolicy.ApiWrite.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isEditable = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isEditable = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+<RadzenRadioButtonList Name="IsEnableDocumentHistory" @bind-Value="@ResourceHeader.Controller.DocumentHistorySettings.IsEnable" TValue="bool" Disabled="@(!_isEditable)">
+    <Items>
+        <RadzenRadioButtonListItem Text="有効" Value="true" TValue="bool" />
+        <RadzenRadioButtonListItem Text="無効" Value="false" TValue="bool" />
+    </Items>
+</RadzenRadioButtonList>
+<RadzenCard>
+    <label class="control-label" data-tooltip="API_DocumentHistoryRepository"><span> 履歴用リポジトリグループ一覧 </span></label>
+    <RadzenDataGrid class="grid-resource-document-history-repository-group" Data="@ResourceHeader.RepositoryGroupList.Where(x => x.IsHistoryStorage)" TItem="JP.DataHub.AdminWeb.WebAPI.Models.Api.RepositoryGroupModel">
+        <Columns>
+            <RadzenDataGridColumn TItem="JP.DataHub.AdminWeb.WebAPI.Models.Api.RepositoryGroupModel" Property="RepositoryGroupName" Title="リポジトリグループ名" Sortable="false">
+                <Template Context="repoName">
+                    <RadzenLabel Text="@repoName.RepositoryGroupName"></RadzenLabel>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="JP.DataHub.AdminWeb.WebAPI.Models.Api.RepositoryGroupModel" Property="RepositoryGroupId.ToLower()" Title="設定" Sortable="false">
+                <Template Context="repoId">
+                    <RadzenRadioButtonList Name="HistoryRepository" @bind-Value="@ResourceHeader.Controller.DocumentHistorySettings.HistoryRepositoryId" TValue="string" Disabled="@(!_isEditable ? true : ResourceHeader.Controller.DocumentHistorySettings.IsEnable == false)">
+                        <Items>
+                            <RadzenRadioButtonListItem TValue="string" Value="@repoId.RepositoryGroupId" />
+                        </Items>
+                    </RadzenRadioButtonList>
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+    <ValidationMessage For="@(() => ResourceHeader.Controller.DocumentHistorySettings.HistoryRepositoryId)" />
+</RadzenCard>
+
+@code {
+    [Parameter]
+    public ApiResourceHeaderModel ResourceHeader   { get; set; }
+
+    private bool _isEditable = false;
+
+    protected override void OnParametersSet()
+    {
+        ResourceHeader.Controller.DocumentHistorySettings ??= new(false, null);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // モデル追加/編集から戻ったときにAuthorizeViewで設定した編集可否フラグが反映されないため明示的に再レンダリング
+            StateHasChanged();
+        }
+    }
+}

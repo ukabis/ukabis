@@ -1,0 +1,4 @@
+﻿::deep .grid-resource-document-history-repository-group {
+    max-height: var(--grid-max-height);
+    overflow-y: auto;
+}

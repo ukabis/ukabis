@@ -1,0 +1,23 @@
+{
+  "ConnectionStrings": {
+    // これはトランザクションの管理をするかどうか（基本はする）
+    "IsTransactionManage": true,
+    // TransactionScopeをサポートしているかどうか
+    // Oracle : false
+    // SQL Server : true
+    "TransactionScope": false,
+    // DbConnectionクラスのUnityContainer内でのLifeTimeの指定 デフォルトはPerRequestLifetimeManager
+    // Web系はConnectionが大量に生成されることを避けるため PerRequestに指定している
+    "LifeTimeManager": "PerRequestLifetimeManager",
+    // DynamicApiの接続先
+    "DynamicApi": {
+      "ConnectionString": "Data Source=(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=))(connect_data=(service_name=))(security=(my_wallet_directory=./wallet)(ssl_server_dn_match=no)));User Id=;Password=;",
+      "Provider": "Oracle.ManagedDataAccess.Client",
+      "Options": {
+        "Assembly": "JP.DataHub.OracleDbProviderInit",
+        "Type": "OracleDbInit",
+        "FetchSize": "100"
+      }
+    }
+  }
+}

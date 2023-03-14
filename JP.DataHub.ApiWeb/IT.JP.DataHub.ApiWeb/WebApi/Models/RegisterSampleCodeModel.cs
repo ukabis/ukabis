@@ -1,0 +1,28 @@
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+
+namespace IT.JP.DataHub.ApiWeb.WebApi.Models
+{
+    public class RegisterSampleCodeModel
+    {
+        /// <summary>
+        /// SampleCodeId
+        /// </summary>
+        public string? SampleCodeId { get; set; }
+
+        /// <summary>
+        /// LanguageId
+        /// </summary>
+        public string LanguageId { get; set; }
+
+        /// <summary>
+        /// Code
+        /// </summary>
+        public string Code { get; set; }
+
+        /// <summary>
+        /// IsActive
+        /// </summary>
+        public bool IsActive { get; set; } = true;
+    }
+}

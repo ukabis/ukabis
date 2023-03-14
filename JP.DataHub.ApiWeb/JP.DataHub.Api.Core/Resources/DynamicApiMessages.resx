@@ -1,0 +1,891 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AccessControlAuthFailed" xml:space="preserve">
+    <value>AccessControl認証が失敗しました</value>
+  </data>
+  <data name="AccessControlAuthFailed_Detail" xml:space="preserve">
+    <value>HTTPヘッダー：X-AccessBeyondVendorKeyに正しいアクセスコントロールの値を指定してください。</value>
+  </data>
+  <data name="AdminAuthFailed" xml:space="preserve">
+    <value>管理者認証が失敗しました</value>
+  </data>
+  <data name="AdminAuthFailed_Detail" xml:space="preserve">
+    <value>HTTPヘッダー：X-Adminに正しい管理者認証用のキーワードを指定してください。</value>
+  </data>
+  <data name="AggregateException" xml:space="preserve">
+    <value>複数の例外が発生しました</value>
+  </data>
+  <data name="AnInternalServerErrorHasOccurred" xml:space="preserve">
+    <value>内部サーバーエラーが発生しました。</value>
+  </data>
+  <data name="AnOpenIDWasSpecifiedThatIsNotAllowedToBeShared" xml:space="preserve">
+    <value>共有が許可されていないOpenIDが指定されています。</value>
+  </data>
+  <data name="ApiException" xml:space="preserve">
+    <value>APIの例外</value>
+  </data>
+  <data name="APIIPFilter" xml:space="preserve">
+    <value>API IPフィルタの例外</value>
+  </data>
+  <data name="ArgumentNullException" xml:space="preserve">
+    <value>ArgumentNull例外</value>
+  </data>
+  <data name="AsyncApiNotEndException" xml:space="preserve">
+    <value>AsyncApi NotEnd例外</value>
+  </data>
+  <data name="AsyncApiResultNotFoundException" xml:space="preserve">
+    <value>AsyncApi結果NOTFOUND例外</value>
+  </data>
+  <data name="AsyncDynamicApiError" xml:space="preserve">
+    <value>非同期APIの実行中に予期せぬエラーが発生しました。</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_Mismatch" xml:space="preserve">
+    <value>添付ファイルとブロックチェーン間の不一致</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_Mismatch_Detail" xml:space="preserve">
+    <value>ブロックチェーンと添付ファイルに記録された値が合致しません。</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoBlockchainHash" xml:space="preserve">
+    <value>ブロックチェーンで添付ファイルハッシュが見つかりません</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoBlockchainHash_Detail" xml:space="preserve">
+    <value>ブロックチェーン上に指定されたIDの添付ファイルのハッシュ値が記録されていません。</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoSource" xml:space="preserve">
+    <value>添付ファイルリポジトリに見つかりません</value>
+  </data>
+  <data name="BlockchainValidate_AttachFile_NoSource_Detail" xml:space="preserve">
+    <value>リポジトリ上に指定されたIDの添付ファイルのデータが記録されていません。</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_Disable" xml:space="preserve">
+    <value>ドキュメントの履歴は無効です</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_Disable_Detail" xml:space="preserve">
+    <value>DynamicApiの履歴の機能が無効です。</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_VersionNotFound" xml:space="preserve">
+    <value>specifedバージョンが見つかりません</value>
+  </data>
+  <data name="BlockchainValidate_DocumentHistory_VersionNotFound_Detail" xml:space="preserve">
+    <value>指定されたバージョンの履歴が存在しません</value>
+  </data>
+  <data name="BlockchainValidate_Mismatch" xml:space="preserve">
+    <value>リポジトリとブロックチェーン間の不一致</value>
+  </data>
+  <data name="BlockchainValidate_Mismatch_Detail" xml:space="preserve">
+    <value>ブロックチェーンとレポジトリに記録された値が合致しません。</value>
+  </data>
+  <data name="BlockchainValidate_NoBlockchainHash" xml:space="preserve">
+    <value>ブロックチェーンに見つかりません</value>
+  </data>
+  <data name="BlockchainValidate_NoBlockchainHash_Detail" xml:space="preserve">
+    <value>ブロックチェーン上に指定されたIDのデータが記録されていません。</value>
+  </data>
+  <data name="BlockchainValidate_NoSource" xml:space="preserve">
+    <value>リポジトリ内に見つかりません</value>
+  </data>
+  <data name="BlockchainValidate_NoSource_Detail" xml:space="preserve">
+    <value>リポジトリ上に指定されたIDのデータが記録されていません。</value>
+  </data>
+  <data name="BlockedRequestedContentTypeOrFileTypeByList" xml:space="preserve">
+    <value>リクエストがブロックされました</value>
+  </data>
+  <data name="BlockedRequestedContentTypeOrFileTypeByList_Detail" xml:space="preserve">
+    <value>リクエストのコンテントタイプかファイルタイプが、リストによりブロックされました</value>
+  </data>
+  <data name="CannotSetX-UserResourceSharingWhenIsContainerDynamicSeparationIsSet" xml:space="preserve">
+    <value>IsContainerDynamicSeparationが設定されている場合はX-UserResourceSharingの設定は行えません。</value>
+  </data>
+  <data name="CantCallInternalCallsFromOutside" xml:space="preserve">
+    <value>外部から内部コールを呼び出すことはできません。</value>
+  </data>
+  <data name="CertifiedApplicationNotFound" xml:space="preserve">
+    <value>認定アプリケーションのデータはありません</value>
+  </data>
+  <data name="CertifiedApplicationNotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当する認定アプリケーションのデータはありません。</value>
+  </data>
+  <data name="ClientCertificateAuthenticationRequired" xml:space="preserve">
+    <value>クライアント証明書認証が必要です</value>
+  </data>
+  <data name="ClientCertificateAuthenticationRequired_Detail" xml:space="preserve">
+    <value>クライアント証明書を設定してください</value>
+  </data>
+  <data name="ClientCertificateExpired" xml:space="preserve">
+    <value>有効期限切れのクライアント証明書です</value>
+  </data>
+  <data name="ClientCertificateExpired_Detail" xml:space="preserve">
+    <value>有効期限内のクライアント証明書を設定してください</value>
+  </data>
+  <data name="ClientCertificateNotFoundOrVendorSystemUnusable" xml:space="preserve">
+    <value>クライアント証明書が見つからないか、ベンダーまたはシステムが利用できません</value>
+  </data>
+  <data name="ClientCertificateNotFoundOrVendorSystemUnusable_Detail" xml:space="preserve">
+    <value>有効なクライアント証明書を設定してください</value>
+  </data>
+  <data name="ClientIdNotFoundOrVendorSystemUnusable" xml:space="preserve">
+    <value>ClientIdが見つからないか、ベンダーまたはシステムが使用できません。</value>
+  </data>
+  <data name="ClientIdNotFoundOrVendorSystemUnusable_Detail" xml:space="preserve">
+    <value>ベンダーシステム認証用のアクセストークンを取得し直してください。</value>
+  </data>
+  <data name="ContainerDynamicSeparationRepositoryNotFound" xml:space="preserve">
+    <value>動的Container分離用リポジトリを選択してください。</value>
+  </data>
+  <data name="ContainerDynamicSeparationRequiredDependency" xml:space="preserve">
+    <value>依存設定が依存なしの場合は動的Conainer分離を使用できません。</value>
+  </data>
+  <data name="CsvParseFailed" xml:space="preserve">
+    <value>このAPIは、CSVをサポートしていません。</value>
+  </data>
+  <data name="DataEncryptionError" xml:space="preserve">
+    <value>データ暗号化エラー</value>
+  </data>
+  <data name="DataEncryptionError_CommonKeyNotFound" xml:space="preserve">
+    <value>共通鍵が見つかりません。</value>
+  </data>
+  <data name="DataEncryptionError_DecryptionFailed" xml:space="preserve">
+    <value>データの復号に失敗しました。</value>
+  </data>
+  <data name="DataIsAlreadyRegistered" xml:space="preserve">
+    <value>データが既に登録されています。</value>
+  </data>
+  <data name="DefinedInVendorNotUsedFlag" xml:space="preserve">
+    <value>データ提供でないためこのAPIは呼び出せません。</value>
+  </data>
+  <data name="DefinedInVendorNotUsedFlag_Detail" xml:space="preserve">
+    <value>自社で定義したリソースは、データ提供を設定しなければなりません。ベンダー設定を確認してください。</value>
+  </data>
+  <data name="DefinedOtherVendorNotUsedFlag" xml:space="preserve">
+    <value>データ利用でないためこのAPIは呼び出せません。</value>
+  </data>
+  <data name="DefinedOtherVendorNotUsedFlag_Detail" xml:space="preserve">
+    <value>他社が定義したリソースは、データ利用を設定しなければなりません。ベンダー設定を確認してください。</value>
+  </data>
+  <data name="DeleteWasSuccessful" xml:space="preserve">
+    <value>削除が正常に行われました。</value>
+  </data>
+  <data name="DocumentHasBeenDeleted" xml:space="preserve">
+    <value>文書が削除されています。</value>
+  </data>
+  <data name="DoesNotExistDataToBeUpdatedIs" xml:space="preserve">
+    <value>更新対象のデータが存在しません。</value>
+  </data>
+  <data name="DoesNotExistDataToBeUpdatedIs_Detail" xml:space="preserve">
+    <value>更新対象のデータが存在しません。対象のデータはすでに削除された可能性があります。</value>
+  </data>
+  <data name="Dummy" xml:space="preserve">
+    <value>DUMMY</value>
+  </data>
+  <data name="Dummy_Detail" xml:space="preserve">
+    <value>DUMMY_DETAIL</value>
+  </data>
+  <data name="Exception" xml:space="preserve">
+    <value>内部サーバーエラーが発生しました。</value>
+  </data>
+  <data name="ExceptionOccured" xml:space="preserve">
+    <value>内部サーバーエラーが発生しました。</value>
+  </data>
+  <data name="Exception_Detail" xml:space="preserve">
+    <value>EXCEPTION_DETAIL</value>
+  </data>
+  <data name="ExistStaffAccount" xml:space="preserve">
+    <value>アカウントは既に使用されています。</value>
+  </data>
+  <data name="ExternalAttachiFileError" xml:space="preserve">
+    <value>外部添付ファイルのエラーが発生しました。</value>
+  </data>
+  <data name="ExternalAttachiFileError_ConnectionFailed" xml:space="preserve">
+    <value>外部データソースへの接続に失敗しました。</value>
+  </data>
+  <data name="ExternalAttachiFileError_DocumentHistoryUnsupported" xml:space="preserve">
+    <value>履歴機能が有効なAPIでは外部添付ファイルを利用できません。</value>
+  </data>
+  <data name="ExternalAttachiFileError_FileInfoMissing" xml:space="preserve">
+    <value>外部添付ファイルのファイル情報が必要です。</value>
+  </data>
+  <data name="ExternalAttachiFileError_FileNotFound" xml:space="preserve">
+    <value>外部データソースに指定されたファイルが存在しません。</value>
+  </data>
+  <data name="ExternalAttachiFileError_InvalidFileInfo" xml:space="preserve">
+    <value>外部添付ファイルのファイル情報が不正です。</value>
+  </data>
+  <data name="ExternalAttachiFileError_UnnecessaryUpload" xml:space="preserve">
+    <value>外部添付ファイルはアップロードの必要はありません。</value>
+  </data>
+  <data name="FailedWithDriveOutTransparentAPI" xml:space="preserve">
+    <value>DriveOut透過APIで失敗しました。</value>
+  </data>
+  <data name="FailedWithDriveOutTransparentAPI_Detail" xml:space="preserve">
+    <value>DriveOut透過APIの処理で、履歴情報が取得できませんでした。履歴が存在しないdocumentの可能性があります。</value>
+  </data>
+  <data name="FileIdIsInvalid" xml:space="preserve">
+    <value>FileIDが不正です。</value>
+  </data>
+  <data name="FileIdNoSettingRequired" xml:space="preserve">
+    <value>FileId設定は不要です。</value>
+  </data>
+  <data name="FileIdRequired" xml:space="preserve">
+    <value>FileIDは必須です。</value>
+  </data>
+  <data name="FileIdRequired_Detail" xml:space="preserve">
+    <value>FileIDを指定してください。</value>
+  </data>
+  <data name="FileIsRequired" xml:space="preserve">
+    <value>Fileは必須です。</value>
+  </data>
+  <data name="ForeignKeyException" xml:space="preserve">
+    <value>外部キーの例外が発生しました。</value>
+  </data>
+  <data name="FromNotFoundQuery" xml:space="preserve">
+    <value>クエリが見つかりません。</value>
+  </data>
+  <data name="GatewayURLDefinedError" xml:space="preserve">
+    <value>定義されているGateway先URLに誤りがある可能性があります。</value>
+  </data>
+  <data name="HasDefinedKeywordDataSchemaException" xml:space="preserve">
+    <value>プロパティ名が不正です。モデルのrootプロパティ名にシステムで定義済みのキーワードが指定されています。</value>
+  </data>
+  <data name="HistoryDataNotFound" xml:space="preserve">
+    <value>履歴データが見つかりません。</value>
+  </data>
+  <data name="HistoryDatNotFound" xml:space="preserve">
+    <value>履歴データが見つかりません。</value>
+  </data>
+  <data name="HttpMethodTypeDoesNotMatch" xml:space="preserve">
+    <value>Httpメソッドタイプが一致しません</value>
+  </data>
+  <data name="HttpMethodTypeDoesNotMatch_Detail" xml:space="preserve">
+    <value>リクエストされたHttpメソッドタイプはサポートされていません。</value>
+  </data>
+  <data name="HttpMethodTypeDoesNotSupport" xml:space="preserve">
+    <value>リクエストされたHttpメソッドタイプはサポートされていません。</value>
+  </data>
+  <data name="HttpResponseException" xml:space="preserve">
+    <value>Http応答例外</value>
+  </data>
+  <data name="IdDoesNotMatch" xml:space="preserve">
+    <value>idが一致しません。</value>
+  </data>
+  <data name="IdIsRequired" xml:space="preserve">
+    <value>IDが必要です。</value>
+  </data>
+  <data name="IMadeASearchByODataDidNotHaveTheData" xml:space="preserve">
+    <value>ODataによる検索を行いましたがデータがありませんでした。</value>
+  </data>
+  <data name="InvalidAccountFormatException" xml:space="preserve">
+    <value>アカウントのフォーマットが違います。</value>
+  </data>
+  <data name="InvalidApiQuerySql_ResourceIdSpecified" xml:space="preserve">
+    <value>テーブルの指定方法が不正です。</value>
+  </data>
+  <data name="InvalidApiQuerySql_SelectInvalidColumn" xml:space="preserve">
+    <value>SELECT句に不正な値が指定されています。</value>
+  </data>
+  <data name="InvalidApiQuerySql_TableJoinNotAllowed" xml:space="preserve">
+    <value>指定されたテーブルの結合は許可されていません。</value>
+  </data>
+  <data name="InvalidApiQuerySql_TableNotFound" xml:space="preserve">
+    <value>指定されたテーブルが見つかりません。</value>
+  </data>
+  <data name="InvalidApiQuerySql_TableToJoinNotFound" xml:space="preserve">
+    <value>結合先として指定されたテーブルが見つかりません。</value>
+  </data>
+  <data name="InvalidAttachFileName" xml:space="preserve">
+    <value>添付ファイルのファイル名が不正です。</value>
+  </data>
+  <data name="InvalidCastException" xml:space="preserve">
+    <value>無効なキャスト例外</value>
+  </data>
+  <data name="InvalidMethodType" xml:space="preserve">
+    <value>無効なMethodType</value>
+  </data>
+  <data name="InvalidResourceAgreement" xml:space="preserve">
+    <value>AgreeDescriptionが必要です。</value>
+  </data>
+  <data name="InvalidResourceAgreement_Detail" xml:space="preserve">
+    <value>規約の同意を有効化する場合はAgreeDescriptionが必須です。</value>
+  </data>
+  <data name="InvalidTypeExpectedObject_ButGotArray" xml:space="preserve">
+    <value>更新対象のデータが不正です。オブジェクトではなく配列が指定されました。</value>
+  </data>
+  <data name="InvalidXVersion" xml:space="preserve">
+    <value>無効なX-Version</value>
+  </data>
+  <data name="InvaliOtherResourceSqlAccessRepositoryType" xml:space="preserve">
+    <value>テーブル結合が不可能なリポジトリタイプ</value>
+  </data>
+  <data name="InvaliOtherResourceSqlAccessRepositoryType_Detail" xml:space="preserve">
+    <value>テーブル結合はRDBMSリポジトリのみ可能です</value>
+  </data>
+  <data name="IsTransparentApiIncorrect" xml:space="preserve">
+    <value>透過APIの設定が正しくありません。</value>
+  </data>
+  <data name="ItWasExecutedODataDelete" xml:space="preserve">
+    <value>ODataDeleteを実行しました。</value>
+  </data>
+  <data name="KeyMissMatch" xml:space="preserve">
+    <value>Keyに一致する情報が見つかりませんでした。</value>
+  </data>
+  <data name="KeyMissMatch_Detail" xml:space="preserve">
+    <value>Keyに一致する情報が見つかりませんでした。対象のデータはすでに削除された可能性があります。</value>
+  </data>
+  <data name="KeyPropertyIsRequiredInRequestData" xml:space="preserve">
+    <value>Keyプロパティは、要求データに必要とされます</value>
+  </data>
+  <data name="LoggingRequestResponseConnectionDoesNotExistOrIsFull" xml:space="preserve">
+    <value>ロギングRequestResponse接続が存在しないか、いっぱいです</value>
+  </data>
+  <data name="MethodIPFilter" xml:space="preserve">
+    <value>方法IPフィルタの例外</value>
+  </data>
+  <data name="MethodTypeDoesNotMatch" xml:space="preserve">
+    <value>Methodタイプが一致しません。</value>
+  </data>
+  <data name="MethodTypeDoesNotMatch_Detail" xml:space="preserve">
+    <value>リクエストされたHttpメソッドタイプはサポートされていません。</value>
+  </data>
+  <data name="MethodTypeIsIncorrect" xml:space="preserve">
+    <value>MethodTypeが正しくありません</value>
+  </data>
+  <data name="MissingRepositoryKey" xml:space="preserve">
+    <value>リポジトリのキーがありません</value>
+  </data>
+  <data name="MustAgreeToTheTerms" xml:space="preserve">
+    <value>規約に同意する必要があります。</value>
+  </data>
+  <data name="NoAgreementAlreadyAgreement" xml:space="preserve">
+    <value>既に同意しています。</value>
+  </data>
+  <data name="NoAgreementAlreadyAgreement_Detail" xml:space="preserve">
+    <value>このユーザーは、指定された規約にはすでに同意しています。</value>
+  </data>
+  <data name="NoDataFound" xml:space="preserve">
+    <value>更新対象のデータがみつかりません。</value>
+  </data>
+  <data name="NoRevokeNotAgreement" xml:space="preserve">
+    <value>リボークできません</value>
+  </data>
+  <data name="NoRevokeNotAgreement_Detail" xml:space="preserve">
+    <value>この規約には同意していないためリボークが行えません</value>
+  </data>
+  <data name="NotAgreedAndApproved" xml:space="preserve">
+    <value>同意と承認がされていません。</value>
+  </data>
+  <data name="NotAgreedAndApproved_Detail" xml:space="preserve">
+    <value>あなたのベンダーは、このリソースに対して同意をしていないか、または管理者が承認をしていないため、リソースを利用することができません。</value>
+  </data>
+  <data name="NotAgreementNoTerms" xml:space="preserve">
+    <value>同意できません。</value>
+  </data>
+  <data name="NotAgreementNoTerms_Detail" xml:space="preserve">
+    <value>指定された規約が存在しないため同意できません。</value>
+  </data>
+  <data name="NotAllowedForSystem" xml:space="preserve">
+    <value>このAPIは、システムのために許可されていません</value>
+  </data>
+  <data name="NotAllowedForSystem_Detail" xml:space="preserve">
+    <value>このAPIの使用は許可されていません。</value>
+  </data>
+  <data name="NotDeleteCertifiedApplicationNotMatch" xml:space="preserve">
+    <value>認定アプリケーションの削除ができません</value>
+  </data>
+  <data name="NotDeleteCertifiedApplicationNotMatch_Detail" xml:space="preserve">
+    <value>認定アプリケーションのキーが一致しないため、削除ができません。</value>
+  </data>
+  <data name="NotDeleteTermGroupKeyNotMatch" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。</value>
+  </data>
+  <data name="NotDeleteTermGroupKeyNotMatch_Detail" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。規約グループの削除ができません。</value>
+  </data>
+  <data name="NotDeleteTermsKeyNotMatch" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。</value>
+  </data>
+  <data name="NotDeleteTermsKeyNotMatch_Detail" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。規約プの削除ができません。</value>
+  </data>
+  <data name="NotDeleteUserGroupKeyNotMatch" xml:space="preserve">
+    <value>ユーザーグループの削除ができません</value>
+  </data>
+  <data name="NotDeleteUserGroupKeyNotMatch_Detail" xml:space="preserve">
+    <value>ユーザーグループのキーが一致しないため、削除ができません。</value>
+  </data>
+  <data name="NotFoundException" xml:space="preserve">
+    <value>見つかりません</value>
+  </data>
+  <data name="NotImplementedException" xml:space="preserve">
+    <value>実装されていません</value>
+  </data>
+  <data name="NotMatchUploadedFilePosition" xml:space="preserve">
+    <value>アップロードされたファイルの位置と一致しません</value>
+  </data>
+  <data name="NotParseCsvException" xml:space="preserve">
+    <value>CSV形式の例外が発生しました</value>
+  </data>
+  <data name="NotUpdateTermGroupKeyNotMatch" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。</value>
+  </data>
+  <data name="NotUpdateTermGroupKeyNotMatch_Detail" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。規約グループの更新ができません。</value>
+  </data>
+  <data name="NotUpdateTermsGKeyNotMatch" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。</value>
+  </data>
+  <data name="NotUpdateTermsGKeyNotMatch_Detail" xml:space="preserve">
+    <value>キーで指定したものが見つかりません。規約の更新ができません。</value>
+  </data>
+  <data name="NoValidVendorOrSystem" xml:space="preserve">
+    <value>認定アプリケーションの登録ができません</value>
+  </data>
+  <data name="NoValidVendorOrSystem_Detail" xml:space="preserve">
+    <value>ベンダーまたはシステムが有効でないため認定アプリケーションの登録ができません。</value>
+  </data>
+  <data name="ODataException" xml:space="preserve">
+    <value>Odataの例外が発生しました</value>
+  </data>
+  <data name="ODataPatchNotFound" xml:space="preserve">
+    <value>ODataPatchの更新対象がありません。</value>
+  </data>
+  <data name="ODataPatchRequestInvalid" xml:space="preserve">
+    <value>ODataPatchのリクエストが不正です。</value>
+  </data>
+  <data name="ODataPatchRequestInvalid_AdditionalConditionInvalid" xml:space="preserve">
+    <value>追加の検索条件が不正です。</value>
+  </data>
+  <data name="ODataPatchRequestInvalid_UneditableProperty" xml:space="preserve">
+    <value>リクエストに更新不可のプロパティが含まれています。</value>
+  </data>
+  <data name="ODataPatchUnavailable" xml:space="preserve">
+    <value>ODataPatchを利用できません。</value>
+  </data>
+  <data name="ODataPatchUnavailable_NotSupportedRepository" xml:space="preserve">
+    <value>ODataPatchを利用するにはODataPatchに対応したリポジトリを選択する必要があります。</value>
+  </data>
+  <data name="ODataPatchUnavailable_OptimisticConcurrencyEnabled" xml:space="preserve">
+    <value>楽観排他が有効なAPIではODataPatchを利用できません。楽観排他を無効化してODataPatchを利用するにはX-NoOptimisticヘッダをtrueに設定してAPIを実行してください。</value>
+  </data>
+  <data name="ODataPatchUnavailable_UnsaportedFeaturesEnabled" xml:space="preserve">
+    <value>ひとつ以上の機能が有効なためODataPatchを利用できません。</value>
+  </data>
+  <data name="OneOrMoreErrorsOccurred" xml:space="preserve">
+    <value>1つ以上のエラーが発生しました。</value>
+  </data>
+  <data name="OneOrMoreJsonValidationErrorsOccurred" xml:space="preserve">
+    <value>一つ以上のJSON検証エラーが発生しました。</value>
+  </data>
+  <data name="OpenidAccessControlAuthFailed_Detail" xml:space="preserve">
+    <value>OpenIDが許可されていません。</value>
+  </data>
+  <data name="OpenIdAccessTokenExpired" xml:space="preserve">
+    <value>OpenID認証のアクセストークンの期限切れ</value>
+  </data>
+  <data name="OpenIdAccessTokenExpired_Detail" xml:space="preserve">
+    <value>OpenID認証のアクセストークンの有効期限が切れています</value>
+  </data>
+  <data name="OpenIdAccessTokenInvalid" xml:space="preserve">
+    <value>無効なOpenID認証のアクセストークン</value>
+  </data>
+  <data name="OpenIdAccessTokenInvalid_Detail" xml:space="preserve">
+    <value>OpenID認証に無効なアクセストークンが使われているか、または指定されていません</value>
+  </data>
+  <data name="OpenIdAuthRequired" xml:space="preserve">
+    <value>OpenIDの認証が必要です</value>
+  </data>
+  <data name="OpenIdAuthRequired_Detail" xml:space="preserve">
+    <value>HTTPヘッダー：AuthorizationにOpenID認証用のアクセストークンを指定してください。</value>
+  </data>
+  <data name="OpenIdNotAllowedCA" xml:space="preserve">
+    <value>このAPIは、認証局に許可されていません</value>
+  </data>
+  <data name="OpenIdNotAllowedCA_Detail" xml:space="preserve">
+    <value>許可された認証局からOpenID認証用のアクセストークンを取得してください。</value>
+  </data>
+  <data name="OpenIdUserOperationException" xml:space="preserve">
+    <value>OpenIDのユーザ操作例外</value>
+  </data>
+  <data name="OperatingVendorUserOnly" xml:space="preserve">
+    <value>API利用不可</value>
+  </data>
+  <data name="OperatingVendorUserOnly_Detail" xml:space="preserve">
+    <value>このAPIを利用することはできません。</value>
+  </data>
+  <data name="QueryResultsDidNotHaveData." xml:space="preserve">
+    <value>Queryの結果データがありませんでした。</value>
+  </data>
+  <data name="QuerySyntaxError" xml:space="preserve">
+    <value>Queryの構文に誤りがあります。{0}</value>
+  </data>
+  <data name="QuerySyntaxErrorException" xml:space="preserve">
+    <value>クエリ構文エラー例外が発生しました</value>
+  </data>
+  <data name="ReferenceFailureToRollBackDueToNotifyOfUpdateFilure" xml:space="preserve">
+    <value>Reference,Notifyの更新失敗によるロールバックの失敗</value>
+  </data>
+  <data name="ReferenceFailureToRollBackDueToNotifyOfUpdateFilure_Detail" xml:space="preserve">
+    <value>Reference,Notify機能による外部リソースに対し更新を行いました。ですが、外部リソースに対する更新に失敗したため、ロールバックを行おうとしましたが、失敗しました。ロールバックが必要な情報は下記になります。</value>
+  </data>
+  <data name="RepositoryKeyHasNotBeenSet" xml:space="preserve">
+    <value>リポジトリキーが設定されていません。</value>
+  </data>
+  <data name="RepositoryKeyHasNotBeenSet_Detail" xml:space="preserve">
+    <value>リポジトリキーが設定されていません。</value>
+  </data>
+  <data name="RequestBodyIsArrayOnly" xml:space="preserve">
+    <value>リクエストボディは、Arrayのみです</value>
+  </data>
+  <data name="RequestBodyIsEmpty" xml:space="preserve">
+    <value>リクエストボディは空です</value>
+  </data>
+  <data name="ResourceGroup_Delete_NotFound" xml:space="preserve">
+    <value>リソースグループの削除ができません</value>
+  </data>
+  <data name="ResourceGroup_Delete_NotFound_Detail" xml:space="preserve">
+    <value>リソースグループIDのデータが存在しません。</value>
+  </data>
+  <data name="ResourceGroup_GetList_NotFound" xml:space="preserve">
+    <value>リソースグループのデータがありません</value>
+  </data>
+  <data name="ResourceGroup_GetList_NotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当するリソースグループのデータが取得できません。</value>
+  </data>
+  <data name="ResourceGroup_Register_NotFound" xml:space="preserve">
+    <value>リソースグループの登録ができません</value>
+  </data>
+  <data name="ResourceGroup_Register_NotFound_Detail" xml:space="preserve">
+    <value>データが存在しないためです。</value>
+  </data>
+  <data name="ResourceIsNotPublic" xml:space="preserve">
+    <value>リソースが公開されていません。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable" xml:space="preserve">
+    <value>リソーススキーマ適用エラー</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_AllowAdditionalProperties" xml:space="preserve">
+    <value>additionalPropertiesをtrueにすることはできません。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_CombiningSchemas" xml:space="preserve">
+    <value>トップレベルのallOf/anyOf/oneOfは使用できません。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_InvalidPropertyName" xml:space="preserve">
+    <value>プロパティ名に使用できない文字が含まれています。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_ModifyExistingProperties" xml:space="preserve">
+    <value>既存のプロパティの削除及び型変更はできません。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_NoProperties" xml:space="preserve">
+    <value>プロパティがありません。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_OneOrMoreErrorsOccurred" xml:space="preserve">
+    <value>1つ以上のエラーが発生しました。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_PropertyNameTooLong" xml:space="preserve">
+    <value>プロパティ名が長すぎます。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_PropertyTypeRequired" xml:space="preserve">
+    <value>プロパティのタイプは必須です。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_ResourceSchemaRequired" xml:space="preserve">
+    <value>リソーススキーマは必須です。</value>
+  </data>
+  <data name="ResourceSchemaNotAdaptable_TooMatchProperties" xml:space="preserve">
+    <value>プロパティの数が多すぎます。</value>
+  </data>
+  <data name="Revoke_RemoveResourceEnd_Fail" xml:space="preserve">
+    <value>リボークのリソース削除が終了できません</value>
+  </data>
+  <data name="Revoke_RemoveResourceEnd_Fail_Detail" xml:space="preserve">
+    <value>リボークのリソース削除の終了は既にされています。</value>
+  </data>
+  <data name="Revoke_RemoveResourceEnd_NotFound" xml:space="preserve">
+    <value>リボークのリソース削除が終了できません</value>
+  </data>
+  <data name="Revoke_RemoveResourceEnd_NotFound_Detail" xml:space="preserve">
+    <value>リボークのリソース削除の開始がおこなわれていないか、または、ユーザーの同意が記録されていません。</value>
+  </data>
+  <data name="Revoke_RemoveResourceStart_Fail" xml:space="preserve">
+    <value>リボークのリソース削除が開始できません</value>
+  </data>
+  <data name="Revoke_RemoveResourceStart_Fail_Detail" xml:space="preserve">
+    <value>ControllerIdまたはUserRevokeIdのIDが存在しません。</value>
+  </data>
+  <data name="Revoke_Start_FK" xml:space="preserve">
+    <value>リボークのスタートが記録できません</value>
+  </data>
+  <data name="Revoke_Start_FK_Detail" xml:space="preserve">
+    <value>FKエラーです</value>
+  </data>
+  <data name="Revoke_Start_NotAgreement" xml:space="preserve">
+    <value>リボークのスタートが記録できません</value>
+  </data>
+  <data name="Revoke_Start_NotAgreement_Detail" xml:space="preserve">
+    <value>同意している規約がありません。</value>
+  </data>
+  <data name="Revoke_Stop_NotAgreement" xml:space="preserve">
+    <value>同意していません</value>
+  </data>
+  <data name="Revoke_Stop_NotAgreement_Detail" xml:space="preserve">
+    <value>同意していないため、Stopの記録ができません。</value>
+  </data>
+  <data name="Revoke_Stop_NotStart" xml:space="preserve">
+    <value>同意していません</value>
+  </data>
+  <data name="Revoke_Stop_NotStart_Detail" xml:space="preserve">
+    <value>リボークのスタートが記録されていません。</value>
+  </data>
+  <data name="RoslynScriptRuntimeException" xml:space="preserve">
+    <value>RoslynScriptRuntimeの例外が発生しました</value>
+  </data>
+  <data name="SendMailTamplateCd" xml:space="preserve">
+    <value>sendMailTamplateCd</value>
+  </data>
+  <data name="SqlDataBaseException" xml:space="preserve">
+    <value>SQLデータベース例外</value>
+  </data>
+  <data name="SyntaxErrorOfOData" xml:space="preserve">
+    <value>ODataの構文エラー</value>
+  </data>
+  <data name="SyntaxErrorOfOData_Detail" xml:space="preserve">
+    <value>ODataの構文が間違っているか、ODataの対応していない構文が使われています。</value>
+  </data>
+  <data name="SyntaxErrorOfOData_InvalidFilterColumn" xml:space="preserve">
+    <value>filterに不正な項目が指定されています。</value>
+  </data>
+  <data name="SyntaxErrorOfOData_InvalidFilterValue" xml:space="preserve">
+    <value>filterに不正な値が指定されています。</value>
+  </data>
+  <data name="SyntaxErrorOfOData_NotSupportedODataOperation" xml:space="preserve">
+    <value>{0}はサポートされていません。</value>
+  </data>
+  <data name="TermGroupNotFound" xml:space="preserve">
+    <value>規約グループのデータはありません。</value>
+  </data>
+  <data name="TermGroupNotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当する規約グループのデータはありません。</value>
+  </data>
+  <data name="TermsNotFound" xml:space="preserve">
+    <value>規約のデータはありません。</value>
+  </data>
+  <data name="TermsNotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当する規約のデータはありません。</value>
+  </data>
+  <data name="ThisURLDoesNotSupportDocumentHistory" xml:space="preserve">
+    <value>このURLは、ドキュメントの履歴をサポートしていません。</value>
+  </data>
+  <data name="ToAuthenticateTheOpenIdHasFailed" xml:space="preserve">
+    <value>OpenIdの認証に失敗しています</value>
+  </data>
+  <data name="TooMachData" xml:space="preserve">
+    <value>更新対象のデータが複数見つかりました。</value>
+  </data>
+  <data name="TypeOfVersionIsIntOrGuid" xml:space="preserve">
+    <value>バージョンの種類は、intまたはGUIDです。</value>
+  </data>
+  <data name="UpdateHistoryNotFound" xml:space="preserve">
+    <value>更新履歴が見つかりません</value>
+  </data>
+  <data name="UserGroupNotFound" xml:space="preserve">
+    <value>ユーザーグループのデータはありません</value>
+  </data>
+  <data name="UserGroupNotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当するユーザーグループのデータはありません</value>
+  </data>
+  <data name="UserResourceShare_Delete_KeyNotMatch" xml:space="preserve">
+    <value>データ共有の削除ができません</value>
+  </data>
+  <data name="UserResourceShare_Delete_KeyNotMatch_Detail" xml:space="preserve">
+    <value>データ共有のキーがマッチしないためデータ共有の削除ができません。</value>
+  </data>
+  <data name="UserResourceShare_GetList_NotFound" xml:space="preserve">
+    <value>データ共有のデータが取得できません</value>
+  </data>
+  <data name="UserResourceShare_GetList_NotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当するデータ共有のデータが取得できません。</value>
+  </data>
+  <data name="UserResourceShare_Register_UnMatchKey" xml:space="preserve">
+    <value>データ共有の登録ができません</value>
+  </data>
+  <data name="UserResourceShare_Register_UnMatchKey_Detail" xml:space="preserve">
+    <value>データ共有のキーがマッチしないためデータ共有の登録ができません。</value>
+  </data>
+  <data name="UserResourceShare_Register_UserShareTypeCodeMissMatch" xml:space="preserve">
+    <value>データ共有の登録ができません</value>
+  </data>
+  <data name="UserResourceShare_Register_UserShareTypeCodeMissMatch_Detail" xml:space="preserve">
+    <value>user_share_type_codeの値が不正なため、データ共有の登録ができません。</value>
+  </data>
+  <data name="UserTermsNotFound" xml:space="preserve">
+    <value>同意一覧のデータはありません</value>
+  </data>
+  <data name="UserTermsNotFound_Detail" xml:space="preserve">
+    <value>検索条件に該当する同意一覧のデータはありません。</value>
+  </data>
+  <data name="VendorOrSystemUnspecified" xml:space="preserve">
+    <value>ベンダーやシステムが未指定です</value>
+  </data>
+  <data name="VendorSystemAccessTokenIdMissing" xml:space="preserve">
+    <value>AccessTokenIdがありません。</value>
+  </data>
+  <data name="VendorSystemAccessTokenNotFound" xml:space="preserve">
+    <value>VendorSystem AccessTokenが見つかりません</value>
+  </data>
+  <data name="VendorSystemAccessTokenNotFound_Detail" xml:space="preserve">
+    <value>ベンダーシステム認証用のアクセストークンを取得し直してください。</value>
+  </data>
+  <data name="VendorSystemAuthRequired" xml:space="preserve">
+    <value>VendorSystem認証が必要です</value>
+  </data>
+  <data name="VendorSystemAuthRequired_Detail" xml:space="preserve">
+    <value>HTTPヘッダー：X-Authorizationにベンダーシステム認証用のアクセストークンを指定してください。</value>
+  </data>
+  <data name="VendorSystemTokenExpired" xml:space="preserve">
+    <value>VendorSystem AccessTokenの有効期限が切れています</value>
+  </data>
+  <data name="VendorSystemTokenInvalid" xml:space="preserve">
+    <value>VendorSystem AccessTokenが無効か、または、指定されていません</value>
+  </data>
+  <data name="VersionDoesNotExistInHistory" xml:space="preserve">
+    <value>バージョンは、バージョン情報の中で存在していません。</value>
+  </data>
+  <data name="VersionIsRequired" xml:space="preserve">
+    <value>バージョンが必要です。</value>
+  </data>
+  <data name="WeCallTheGatewayDidNotHaveTheData" xml:space="preserve">
+    <value>Gatewayを呼び出しましたがデータがありませんでした。</value>
+  </data>
+  <data name="WrongInternalCallingKeyword" xml:space="preserve">
+    <value>間違った内部呼び出しキーワード。</value>
+  </data>
+  <data name="X-UserResourceSharingCanBeSpecifiedForDataRetrieval" xml:space="preserve">
+    <value>X-UserResourceSharingを指定できるのはデータ取得のみです</value>
+  </data>
+  <data name="XReferenceHeaderIsInvalid" xml:space="preserve">
+    <value>X-リファレンスヘッダーが無効です。</value>
+  </data>
+  <data name="XVersionNotFoundException" xml:space="preserve">
+    <value>Xversion NOTFOUND例外</value>
+  </data>
+  <data name="YouCanNotUseIt" xml:space="preserve">
+    <value>利用できません</value>
+  </data>
+  <data name="YouCanNotUseIt_Detail" xml:space="preserve">
+    <value>添付ファイル機能が有効になっていないため利用できません。</value>
+  </data>
+</root>

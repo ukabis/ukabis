@@ -1,0 +1,148 @@
+﻿@inherits AdminWebBasePage
+@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+@using JP.DataHub.AdminWeb.Core.Component.Component
+@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+@using JP.DataHub.Com.Json.Schema
+@using Newtonsoft.Json
+@inject IAdminApiService Service
+
+@inject IJSRuntime JS
+<RadzenTemplateForm TItem="ResourceWizardModel" EditContext="@_modelSetting">
+    <ObjectGraphDataAnnotationsValidator />
+    <ValidationSummary />
+    <h5 style="text-align:center">APIが扱うデータを定義するモデルを設定してください</h5>
+    <div class="p-2 border">
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="ModelName" Text="モデル名" />
+            </div>
+            <div class="col-8">
+                <RadzenTextBox class="w-100" Name="ModelName" @bind-Value="Resource.ModelName" />
+                <RadzenRequiredValidator Component="ModelName" Text="@ValidationMessageExtensions.RequiredValidationMessage" Style="display: block; font-size:16px; color:red;" />
+                <RadzenLengthValidator Component="ModelName" Max="100" Text="@(100.ToMaxLengthValidationMessage())" Style="display: block; font-size:16px; color:red;" />
+                <FunctionValidator Component="ModelName" Func="ValidateModelNameExists" Text="指定されたモデル名は既に使用されています。" Style="display: block; font-size:16px; color:red;" />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="DataSchema" Text="データモデル" />
+            </div>
+            <div class="col-8">
+                <RadzenTextArea class="w-100 textarea-json-schema" Change="SetRepositoryKeySource" Name="DataModel" @bind-Value="Resource.DataModel" Style="display: block;" />
+                <RadzenRequiredValidator Component="DataModel" Text="@ValidationMessageExtensions.RequiredValidationMessage" Style="display: block; font-size:16px; color:red;" />
+                <FunctionValidator Component="DataModel" Func="ValidateDataModel" Text="JSONが正しくありません。" Style="display: block; font-size:16px; color:red;" />
+                <div class="mt-1">
+                    <RadzenButton Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Resource.DataModel))" />
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4">
+                <RadzenLabel Component="RepositoryKey" Text="リポジトリキー" />
+            </div>
+            <div class="col-8">
+                <RadzenDropDown class="w-100" Name="RepositoryKeySource" TValue="string" AllowClear=true Data=@(Resource.RepositoryKeySource) TextProperty="RepositoryKey" ValueProperty="RepositoryKey" @bind-Value="@Resource.RepositoryKey" />
+                <RadzenLengthValidator Component="RepositoryKeySource" Max="4000" Text="@(4000.ToMaxLengthValidationMessage())" Style="display: block; font-size:16px; color:red;" />
+            </div>
+        </div>
+    </div>
+</RadzenTemplateForm>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ResourceWizardModel Resource { get; set; }
+
+    EditContext _modelSetting;
+
+    protected override void OnInitialized()
+    {
+        _modelSetting = new EditContext(Resource);
+
+        try
+        {
+            // リポジトリキーリストに変更がないかを確認する
+            var dataModel = JSchema.Parse(Resource.DataModel);
+            var repositoryKeyList = dataModel.Properties.Select(x => $"{Resource.Url}/{{{x.Key}}}").ToList();
+            if (!repositoryKeyList.SequenceEqual(Resource.RepositoryKeySource))
+            {
+                Resource.RepositoryKey = null;
+                Resource.RepositoryKeySource = repositoryKeyList;
+            }
+        }
+        catch
+        {
+            Resource.RepositoryKey = null;
+            Resource.RepositoryKeySource.Clear();
+        }
+
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text ?? "");
+        NotificationService.Notify(new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "コピーしました"
+        });
+    }
+
+    public void SetRepositoryKeySource()
+    {
+        Resource.RepositoryKeySource.Clear();
+        Resource.RepositoryKey = null;
+        try
+        {
+            var dataModel = JSchema.Parse(Resource.DataModel);
+            Resource.RepositoryKeySource.AddRange(dataModel.Properties.Select(x => $"{Resource.Url}/{{{x.Key}}}").ToList());
+        }
+        catch
+        {
+            return;
+        }
+    }
+
+    public bool Validate()
+    {
+        return _modelSetting.Validate();
+    }
+
+    /// <summary>
+    /// モデル名が既に存在するかを検証します
+    /// </summary>
+    /// <returns>true:モデル名が重複していない/false:モデル名が重複している</returns>
+    private bool ValidateModelNameExists()
+    {
+        try
+        {
+            // 重複している場合trueが返ってくる
+            var result = Service.ExistsSameSchemaName(Resource.ModelName).Throw(r => !r.IsSuccessStatusCode, "モデル名が不適切です。").Result;
+            return !result;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// データモデルを検証します。
+    /// </summary>
+    /// <returns>true:データモデルが適切/false:データモデルが不適切</returns>
+    private bool ValidateDataModel()
+    {
+        try
+        {
+            JSchema.Parse(Resource.DataModel);
+        }
+        catch
+        {
+            return false;
+        }
+
+        return true;
+    }
+}

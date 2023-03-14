@@ -1,0 +1,11 @@
+﻿﻿@if (Enabled)
+{
+    <div class="overlay">
+        <div class="spinner"></div>
+    </div>    
+}
+
+@code {
+    [Parameter]
+    public bool Enabled { get; set; }
+}

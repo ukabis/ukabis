@@ -1,0 +1,94 @@
+﻿{
+  "List": [
+    {
+      "ServerName": "default_server",
+      "Type": "default_server",
+      "AuthenticationType": "vendor",
+      "EnvironmentList": [
+        {
+          "EnvironmentName": "Develop",
+          "EnvironmentId": "",
+          "Url": "https://localhost:44356",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "https://localhost:44356/Token",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        },
+        {
+          "EnvironmentName": "AzureDotnet6開発",
+          "EnvironmentId": "",
+          "Url": "",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        },
+        {
+          "EnvironmentName": "OCIDotnet6開発_Development",
+          "EnvironmentId": "",
+          "Url": "https://localhost:44356",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": "",
+              "ClientSecret": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "https://localhost:44356/Token",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        },
+        {
+          "EnvironmentName": "OCIDotnet6開発",
+          "EnvironmentId": "",
+          "Url": "",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": "",
+              "ClientSecret": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+
+}

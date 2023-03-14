@@ -1,0 +1,33 @@
+{
+  "List": [
+    {
+      "ServerName": "default_server",
+      "Type": "default_server",
+      "AuthenticationType": "vendor",
+      "EnvironmentList": [
+        {
+          "EnvironmentName": "Develop",
+          "EnvironmentId": "",
+          "Url": "https://localhost:44356",
+          "DynamicApiUrl": "https://localhost:44322",
+          "ServerAuthenticationList": {
+            "OpenId": {
+              "Type": "OpenId",
+              "Url": "",
+              "Scope": "",
+              "ClientId": "",
+              "ClientSecret": ""
+            },
+            "Vendor": {
+              "Type": "Vendor",
+              "Url": "https://localhost:44356/Token",
+              "ClientId": "",
+              "ClientSecret": "",
+              "AdminKey": ""
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

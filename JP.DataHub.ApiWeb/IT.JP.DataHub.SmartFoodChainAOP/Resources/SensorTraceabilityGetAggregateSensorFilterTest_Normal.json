@@ -1,0 +1,30 @@
+[
+  {
+    "sensorDeviceId": "hoge1",
+    "thingsId": "hoge1",
+    "datestreamId": "hoge1",
+    "observedPropertyId": "hoge1",
+    "observedPropertyName": "hoge1",
+    "measurementId": "hoge1",
+    "measurementName": "hoge1",
+    "phenomenonTime": "hoge1",
+    "maximumValue": 1000,
+    "averageValue": 500,
+    "minimumValue": 100,
+    "aggregationTimeMinute": 999
+  },
+  {
+    "sensorDeviceId": "hoge2",
+    "thingsId": "hoge2",
+    "datestreamId": "hoge2",
+    "observedPropertyId": "hoge2",
+    "observedPropertyName": "hoge2",
+    "measurementId": "hoge2",
+    "measurementName": "hoge2",
+    "phenomenonTime": "hoge2",
+    "maximumValue": 1000,
+    "averageValue": 500,
+    "minimumValue": 100,
+    "aggregationTimeMinute": 999
+  }
+]

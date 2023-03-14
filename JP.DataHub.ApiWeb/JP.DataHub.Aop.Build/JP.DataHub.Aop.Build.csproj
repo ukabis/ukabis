@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JP.DataHub.ApiFilterIntegratedTest\JP.DataHub.ApiFilterIntegratedTest.csproj" />
+    <ProjectReference Include="..\JP.DataHub.ApiFilterSample\JP.DataHub.ApiFilterSample.csproj" />
+    <ProjectReference Include="..\JP.DataHub.ODataOverPartition\JP.DataHub.ODataOverPartition.csproj" />
+    <ProjectReference Include="..\JP.DataHub.SmartFoodChain\JP.DataHub.SmartFoodChain.csproj" />
+  </ItemGroup>
+
+</Project>

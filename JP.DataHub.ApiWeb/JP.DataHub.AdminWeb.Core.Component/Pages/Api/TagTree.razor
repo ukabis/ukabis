@@ -1,0 +1,61 @@
+﻿@using JP.DataHub.AdminWeb.WebAPI.Models;
+
+@inject DialogService DialogService
+
+@* タグTree *@
+<RadzenCard Style="width: 100%; height:auto; max-height:85%;">
+    <RadzenTree>
+        <RadzenTreeItem Expanded="true">
+            <ChildContent>
+                @foreach (var tag in TagInfoList)
+                {
+                    <RadzenTreeItem Text="ResourceItem" Value="tag">
+                        <Template>
+                            <span>
+                                <RadzenCheckBox TValue="bool" @bind-Value="tag.IsActive" Change="(args => OnChange(args, tag))"></RadzenCheckBox>
+                                <RadzenLabel class="mx-2" Text="@tag.TagName"></RadzenLabel>
+                            </span>
+                        </Template>
+                        <ChildContent>
+                            @foreach (var tagChild in tag.Children)
+                            {
+                                <RadzenTreeItem Text="MethodItem" Value="tagChild">
+                                    <Template>
+                                        <span class="w-100 position-relative">
+                                            <RadzenCheckBox TValue="bool" @bind-Value="tagChild.IsActive" Change="(args => OnChange(args, tagChild))"></RadzenCheckBox>
+                                            <RadzenLabel class="mx-2" Text="@tagChild.TagName"></RadzenLabel>
+                                        </span>
+                                    </Template>
+                                </RadzenTreeItem>
+                            }
+                        </ChildContent>
+                    </RadzenTreeItem>
+                }
+            </ChildContent>
+        </RadzenTreeItem>
+    </RadzenTree>
+</RadzenCard>
+<div class="row mt-4">
+    <div class="col text-center">
+        <RadzenButton Text="決定" ButtonStyle="ButtonStyle.Primary" Click="@((args) => { DialogService.Close(new { Info = TagInfoList, Flat = TagListFlat }); })"></RadzenButton>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public IEnumerable<TagInfoModel> TagInfoList { get; set; }
+
+    [Parameter]
+    public List<TagInfoModel> TagListFlat { get; set; }
+
+
+    private void OnChange(bool? isActive, TagInfoModel tag)
+    {
+        if(isActive.HasValue)
+        {
+            var tagFlat = TagListFlat.Where(x => x.TagId == tag.TagId).FirstOrDefault();
+            if(tagFlat != null)
+                tagFlat.IsActive = isActive.Value;
+        }
+    }
+}

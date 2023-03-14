@@ -1,0 +1,7 @@
+﻿** ローカルデバッグ時の注意
+ローカルのManageApiのプロジェクトを起動してデバッグする際は
+1. ManageApi起動
+2. SystemAdmin起動
+の順に起動する必要がある。
+SystemAdminの起動時にベンダーシステム認証のトークンを取得しているkがSystemAdminを先に起動するとその処理に失敗する。
+失敗時はAUthenticationResultの値がFailになるため、DynamicApiClientのトークンリトライ処理に入らないため、APIコールができなくなってしまう。

@@ -1,0 +1,32 @@
+﻿<!-- Bootstrap.cssm Bootstrap.jsが必要 -->
+<div class="modal fade" id="@TargetIdName" tabindex="-1" aria-labelledby="alertLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="alertLabel">@AletrTitle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @AletrContent
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick=@(async () => await Action.InvokeAsync())>はい</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">いいえ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string TargetIdName { get; set; }
+
+    [Parameter]
+    public string AletrTitle { get; set; }
+
+    [Parameter]
+    public string AletrContent { get; set; }
+
+    [Parameter]
+    public EventCallback Action { get; set; }
+}

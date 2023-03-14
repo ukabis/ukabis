@@ -1,0 +1,95 @@
+﻿@inherits LayoutComponentBase
+@layout MainLayoutBase
+@using System.Security.Claims
+
+<AuthorizeView Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+    <Authorized>
+        <div class="page">
+            <div class="sidebar">
+                <NavMenu Title="@Title" />
+            </div>
+    
+            <main>
+                <div class="top-row px-4">
+                    <span class="mx-2"> @Layout.Email</span>
+                    <RadzenProfileMenu>
+                        <Template>
+                            <RadzenGravatar Email="@Layout.Email">
+                            </RadzenGravatar>
+                        </Template>
+                        <ChildContent>
+                            <div class="row px-3 py-2">
+                                <div class="col d-flex justify-content-center align-items-center">
+                                    <div class="w-100">@Layout.Name</div>
+                                    <RadzenButton class="button-header-clipboard ms-2 px-0" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Layout.Name))"></RadzenButton>
+                                </div>
+                            </div>
+                            <div class="row px-3 py-2">
+                                <div class="col d-flex justify-content-center align-items-center">
+                                    <div class="w-100">@Layout.Email</div>
+                                    <RadzenButton class="button-header-clipboard ms-2 px-0" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Layout.Email))"></RadzenButton>
+                                </div>
+                            </div>
+                            <div class="row px-3 py-2">
+                                <div class="col d-flex justify-content-center align-items-center">
+                                    <div class="w-100">@Layout.OpenId</div>
+                                    <RadzenButton class="button-header-clipboard ms-2 px-0" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Layout.OpenId))"></RadzenButton>
+                                </div>
+                            </div>
+                            <div class="row px-3 py-2">
+                                <div class="col">
+                                    <a class="m-0" href="MicrosoftIdentity/Account/SignOut">Log out</a>
+                                </div>
+                            </div>
+                        </ChildContent>
+                    </RadzenProfileMenu>
+                </div>
+    
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="d-flex flex-column align-items-center justify-content-center text-center" style="height: 100vh;">
+            <div class="h1">
+                403
+            </div>
+            <div class="h2">
+                ACCESS DENIED
+            </div>
+            <div>
+                <a href="MicrosoftIdentity/Account/SignOut">Log out</a>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private const string Title = "管理画面";
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Inject]
+    protected Radzen.NotificationService NotificationService { get; set; }
+
+    [Inject]
+    protected IJSRuntime JS { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Layout.Title = Title;
+    }
+
+    protected async Task CopyToClipboard(string text)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text ?? "");
+        NotificationService.Notify(new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "コピーしました"
+        });
+    }
+}

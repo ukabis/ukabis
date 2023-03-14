@@ -1,0 +1,4 @@
+﻿::deep .grid-resource-ip-filter-group, ::deep .grid-resource-ip-filter, ::deep .grid-resource-open-id-ca {
+    max-height: var(--grid-max-height);
+    overflow-y: auto;
+}

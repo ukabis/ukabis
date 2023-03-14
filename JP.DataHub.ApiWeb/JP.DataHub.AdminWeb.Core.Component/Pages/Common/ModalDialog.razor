@@ -1,0 +1,22 @@
+﻿@inject DialogService DialogService
+
+<div>
+    <p class="mb-2" style="font-size: 18px">@Message</p>
+    <div class="row">
+        <div class="col">
+            <RadzenButton Text="@OkBtnMessage" Click="@((args) => { DialogService.Close(true); })" Class="me-2" Style="width: 150px;" />
+            <RadzenButton Text="@NotOkBtnMessage" Click="@((args) => { DialogService.Close(false); })" ButtonStyle="ButtonStyle.Light" Class="me-2" Style="width: 150px;" />
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string Message {get; set;}
+
+    [Parameter]
+    public string OkBtnMessage {get; set;}
+
+    [Parameter]
+    public string NotOkBtnMessage { get; set; }
+}

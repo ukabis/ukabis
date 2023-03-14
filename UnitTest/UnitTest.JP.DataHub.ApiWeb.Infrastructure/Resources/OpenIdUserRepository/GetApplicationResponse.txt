@@ -1,0 +1,87 @@
+﻿{
+  "odata.metadata": "https://graph.windows.net/datahubjp.onmicrosoft.com/$metadata#directoryObjects",
+  "value": [
+    {
+      "odata.type": "Microsoft.DirectoryServices.Application",
+      "objectType": "Application",
+      "objectId": "34fde61a-688f-440a-a516-9e3d17826f81",
+      "deletionTimestamp": null,
+      "acceptMappedClaims": null,
+      "addIns": [],
+      "appId": "7861b5c5-ab91-4a29-b0d6-60f110e87a27",
+      "appRoles": [],
+      "availableToOtherTenants": false,
+      "displayName": "b2c-extensions-app. Do not modify. Used by AADB2C for storing user data.",
+      "errorUrl": null,
+      "groupMembershipClaims": null,
+      "homepage": "https://extensions.cpim.windows.net",
+      "identifierUris": [
+        "https://extensions.cpim.windows.net"
+      ],
+      "informationalUrls": {
+        "termsOfService": null,
+        "support": null,
+        "privacy": null,
+        "marketing": null
+      },
+      "isDeviceOnlyAuthSupported": null,
+      "keyCredentials": [],
+      "knownClientApplications": [],
+      "logoutUrl": null,
+      "logo@odata.mediaEditLink": "directoryObjects/34fde61a-688f-440a-a516-9e3d17826f81/Microsoft.DirectoryServices.Application/logo",
+      "logoUrl": null,
+      "mainLogo@odata.mediaEditLink": "directoryObjects/34fde61a-688f-440a-a516-9e3d17826f81/Microsoft.DirectoryServices.Application/mainLogo",
+      "oauth2AllowIdTokenImplicitFlow": true,
+      "oauth2AllowImplicitFlow": false,
+      "oauth2AllowUrlPathMatching": false,
+      "oauth2Permissions": [
+        {
+          "adminConsentDescription": "Allow the application to access b2c-extensions-app. Do not modify. Used by AADB2C for storing user data. on behalf of the signed-in user.",
+          "adminConsentDisplayName": "Access b2c-extensions-app. Do not modify. Used by AADB2C for storing user data.",
+          "id": "377fd294-912a-4cac-88f7-ee40add01e94",
+          "isEnabled": true,
+          "type": "User",
+          "userConsentDescription": "Allow the application to access b2c-extensions-app. Do not modify. Used by AADB2C for storing user data. on your behalf.",
+          "userConsentDisplayName": "Access b2c-extensions-app. Do not modify. Used by AADB2C for storing user data.",
+          "value": "user_impersonation"
+        }
+      ],
+      "oauth2RequirePostResponse": false,
+      "optionalClaims": null,
+      "orgRestrictions": [],
+      "parentalControlSettings": {
+        "countriesBlockedForMinors": [],
+        "legalAgeGroupRule": "Allow"
+      },
+      "passwordCredentials": [],
+      "publicClient": null,
+      "publisherDomain": null,
+      "recordConsentConditions": null,
+      "replyUrls": [
+        "https://extensions.cpim.windows.net"
+      ],
+      "requiredResourceAccess": [
+        {
+          "resourceAppId": "00000002-0000-0000-c000-000000000000",
+          "resourceAccess": [
+            {
+              "id": "78c8a3c8-a07e-4b9e-af1b-b5ccab50a175",
+              "type": "Role,Scope"
+            },
+            {
+              "id": "5778995a-e1bf-45b8-affa-663a9f3f4d04",
+              "type": "Role,Scope"
+            },
+            {
+              "id": "311a71cc-e848-46a1-bdf8-97ff7156d8e6",
+              "type": "Scope"
+            }
+          ]
+        }
+      ],
+      "samlMetadataUrl": null,
+      "signInAudience": null,
+      "tokenEncryptionKeyId": null
+    }
+  ]
+}

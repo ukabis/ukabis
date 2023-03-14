@@ -1,0 +1,25 @@
+﻿.list-group-item {
+    cursor: pointer;
+    border-left: none;
+    white-space: nowrap;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
+.list-group-item:hover {
+    background-color: #59a6cd;
+    color: white;
+}
+
+.list-group-item.selected {
+    background-color: #479cc8;
+    color: white;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}

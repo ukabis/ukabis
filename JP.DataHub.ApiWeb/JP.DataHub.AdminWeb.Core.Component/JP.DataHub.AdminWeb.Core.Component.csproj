@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Configurations>Debug;Release;LocalStaging</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.DataAnnotations.Validation" Version="3.2.0-rc1.20223.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.6" />
+    <PackageReference Include="Radzen.Blazor" Version="3.18.16" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Blazor.Core\JP.DataHub.Blazor.Core.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Core\JP.DataHub.AdminWeb.Core.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Service.Interface\JP.DataHub.AdminWeb.Service.Interface.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.WebAPI\JP.DataHub.AdminWeb.WebAPI.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,21 @@
+﻿<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">@Title</a>
+    </div>
+</div>
+<RadzenPanelMenu>
+    <AuthorizeView Policy="@(FunctionPolicy.Top.ToString())">
+        <RadzenPanelMenuItem Text="トップ" Path="/" Icon="home"></RadzenPanelMenuItem>
+    </AuthorizeView>
+    <AuthorizeView Policy="@(FunctionPolicy.Vendor.ToString())">
+        <RadzenPanelMenuItem Text="ベンダー" Path="vendor" Icon="key"></RadzenPanelMenuItem>
+    </AuthorizeView>
+    <AuthorizeView Policy="@(FunctionPolicy.Api.ToString())">
+        <RadzenPanelMenuItem Text="API" Path="api" Icon="api"></RadzenPanelMenuItem>
+    </AuthorizeView>
+</RadzenPanelMenu>
+
+@code {
+    [Parameter]
+    public string Title{ get; set; }
+}

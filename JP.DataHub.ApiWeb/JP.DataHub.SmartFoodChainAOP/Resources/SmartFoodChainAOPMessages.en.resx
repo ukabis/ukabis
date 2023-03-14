@@ -1,0 +1,564 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="E100400_detail" xml:space="preserve">
+    <value>User is a member of multiple groups.</value>
+  </data>
+  <data name="E100400_title" xml:space="preserve">
+    <value>Invalid member</value>
+  </data>
+  <data name="E100401_detail" xml:space="preserve">
+    <value>Group does not have representative.</value>
+  </data>
+  <data name="E100401_title" xml:space="preserve">
+    <value>Invalid group</value>
+  </data>
+  <data name="E100402_detail" xml:space="preserve">
+    <value>User is not a member of any group.</value>
+  </data>
+  <data name="E100402_title" xml:space="preserve">
+    <value>Group not found</value>
+  </data>
+  <data name="E100403_detail" xml:space="preserve">
+    <value>Group is not found.</value>
+  </data>
+  <data name="E100403_title" xml:space="preserve">
+    <value>Group not found</value>
+  </data>
+  <data name="E100404_detail" xml:space="preserve">
+    <value>Cannot delete because you are not a representative.</value>
+  </data>
+  <data name="E100404_title" xml:space="preserve">
+    <value>Cannot delete</value>
+  </data>
+  <data name="E100409_detail" xml:space="preserve">
+    <value>Group is not found.</value>
+  </data>
+  <data name="E100409_title" xml:space="preserve">
+    <value>Group not found</value>
+  </data>
+  <data name="E101400_detail" xml:space="preserve">
+    <value>'app' paramter is not specified or valid format.</value>
+  </data>
+  <data name="E101400_title" xml:space="preserve">
+    <value>Invalid 'app' parameter</value>
+  </data>
+  <data name="E101401_detail" xml:space="preserve">
+    <value>Application with specified id does not exists.  Ask application provider if the application has been registered.</value>
+  </data>
+  <data name="E101401_title" xml:space="preserve">
+    <value>Application not found</value>
+  </data>
+  <data name="E101402_detail" xml:space="preserve">
+    <value>API call to Application resource is failed. Check API format.</value>
+  </data>
+  <data name="E101402_title" xml:space="preserve">
+    <value>Cannot get Application resource</value>
+  </data>
+  <data name="E101403_detail" xml:space="preserve">
+    <value>Need to register as a user in application to use.</value>
+  </data>
+  <data name="E101403_title" xml:space="preserve">
+    <value>User is not authenticated</value>
+  </data>
+  <data name="E101404_detail" xml:space="preserve">
+    <value>API call to ApplicationUser resource is failed. Check API format.</value>
+  </data>
+  <data name="E101404_title" xml:space="preserve">
+    <value>Cannot get ApplicationUser resource</value>
+  </data>
+  <data name="E101405_detail" xml:space="preserve">
+    <value>API call to Role resource is failed. Check API format.</value>
+  </data>
+  <data name="E101405_title" xml:space="preserve">
+    <value>Cannot get Role resource</value>
+  </data>
+  <data name="E102401_detail" xml:space="preserve">
+    <value>Register is failed.</value>
+  </data>
+  <data name="E102401_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E102402_detail" xml:space="preserve">
+    <value>Cannot convert request body to json.</value>
+  </data>
+  <data name="E102402_title" xml:space="preserve">
+    <value>Invalid request body</value>
+  </data>
+  <data name="E102403_detail" xml:space="preserve">
+    <value>ProductCode is required.</value>
+  </data>
+  <data name="E102403_title" xml:space="preserve">
+    <value>Required item not found</value>
+  </data>
+  <data name="E102404_detail" xml:space="preserve">
+    <value>JAS judgement has not been done.</value>
+  </data>
+  <data name="E102404_title" xml:space="preserve">
+    <value>Invalid JAS judgement result</value>
+  </data>
+  <data name="E102405_detail" xml:space="preserve">
+    <value>Failure to meet JAS judgement standard.</value>
+  </data>
+  <data name="E102405_title" xml:space="preserve">
+    <value>Invalid JAS judgement result</value>
+  </data>
+  <data name="E102406_detail" xml:space="preserve">
+    <value>The ProductCode is not supported.</value>
+  </data>
+  <data name="E102406_title" xml:space="preserve">
+    <value>Invalid data format</value>
+  </data>
+  <data name="E102407_detail" xml:space="preserve">
+    <value>Gln is required.</value>
+  </data>
+  <data name="E102407_title" xml:space="preserve">
+    <value>Required item not found</value>
+  </data>
+  <data name="E102408_detail" xml:space="preserve">
+    <value>Cannot get data</value>
+  </data>
+  <data name="E102408_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E102409_detail" xml:space="preserve">
+    <value>Data matched the conditions is not found.</value>
+  </data>
+  <data name="E102409_title" xml:space="preserve">
+    <value>Data not found</value>
+  </data>
+  <data name="E102410_detail" xml:space="preserve">
+    <value>Query string is required.</value>
+  </data>
+  <data name="E102410_title" xml:space="preserve">
+    <value>Invalid query string</value>
+  </data>
+  <data name="E103400_detail" xml:space="preserve">
+    <value>Cannot convert request data.</value>
+  </data>
+  <data name="E103400_title" xml:space="preserve">
+    <value>Invalid data</value>
+  </data>
+  <data name="E103401_detail" xml:space="preserve">
+    <value>This sensor device is already registered.</value>
+  </data>
+  <data name="E103401_title" xml:space="preserve">
+    <value>Registered sensor device</value>
+  </data>
+  <data name="E103402_detail" xml:space="preserve">
+    <value>The sensor does not exists.</value>
+  </data>
+  <data name="E103402_title" xml:space="preserve">
+    <value>Invalid sensor</value>
+  </data>
+  <data name="E103403_detail" xml:space="preserve">
+    <value>Query string not specified.</value>
+  </data>
+  <data name="E103403_title" xml:space="preserve">
+    <value>Invalid query string</value>
+  </data>
+  <data name="E103404_detail" xml:space="preserve">
+    <value>Required parameter 'ProductCode' not specified.</value>
+  </data>
+  <data name="E103404_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E103405_detail" xml:space="preserve">
+    <value>Required parameter 'ArrivalId' not specified.</value>
+  </data>
+  <data name="E103405_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E103406_detail" xml:space="preserve">
+    <value>Sensor data has not been aggregated yet.</value>
+  </data>
+  <data name="E103406_title" xml:space="preserve">
+    <value>Sensor data not found</value>
+  </data>
+  <data name="E103407_detail" xml:space="preserve">
+    <value>Sensor data has not been registered yet.</value>
+  </data>
+  <data name="E103407_title" xml:space="preserve">
+    <value>Sensor data not found</value>
+  </data>
+  <data name="E103408_detail" xml:space="preserve">
+    <value>'Time' is invalid.</value>
+  </data>
+  <data name="E103408_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E103409_detail" xml:space="preserve">
+    <value>If you register datastreams, sensorId and thing are required.</value>
+  </data>
+  <data name="E103409_title" xml:space="preserve">
+    <value>SensorId or Thing is empty</value>
+  </data>
+  <data name="E103410_detail" xml:space="preserve">
+    <value>The sensor device does not exists.</value>
+  </data>
+  <data name="E103410_title" xml:space="preserve">
+    <value>Sensor device not found</value>
+  </data>
+  <data name="E103411_detail" xml:space="preserve">
+    <value>This thing is already registered.</value>
+  </data>
+  <data name="E103411_title" xml:space="preserve">
+    <value>Registered thing</value>
+  </data>
+  <data name="E103501_detail" xml:space="preserve">
+    <value>Unexpected error occurred while retrieving sensor data.</value>
+  </data>
+  <data name="E103501_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E103502_detail" xml:space="preserve">
+    <value>Unexpected error occurred while retrieving sensor data.</value>
+  </data>
+  <data name="E103502_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E105400_detail" xml:space="preserve">
+    <value>Required parameter 'FileId' not specified.</value>
+  </data>
+  <data name="E105400_title" xml:space="preserve">
+    <value>Invalid query string</value>
+  </data>
+  <data name="E104400_detail" xml:space="preserve">
+    <value>ProductCode is required.</value>
+  </data>
+  <data name="E104400_title" xml:space="preserve">
+    <value>Required item not found</value>
+  </data>
+  <data name="E104401_detail" xml:space="preserve">
+    <value>Gln is required.</value>
+  </data>
+  <data name="E104401_title" xml:space="preserve">
+    <value>Required item not found</value>
+  </data>
+  <data name="E104402_detail" xml:space="preserve">
+    <value>Cannot get data</value>
+  </data>
+  <data name="E104402_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E104403_detail" xml:space="preserve">
+    <value>Data matched the conditions is not found.</value>
+  </data>
+  <data name="E104403_title" xml:space="preserve">
+    <value>Traceability data not found</value>
+  </data>
+  <data name="E101406_detail" xml:space="preserve">
+    <value>Application with specified id does not exists, or you are not Manager.</value>
+  </data>
+  <data name="E101406_title" xml:space="preserve">
+    <value>Application not found</value>
+  </data>
+  <data name="E106501_detail" xml:space="preserve">
+    <value>Cannot get data</value>
+  </data>
+  <data name="E106501_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E103412_detail" xml:space="preserve">
+    <value>NotFound ObservationProperties in Sensor</value>
+  </data>
+  <data name="E103412_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E103413_detail" xml:space="preserve">
+    <value>NotFound measurementUnits in Sensor</value>
+  </data>
+  <data name="E103413_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E102415_detail" xml:space="preserve">
+    <value>Arrival data not found</value>
+  </data>
+  <data name="E102415_title" xml:space="preserve">
+    <value>Arrival data not found</value>
+  </data>
+  <data name="E101407_detail" xml:space="preserve">
+    <value />
+  </data>
+  <data name="E101407_title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="E101408_detail" xml:space="preserve">
+    <value />
+  </data>
+  <data name="E101408_title" xml:space="preserve">
+    <value />
+  </data>
+  <data name="E107401_detail" xml:space="preserve">
+    <value>Required parameter 'CertificationApplyId' not specified.</value>
+  </data>
+  <data name="E107401_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E107402_detail" xml:space="preserve">
+    <value>Specified application is not exists.</value>
+  </data>
+  <data name="E107402_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E107501_detail" xml:space="preserve">
+    <value>Unexpected error occurred while retrieving application data.</value>
+  </data>
+  <data name="E107501_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E100405_detail" xml:space="preserve">
+    <value>Cannot convert request data.</value>
+  </data>
+  <data name="E100405_title" xml:space="preserve">
+    <value>Invalid data</value>
+  </data>
+  <data name="E100406_detail" xml:space="preserve">
+    <value>There are no remaining ReservedAccount.</value>
+  </data>
+  <data name="E100406_title" xml:space="preserve">
+    <value>Cannot get ReservedAccount</value>
+  </data>
+  <data name="E100407_detail" xml:space="preserve">
+    <value>Failed to get ReservedAccount.</value>
+  </data>
+  <data name="E100407_title" xml:space="preserve">
+    <value>Cannot get ReservedAccount</value>
+  </data>
+  <data name="E100408_detail" xml:space="preserve">
+    <value>Cannot change representativeMember.</value>
+  </data>
+  <data name="E100408_title" xml:space="preserve">
+    <value>Invalid update</value>
+  </data>
+  <data name="E100410_detail" xml:space="preserve">
+    <value>You do not have write permission.</value>
+  </data>
+  <data name="E100410_title" xml:space="preserve">
+    <value>Cannot update the group</value>
+  </data>
+  <data name="E102416_detail" xml:space="preserve">
+    <value>The number of sheets specified exceeds the number of sheets that can be printed.</value>
+  </data>
+  <data name="E102416_title" xml:space="preserve">
+    <value>The number of printable sheets has been exceeded.</value>
+  </data>
+  <data name="E100411_detail" xml:space="preserve">
+    <value>Group does not have managers.</value>
+  </data>
+  <data name="E100411_title" xml:space="preserve">
+    <value>Invalid group</value>
+  </data>
+  <data name="E100412_detail" xml:space="preserve">
+    <value>Group managers must be among the members.</value>
+  </data>
+  <data name="E100412_title" xml:space="preserve">
+    <value>Invalid group</value>
+  </data>
+  <data name="E106402_detail" xml:space="preserve">
+    <value>Query string not specified.</value>
+  </data>
+  <data name="E106402_title" xml:space="preserve">
+    <value>Invalid query string</value>
+  </data>
+  <data name="E106403_detail" xml:space="preserve">
+    <value>Required parameter 'ShipmentSensorId' not specified.</value>
+  </data>
+  <data name="E106403_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E106404_detail" xml:space="preserve">
+    <value>Required parameter 'LastArrivalId' not specified.</value>
+  </data>
+  <data name="E106404_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E106405_detail" xml:space="preserve">
+    <value>Specified 'ShipmentSensorId' is not exists.</value>
+  </data>
+  <data name="E106405_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E106406_detail" xml:space="preserve">
+    <value>Specified 'LastArrivalId' is not exists.</value>
+  </data>
+  <data name="E106406_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E106408_detail" xml:space="preserve">
+    <value>Specified sensor has not started measuring or has already finished measuring.</value>
+  </data>
+  <data name="E106408_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E106507_detail" xml:space="preserve">
+    <value>Failed to update ShipmentSensor.</value>
+  </data>
+  <data name="E106507_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+  <data name="E104404_detail" xml:space="preserve">
+    <value>Unmatched password</value>
+  </data>
+  <data name="E104404_title" xml:space="preserve">
+    <value>Invalid Password</value>
+  </data>
+  <data name="E104405_detail" xml:space="preserve">
+    <value>The specified productCode has already existed.Use Update API.</value>
+  </data>
+  <data name="E104405_title" xml:space="preserve">
+    <value>Doubled ProductCode</value>
+  </data>
+  <data name="E104406_detail" xml:space="preserve">
+    <value>Require specified productCode</value>
+  </data>
+  <data name="E104406_title" xml:space="preserve">
+    <value>Invalid query string</value>
+  </data>
+  <data name="E104407_detail" xml:space="preserve">
+    <value>Specify X-Password</value>
+  </data>
+  <data name="E104407_title" xml:space="preserve">
+    <value>Specify X-Password</value>
+  </data>
+  <data name="E104408_detail" xml:space="preserve">
+    <value>Specified ProdcutCode does not Update.</value>
+  </data>
+  <data name="E104408_title" xml:space="preserve">
+    <value>Specified ProdcutCode does not Update</value>
+  </data>
+  <data name="E104409_detail" xml:space="preserve">
+    <value>Not found specified ProductCode</value>
+  </data>
+  <data name="E104409_title" xml:space="preserve">
+    <value>Not found specified ProductCode</value>
+  </data>
+  <data name="E107403_detail" xml:space="preserve">
+    <value>Specified 'CompanyId' is not exists.</value>
+  </data>
+  <data name="E107403_title" xml:space="preserve">
+    <value>Invalid parameter</value>
+  </data>
+  <data name="E107502_detail" xml:space="preserve">
+    <value>Cannot get data</value>
+  </data>
+  <data name="E107502_title" xml:space="preserve">
+    <value>One or more errors occurred</value>
+  </data>
+</root>

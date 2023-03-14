@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "JP.DataHub.Batch.AsyncDynamicApi": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7288",
+      "launchBrowser": false
+    }
+  }
+}

@@ -1,0 +1,357 @@
+﻿@inherits AdminWebBasePage
+@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+@using JP.DataHub.AdminWeb.Core.Component.Component
+@using JP.DataHub.Com.Json.Schema
+
+@inject ICommonAdminService CommonService
+@inject IAdminRepositoryGroupService RepositoryGroupService
+@inject IAdminApiService Service
+<RadzenCard>
+    <h4>APIウィザード作成</h4>
+    <Wizard @ref="_wizard" GoNextFunc="GoNext">
+        <WizardStep Name="基本設定">
+            <ResourceWizardEditBaseSetting @ref="_baseSetting" Resource="Resource" Vendor="_vendor"/>
+        </WizardStep>
+        <WizardStep Name="モデル作成">
+            <ResourceWizardEditModelSetting @ref="_modelSetting" Resource="Resource"/>
+        </WizardStep>
+        <WizardStep Name="リポジトリ選択">
+            <ResourceWizardEditRepositoryGroupSetting @ref="_repositoryGroupSetting" Resource="Resource" RepositoryGroupList="_repositoryGroupList"/>
+        </WizardStep>
+        <WizardStep Name="メソッド選択">
+            <ResourceWizardEditRegisterSelect Resource="Resource"/>
+        </WizardStep>
+        <WizardStep Name="作成確認">
+            <ResourceWizardEditConfirm Resource="Resource"/>
+        </WizardStep>
+    </Wizard>
+</RadzenCard>
+@code {
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; } = new();
+
+    [Parameter]
+    public ResourceWizardModel Resource { get; set; } = new();
+
+    [Parameter]
+    public List<VendorSimpleModel> Vendors { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<string> OnChange { get; set; } = new();
+
+    private VendorSimpleModel _vendor = new();
+
+    private List<JP.DataHub.AdminWeb.WebAPI.Models.RepositoryGroupModel> _repositoryGroupList = new();
+
+    private ResourceWizardEditBaseSetting _baseSetting;
+
+    private ResourceWizardEditModelSetting _modelSetting;
+    private ResourceWizardEditRepositoryGroupSetting _repositoryGroupSetting;
+
+    private Wizard _wizard;
+
+    private enum Page
+    {
+        Base,
+        Model,
+        RepositoryGroup,
+        RegisterSelect,
+        Confirm
+    }
+
+    private Page _page = Page.Base;
+
+    protected override async Task OnInitializedAsync()
+    {
+        base.OnInitialized();
+        _vendor = Vendors.Where(x => x.VendorId == Resource.VendorId).First();
+        Resource.VendorName = _vendor.VendorName;
+        var system = _vendor.SystemList?.FirstOrDefault();
+        if (system != null)
+        {
+            Resource.SystemId = system.SystemId;
+            Resource.SystemName = system.SystemName;
+        }
+
+        await Layout.ToggleSpinner(true);
+        _repositoryGroupList = RepositoryGroupService.GetRepositoryGroupList($"vendorId={_vendor.VendorId}")
+            .Throw(x => !x.IsSuccessStatusCode && x.StatusCode != HttpStatusCode.NotFound, x => "リポジトリグループの取得に失敗しました。")
+            .Result;
+        await Layout.ToggleSpinner(false);
+    }
+
+    private bool GoNext()
+    {
+        bool result = false;
+        switch ((Page)_wizard.ActiveStepIndex)
+        {
+            case Page.Base:
+                result = _baseSetting.Validate();
+                break;
+            case Page.Model:
+                result = _modelSetting.Validate();
+                break;
+            case Page.RepositoryGroup:
+                // リポジトリがSQLServerおよびOracleの場合はスキーマのadditionalPropertiesをfalseにする
+                if (Resource.RepositoryGroup.Any(x => {
+                    return (x.RepositoryTypeCd == "ss2" || x.RepositoryTypeCd == "ora");
+                }))
+                {
+                    var schema = JSchema.Parse(Resource.DataModel);
+                    schema.AllowAdditionalProperties = false;
+                    Resource.DataModel = schema.ToString();
+                }
+                result = _repositoryGroupSetting.Validate();
+                break;
+            case Page.RegisterSelect:
+                result = true;
+                break;
+            case Page.Confirm:
+                Create();
+                break;
+            default:
+                result = false;
+                break;
+        }
+
+        return result;
+    }
+
+    private async Task Create()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("API作成", "APIの作成を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        // リポジトリキー未設定の場合はURLと同じにする
+        Resource.RepositoryKey = Resource.RepositoryKey ?? Resource.Url;
+
+        string apiId;
+        await Layout.ToggleSpinner(true);
+        try
+        {
+            // 1.モデル登録
+            var modelId = CreateSchema();
+
+            // 2.コントローラ登録
+            apiId = CreateApi(modelId);
+
+            // 3.API登録
+            CreateMethod(apiId, modelId);
+
+            // 4.AdaptResourceSchema呼び出し
+            if (Resource.MethodList.Any(x => x.MethodName.StartsWith("Register") && x.Create))
+            {
+                AdaptResourceSchema();
+            }
+        }
+        catch(Exception e)
+        {
+            await Layout.ToggleSpinner(false);
+            await Layout.ShowMessageDialog("API作成失敗", "APIの作成に失敗しました。", errorDetail: e.ToString());
+            return;
+        }
+
+        await Layout.ToggleSpinner(false);
+        Layout.ShowNotifySuccess(message: "APIを作成しました。");
+
+        await OnChange.InvokeAsync(apiId);
+    }
+
+    private string CreateSchema()
+    {
+        SchemaModel schema = new()
+        {
+            VendorId = Resource.VendorId,
+            SchemaName = Resource.ModelName,
+            JsonSchema = Resource.DataModel,
+        };
+
+        var result = Service.RegisterUriOrResponseSchema(schema).Throw(r => !r.IsSuccessStatusCode, "モデルの登録に失敗しました。").Result;
+        return result.SchemaId;
+    }
+
+    private string CreateApi(string modelId)
+    {
+        var api = new RegisterResourceApiModel()
+        {
+            ApiId = Guid.NewGuid().ToString(),
+            VendorId = Resource.VendorId,
+            SystemId = Resource.SystemId,
+            ApiName = Resource.ApiName,
+            Url = Resource.Url,
+            ApiDescriptiveText = Resource.ApiDescription,
+            ModelId = modelId,
+            RepositoryKey = Resource.RepositoryKey,
+            IsVendor = true,
+            IsEnable = true,
+            IsEnableResourceVersion = true
+        };
+
+        var result = Service.RegisterApi(api).Throw(r => !r.IsSuccessStatusCode, "APIの登録に失敗しました。").Result;
+        return result.ApiId;
+    }
+
+    private void CreateMethod(string apiId, string modelId)
+    {
+        var key = GetKey();
+        foreach (var method in Resource.MethodList)
+        {
+            if (!method.Create) continue;
+
+            RegisterApiModel api = new();
+            switch (method.MethodName)
+            {
+                case "Get/{キー}":
+                    api = CreateGetApi(apiId, modelId, key);
+                    break;
+                case "GetAll":
+                    api = CreateGetAllApi(apiId, modelId);
+                    break;
+                case "Register":
+                    api = CreateRegisterApi(apiId, modelId);
+                    break;
+                case "RegisterList":
+                    api = CreateRegisterListApi(apiId, modelId);
+                    break;
+                case "Update/{キー}":
+                    api = CreateUpdateApi(apiId, modelId, key);
+                    break;
+                case "Exists/{キー}":
+                    api = CreateExistApi(apiId, modelId, key);
+                    break;
+                case "Delete/{キー}":
+                    api = CreateDeleteApi(apiId, modelId, key);
+
+                    break;
+                case "DeleteAll":
+                    api = CreateDeleteAllApi(apiId, modelId);
+                    break;
+                default:
+                    break;
+            }
+            Service.RegisterMethod(api).Throw(r => !r.IsSuccessStatusCode, $"メソッドの登録に失敗しました。URL = {method.MethodName}");
+        }
+    }
+
+    private RegisterApiModel CreateGetApi(string apiId, string modelId, string key)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "GET";
+        api.ActionTypeCd = "quy";
+        api.Url = $"Get/{{{key}}}";
+        api.ResponseModelId = modelId;
+        return api;
+    }
+
+    private RegisterApiModel CreateGetAllApi(string apiId, string modelId)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "GET";
+        api.ActionTypeCd = "quy";
+        api.IsPostDataTypeArray = true;
+        api.Url = "GetAll";
+        api.ResponseModelId = modelId;
+        return api;
+    }
+
+    private RegisterApiModel CreateRegisterApi(string apiId, string modelId)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "POST";
+        api.ActionTypeCd = "reg";
+        api.Url = "Register";
+        //URLとRepositoryKeyが同じときは自動採番
+        api.IsAutomaticId = (Resource.RepositoryKey == Resource.Url);
+        api.RequestModelId = modelId;
+        return api;
+    }
+
+    private RegisterApiModel CreateRegisterListApi(string apiId, string modelId)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "POST";
+        api.ActionTypeCd = "reg";
+        api.IsPostDataTypeArray = true;
+        api.Url = "RegisterList";
+        //URLとRepositoryKeyが同じときは自動採番
+        api.IsAutomaticId = (Resource.RepositoryKey == Resource.Url);
+        api.RequestModelId = modelId;
+        return api;
+    }
+
+    private RegisterApiModel CreateUpdateApi(string apiId, string modelId, string key)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "PATCH";
+        api.ActionTypeCd = "upd";
+        api.Url = $"Update/{{{key}}}";
+        return api;
+    }
+
+    private RegisterApiModel CreateExistApi(string apiId, string modelId, string key)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "GET";
+        api.ActionTypeCd = "quy";
+        api.Url = $"Exists/{{{key}}}";
+        api.Query = $"SELECT c.{key} FROM c WHERE c.{key}={{{key}}}";
+        api.QueryType = "cdb";
+        return api;
+    }
+
+    private RegisterApiModel CreateDeleteApi(string apiId, string modelId, string key)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "DELETE";
+        api.ActionTypeCd = "del";
+        api.Url = $"Delete/{{{key}}}";
+        return api;
+    }
+
+    private RegisterApiModel CreateDeleteAllApi(string apiId, string modelId)
+    {
+        var api = CreateTemplateApi(apiId);
+        api.HttpMethodTypeCd = "DELETE";
+        api.ActionTypeCd = "del";
+        api.Url = "DeleteAll";
+        return api;
+    }
+
+    private RegisterApiModel CreateTemplateApi(string apiId)
+    {
+        return new RegisterApiModel()
+        {
+            ApiId = apiId,
+            RepositoryGroupId = Resource.RepositoryGroupId,
+            IsEnable = true,
+            IsHeaderAuthentication = true,
+            IsOpenIdAuthentication = true,
+            IsHidden = true,
+        };
+    }
+
+    private string GetKey()
+    {
+        if(Resource.RepositoryKey == Resource.Url)
+        {
+            return "id";
+        }
+        else
+        {
+            var sp = Resource.RepositoryKey.Split('/');
+            var key = sp[sp.Length - 1];
+            //{}を削除する
+            return key.Substring(1, key.Length - 2);
+        }
+    }
+
+    private void AdaptResourceSchema()
+    {
+        Service.AdaptResourceSchema(Resource.Url)
+               .Throw(r => !r.IsSuccessStatusCode, "永続化層の更新に失敗しました。");
+    }
+}

@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Configurations>Debug;Release;LocalStaging</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>False</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.NLogTarget" Version="2.20.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="1.25.1" />
+    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.2.22" />
+    <PackageReference Include="NLog" Version="5.0.0" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.0.0" />
+    <PackageReference Include="Radzen.Blazor" Version="3.18.16" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com.csproj" />
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Infrastructure.Core\JP.DataHub.Infrastructure.Core.csproj" />
+    <ProjectReference Include="..\..\JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.MVC\JP.DataHub.MVC.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Core.Component\JP.DataHub.AdminWeb.Core.Component.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Core\JP.DataHub.AdminWeb.Core.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Service.Interface\JP.DataHub.AdminWeb.Service.Interface.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.Service\JP.DataHub.AdminWeb.Service.csproj" />
+    <ProjectReference Include="..\JP.DataHub.AdminWeb.WebAPI\JP.DataHub.AdminWeb.WebAPI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
+</Project>

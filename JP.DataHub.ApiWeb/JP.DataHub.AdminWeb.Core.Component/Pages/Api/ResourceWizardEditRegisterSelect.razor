@@ -1,0 +1,62 @@
+﻿@using JP.DataHub.AdminWeb.Core.Component.Models.Api
+<h5 style="text-align:center">作成するメソッドを選択してください</h5>
+<div class="row mb-2">
+    <div class="col">
+        <div class="p-2 border">
+            <RadzenDataGrid Data="@Resource.MethodList" TItem="ResourceWizardModel.MethodRegisterSelectModel" Style="padding: 0;">
+                <Columns>
+                    <RadzenDataGridColumn Width="43px" TItem="ResourceWizardModel.MethodRegisterSelectModel" TextAlign="TextAlign.Center" Sortable="false">
+                        <Template Context="method">
+                            <RadzenCheckBox TValue="bool" @bind-Value="method.Create" />
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn Width="180px" TItem="ResourceWizardModel.MethodRegisterSelectModel" Title="メソッド名" Sortable="false">
+                        <Template Context="method">
+                            @method.MethodName
+                        </Template>
+                        <EditTemplate Context="method">
+                            @method.MethodName
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="ResourceWizardModel.MethodRegisterSelectModel" Title="説明" Sortable="false">
+                        <Template Context="method">
+                            @method.Description
+                        </Template>
+                        <EditTemplate Context="method">
+                            @method.Description
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+            <RadzenLabel Text="以下のメソッドはデフォルトで作成されます" Style="margin-top: 20px"/>
+            <RadzenDataGrid Data="@Resource.DefaultMethodList" TItem="ResourceWizardModel.MethodRegisterSelectModel" Style="padding: 0;">
+                <Columns>
+                    <RadzenDataGridColumn Width="180px" TItem="ResourceWizardModel.MethodRegisterSelectModel" Title="メソッド名" Sortable="false">
+                        <Template Context="method">
+                            @method.MethodName
+                        </Template>
+                        <EditTemplate Context="method">
+                            @method.MethodName
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="ResourceWizardModel.MethodRegisterSelectModel" Title="説明" Sortable="false">
+                        <Template Context="method">
+                            @method.Description
+                        </Template>
+                        <EditTemplate Context="method">
+                            @method.Description
+                        </EditTemplate>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public ResourceWizardModel Resource { get; set; }
+}

@@ -1,0 +1,209 @@
+﻿<span>
+    <RadzenTextArea class="@TextAreaCssClass" Name="@TextAreaName" @bind-Value="Text" Disabled="Disabled"></RadzenTextArea>
+    <div class="mb-1" style="display:none">
+        <RadzenButton Icon="title" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="見出し" Click="@(args => OpenContextMenu(args))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="format_bold" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="太字" Click="@(args => AppendFormatToDescription(FormatType.Bold))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="format_italic" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="斜体" Click="@(args => AppendFormatToDescription(FormatType.Italic))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="strikethrough_s" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="取り消し線" Click="@(args => AppendFormatToDescription(FormatType.Strike))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="list" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="リスト" Click="@(args => AppendFormatToDescription(FormatType.List))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="format_list_numbered" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="リスト(数字)" Click="@(args => AppendFormatToDescription(FormatType.NumberedList))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="table_view" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="テーブル" Click="@(args => AppendFormatToDescription(FormatType.Table))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="format_quote" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="引用" Click="@(args => AppendFormatToDescription(FormatType.Quote))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="code" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="コード" Click="@(args => AppendFormatToDescription(FormatType.Code))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="link" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="リンク" Click="@(args => AppendFormatToDescription(FormatType.Link))" Disabled="Disabled"></RadzenButton>
+        <RadzenButton Icon="image" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" title="サムネイル" Click="@(args => AppendFormatToDescription(FormatType.Image))" Disabled="Disabled"></RadzenButton>
+        @if(EnableCopy)
+        {
+            <RadzenButton Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Text))"></RadzenButton>
+        }
+        <RadzenButton Text="プレビュー" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="PreviewDescription"></RadzenButton>
+    </div>
+    @if (MaxLength.HasValue)
+    {
+        <RadzenLengthValidator Component="@TextAreaName" Max="MaxLength.Value" Text="@(MaxLength.Value.ToMaxLengthValidationMessage())" Style="display: block;" />
+    }
+</span>
+
+@code {
+    private enum FormatType
+    {
+        Heading1,
+        Heading2,
+        Heading3,
+        Heading4,
+        Heading5,
+        Heading6,
+        Bold,
+        Italic,
+        Strike,
+        List,
+        NumberedList,
+        Table,
+        Quote,
+        Code,
+        Link,
+        Image
+    }
+
+    [Inject]
+    protected IJSRuntime JS { get; set; }
+
+    [Inject]
+    protected Radzen.DialogService DialogService { get; set; }
+
+    [Inject]
+    protected Radzen.ContextMenuService ContextMenuService { get; set; }
+
+    [Inject]
+    protected Radzen.NotificationService NotificationService { get; set; }
+
+    [Parameter]
+    public string Text
+    {
+        get => _text;
+        set
+        {
+            if (_text != value)
+            {
+                _text = value;
+                TextChanged.InvokeAsync(value);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<string> TextChanged { get; set; }
+
+    [Parameter]
+    public string TextAreaName { get; set; }
+
+    [Parameter]
+    public string TextAreaCssClass { get; set; } = "w-100";
+
+    [Parameter]
+    public bool EnableCopy { get; set; }
+
+    [Parameter]
+    public int? MaxLength { get; set; }
+
+    [Parameter]
+    public bool Disabled { get; set; }
+
+    private string _text;
+
+    private async Task OpenContextMenu(MouseEventArgs args)
+    {
+        ContextMenuService.Open(args, service =>
+            @<RadzenMenu>
+                <RadzenMenuItem Value="1" Click="@(args => AppendFormatToDescription(FormatType.Heading1))">
+                    <Template>
+                        <div class="markdown-heading1">見出し1</div>
+                    </Template>
+                </RadzenMenuItem>
+                <RadzenMenuItem Value="2" Click="@(args => AppendFormatToDescription(FormatType.Heading2))">
+                    <Template>
+                        <div class="markdown-heading2">見出し2</div>
+                    </Template>
+                </RadzenMenuItem>
+                <RadzenMenuItem Value="3" Click="@(args => AppendFormatToDescription(FormatType.Heading3))">
+                    <Template>
+                        <div class="markdown-heading3">見出し3</div>
+                    </Template>
+                </RadzenMenuItem>
+                <RadzenMenuItem Value="4" Click="@(args => AppendFormatToDescription(FormatType.Heading4))">
+                    <Template>
+                        <div class="markdown-heading4">見出し4</div>
+                    </Template>
+                </RadzenMenuItem>
+                <RadzenMenuItem Value="5" Click="@(args => AppendFormatToDescription(FormatType.Heading5))">
+                    <Template>
+                        <div class="markdown-heading5">見出し5</div>
+                    </Template>
+                </RadzenMenuItem>
+                <RadzenMenuItem Value="6" Click="@(args => AppendFormatToDescription(FormatType.Heading6))">
+                    <Template>
+                        <div class="markdown-heading6">見出し6</div>
+                    </Template>
+                </RadzenMenuItem>
+            </RadzenMenu>
+        );
+    }
+
+    private void AppendFormatToDescription(FormatType format)
+    {
+        string formatValue = "";
+        switch (format)
+        {
+            case FormatType.Heading1:
+                formatValue = "#";
+                break;
+            case FormatType.Heading2:
+                formatValue = "##";
+                break;
+            case FormatType.Heading3:
+                formatValue = "###";
+                break;
+            case FormatType.Heading4:
+                formatValue = "####";
+                break;
+            case FormatType.Heading5:
+                formatValue = "#####";
+                break;
+            case FormatType.Heading6:
+                formatValue = "######";
+                break;
+            case FormatType.Bold:
+                formatValue = "****";
+                break;
+            case FormatType.Italic:
+                formatValue = "__";
+                break;
+            case FormatType.Strike:
+                formatValue = "~~~~";
+                break;
+            case FormatType.List:
+                formatValue = "\n- \n";
+                break;
+            case FormatType.NumberedList:
+                formatValue = "\n1. \n";
+                break;
+            case FormatType.Table:
+                formatValue = "Head1|Head2\n----|----\nCol1|Col2\nCol1|Col2\nCol1|Col2";
+                break;
+            case FormatType.Quote:
+                formatValue = "\n> \n";
+                break;
+            case FormatType.Code:
+                formatValue = "```\n\n```";
+                break;
+            case FormatType.Link:
+                formatValue = "\n[Title](Url)\n";
+                break;
+            case FormatType.Image:
+                formatValue = "\n![代替テキスト](Url)\n";
+                break;
+        }
+        Text += formatValue;
+        ContextMenuService.Close();
+    }
+
+    private async Task PreviewDescription()
+    {
+        var html = (MarkupString)(await JS.InvokeAsync<string>("convertMarkdownToHtml", Text ?? ""));
+        await DialogService.OpenAsync("プレビュー", service =>
+        @<div class="markdown-body">
+        @html
+        </div>
+        );
+    }
+
+    private async Task CopyToClipboard(string text)
+    {
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", text ?? "");
+        NotificationService.Notify(new NotificationMessage()
+        {
+            Severity = NotificationSeverity.Success,
+            Summary = "コピーしました"
+        });
+    }
+}

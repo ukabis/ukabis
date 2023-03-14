@@ -1,0 +1,4 @@
+﻿::deep .grid-vendor-staff, ::deep .grid-vendor-open-id-ca {
+    max-height: var(--grid-max-height);
+    overflow-y: auto;
+}

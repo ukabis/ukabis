@@ -1,0 +1,741 @@
+﻿@inherits AdminWebBasePage
+
+@using JP.DataHub.AdminWeb.Service.Interface
+@using JP.DataHub.AdminWeb.WebAPI.Models
+@using JP.DataHub.AdminWeb.WebAPI.Resources
+@using JP.DataHub.Com.Net.Http
+@using System.Net
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+@using JP.DataHub.Com.Extensions;
+@using JP.DataHub.AdminWeb.Core.Component.Pages;
+@using JP.DataHub.Com.Unity;
+@using JP.DataHub.AdminWeb.Core.Settings;
+@using Unity;
+
+@attribute [Authorize(Policy = "Vendor")]
+
+@inject ICommonAdminService CommonService
+@inject IAdminVendorService VendorService
+@inject DialogService DialogService
+
+<AuthorizeView Policy="@(FunctionPolicy.SystemAdministrator.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isSystemAdministrator = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isSystemAdministrator = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+<AuthorizeView Policy="@(FunctionPolicy.VendorWrite.ToString())">
+    <Authorized>
+        @{
+            // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+            _isEditable = true;
+        }
+    </Authorized>
+    <NotAuthorized>
+        @{
+            _isEditable = false;
+        }
+    </NotAuthorized>
+</AuthorizeView>
+<RadzenCard>
+    <EditForm EditContext="@VendorEditContext" OnValidSubmit="@Save">
+        <h4>@(string.IsNullOrEmpty(Vendor.VendorId) ? "ベンダー追加" : "ベンダー編集")</h4>
+        <ObjectGraphDataAnnotationsValidator />
+        <ValidationSummary />
+        @if (!string.IsNullOrEmpty(Vendor.VendorId))
+        {
+            <div class="row my-2">
+                <div class="col-4 d-flex align-items-center">
+                    <RadzenLabel Component="VendorId" Text="ベンダーID" />
+                </div>
+                <div class="col-8 d-flex align-items-center">
+                    <RadzenTextBox Name="VendorId" @bind-Value="@Vendor.VendorId" Disabled="true" Class="w-100" />
+                    <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Vendor.VendorId))"></RadzenButton>
+                </div>
+            </div>
+        }
+        <div class="row mb-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Component="VendorName" Text="ベンダー名" />
+            </div>
+            <div class="col-8">
+                <div class="d-flex align-items-center">
+                    <RadzenTextBox Name="VendorName" @bind-Value="@Vendor.VendorName" Disabled="@(!_isEditable)" Class="w-100" />
+                    <RadzenButton class="ms-2" Icon="content_copy" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" Click="@(args => CopyToClipboard(Vendor.VendorName))"></RadzenButton>
+                </div>
+                <ValidationMessage For="@(() => Vendor.VendorName)" />
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Component="RepresentativeMailAddress" Text="代表メールアドレス" />
+            </div>
+            <div class="col-8">
+                <div class="d-flex align-items-center">
+                    <RadzenTextBox Name="RepresentativeMailAddress" @bind-Value="@Vendor.RepresentativeMailAddress" Disabled="@(!_isEditable)" Class="w-100" />
+                </div>
+                <div>
+                    <ValidationMessage For="@(() => Vendor.RepresentativeMailAddress)" />
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Component="IsEnable" Text="状態" />
+            </div>
+            <div class="col-8 d-flex align-items-center">
+                <RadzenRadioButtonList Name="IsEnable" @bind-Value="@Vendor.IsEnable" TValue="bool" Disabled="@(!_isEditable || !_isSystemAdministrator)">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="有効" Value="true" TValue="bool" />
+                        <RadzenRadioButtonListItem Text="無効" Value="false" TValue="bool" />
+                    </Items>
+                </RadzenRadioButtonList>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Component="IsDataOffer" Text="データ提供" />
+            </div>
+            <div class="col-8 d-flex align-items-center">
+                <RadzenRadioButtonList Name="IsDataOffer" @bind-Value="@Vendor.IsDataOffer" TValue="bool" Disabled="@(!_isEditable || !_isSystemAdministrator || !_enabledVendorDataUseAndOffer)">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="する" Value="true" TValue="bool" />
+                        <RadzenRadioButtonListItem Text="しない" Value="false" TValue="bool" />
+                    </Items>
+                </RadzenRadioButtonList>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Component="IsDataUse" Text="データ利用" />
+            </div>
+            <div class="col-8 d-flex align-items-center">
+                <RadzenRadioButtonList Name="IsDataUse" @bind-Value="@Vendor.IsDataUse" TValue="bool" Disabled="@(!_isEditable || !_isSystemAdministrator || !_enabledVendorDataUseAndOffer)">
+                    <Items>
+                        <RadzenRadioButtonListItem Text="する" Value="true" TValue="bool" />
+                        <RadzenRadioButtonListItem Text="しない" Value="false" TValue="bool" />
+                    </Items>
+                </RadzenRadioButtonList>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Component="AttachFileStorage" Text="添付ファイルストレージ" />
+            </div>
+            <div class="col-8 d-flex align-items-center">
+                <RadzenDropDown TValue=string Data=@Vendor.AttachFileStorage TextProperty=AttachFileStorageName ValueProperty=AttachFileStorageId @bind-Value="@Vendor.AttachFileStorageId" Disabled="@(!_isEditable || !_isSystemAdministrator)" AllowClear="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterOperator="StringFilterOperator.Contains" AllowFiltering="true" Class="w-100" />
+            </div>
+        </div>
+        <div class="row mb-2" style="display:none">
+            <div class="col" style="display:none">
+                <div class="p-2 border" style="display:none">
+                    <div class="row mb-2 justify-content-between" style="display:none">
+                        <RadzenLabel Text="リンク一覧" class="col-auto d-flex align-items-center"></RadzenLabel>
+                        @if (_isEditable)
+                        {
+                            <div class="col-auto" style="display:none">
+                                <RadzenButton Text="リンク追加" Click="@((args) => EditVendorLink(null))" ButtonStyle="ButtonStyle.Secondary" Size="ButtonSize.Small" Style="width:120px;" class="px-2" Disabled="@(!_isEditable)" />
+                            </div>
+                        }
+                    </div>
+                    <RadzenDataGrid @ref="_vendorLinkGrid" Data="@Vendor.VendorLinkList" TItem="VendorLinkModel" style="display:none">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="VendorLinkModel" Property="LinkTitle" Title="タイトル" Sortable="false" />
+                            <RadzenDataGridColumn TItem="VendorLinkModel" Property="LinkUrl" Title="URL" Sortable="false" />
+                            <RadzenDataGridColumn TItem="VendorLinkModel" Property="LinkDetail" Title="説明" Sortable="false" />
+                            <RadzenDataGridColumn TItem="VendorLinkModel" Property="IsVisible" Title="表示" Sortable="false">
+                                <Template Context="link">
+                                    <span>@(link.IsVisible ? "表示" : "非表示")</span>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="VendorLinkModel" Property="IsDefault" Title="デフォルト" Sortable="false">
+                                <Template Context="link">
+                                    <span>@(link.IsDefault ? "有効" : "無効")</span>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="VendorLinkModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                <Template Context="link">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditVendorLink(link))" Disabled="@(!_isEditable)">
+                                    </RadzenButton>
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => RemoveVendorLink(link))" Disabled="@(!_isEditable)">
+                                    </RadzenButton>
+                                </Template>
+                            </RadzenDataGridColumn>
+                            <ValidationMessage For="@(() => Vendor.VendorLinkList)" />
+                        </Columns>
+                    </RadzenDataGrid>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2">
+            <div class="col">
+                <div class="p-2 border">
+                    <div class="row mb-2 justify-content-between">
+                        <RadzenLabel Text="スタッフ一覧" class="col-auto d-flex align-items-center"></RadzenLabel>
+                        @if (_isEditable)
+                        {
+                            <div class="col-auto">
+                                <RadzenButton Text="スタッフ追加" Click="AddStaff" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" class="px-2" Style="width:120px;" Disabled="@(!_isEditable)" />
+                            </div>
+                        }
+                    </div>
+                    <RadzenDataGrid @ref="_staffGrid" class="grid-vendor-staff" Data="@Vendor.StaffList" TItem="StaffModel" EditMode="DataGridEditMode.Single" RowCreate="OnCreateStaff" RowUpdate="OnUpdateStaff">
+                        <Columns>
+                            <RadzenDataGridColumn TItem="StaffModel" Property="Account" Title="アカウント" Sortable="false">
+                                <EditTemplate Context="staff">
+                                    <RadzenTextBox @bind-Value="staff.Account" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="StaffModel" Property="EmailAddress" Title="メールアドレス" Sortable="false">
+                                <EditTemplate Context="staff">
+                                    <RadzenTextBox @bind-Value="staff.EmailAddress" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="StaffModel" Property="RoleId" Title="権限" Sortable="false">
+                                <Template Context="staff">
+                                    @(GetRoleName(staff.RoleId))
+                                </Template>
+                                <EditTemplate Context="staff">
+                                    <RadzenDropDown Data="RoleList.Select(r => new { RoleId = r.RoleId.ToString(), RoleName = r.RoleName })" @bind-Value="staff.RoleId" ValueProperty="RoleId" TextProperty="RoleName" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                            <RadzenDataGridColumn TItem="StaffModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                <Template Context="staff">
+                                    <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditStaff(staff))" Disabled="@(!_isEditable)" />
+                                    <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Class="m-1" Click="@(args => RemoveStaff(staff))" Disabled="@(!_isEditable)" />
+                                </Template>
+                                <EditTemplate Context="staff">
+                                    <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdateStaff(staff))" Disabled="@(!_isEditable)" />
+                                    <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditStaff(staff))" Disabled="@(!_isEditable)" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+                        </Columns>
+                    </RadzenDataGrid>
+                    @foreach (var stf in Vendor.StaffList)
+                    {
+                        <ValidationMessage For="@(() => stf.Account)" />
+                        <ValidationMessage For="@(() => stf.EmailAddress)" />
+                        <ValidationMessage For="@(() => stf.RoleId)" />
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="row mb-2" style="display:none">
+            <div class="col" style="display:none">
+                <div class="p-2 border" style="display:none">
+                    <RadzenPanel AllowCollapse="true" Style="padding: 0;display:none" Collapsed="true">
+                        <HeaderTemplate>
+                            <RadzenLabel Text="OpenID認証局設定" class="me-1 align-middle" />
+                        </HeaderTemplate>
+                        <ChildContent>
+                            <RadzenDataGrid @ref="_openIdCaGrid" class="grid-vendor-open-id-ca" Data="@Vendor.OpenIdCaList" TItem="VendorOpenIdCaModel" RowUpdate="OnUpdateOpenIdCa" EditMode="DataGridEditMode.Single" style="display:none">
+                                <Columns>
+                                    <RadzenDataGridColumn TItem="VendorOpenIdCaModel" Property="ApplicationName" Title="認証局" Sortable="false">
+                                        <Template Context="openIdCa">
+                                            @openIdCa.ApplicationName
+                                        </Template>
+                                        <EditTemplate Context="openIdCa">
+                                            @openIdCa.ApplicationName
+                                        </EditTemplate>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="VendorOpenIdCaModel" Property="AccessControl" Title="アクセス制御" Sortable="false">
+                                        <Template Context="openIdCa">
+                                            @s_AccessControls[openIdCa.AccessControl]
+                                        </Template>
+                                        <EditTemplate Context="openIdCa">
+                                            <RadzenDropDown Data="s_AccessControls" @bind-Value="openIdCa.AccessControl" ValueProperty="Key" TextProperty="Value" />
+                                        </EditTemplate>
+                                    </RadzenDataGridColumn>
+                                    <RadzenDataGridColumn TItem="VendorOpenIdCaModel" Title="操作" TextAlign="TextAlign.Center" Width="120px">
+                                        <Template Context="openIdCa">
+                                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => EditOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                        </Template>
+                                        <EditTemplate Context="openIdCa">
+                                            <RadzenButton Icon="check" ButtonStyle="ButtonStyle.Primary" Class="m-1" Click="@(args => UpdateOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Class="m-1" Click="@(args => CancelEditOpenIdCa(openIdCa))" Disabled="@(!_isEditable)" />
+                                        </EditTemplate>
+                                    </RadzenDataGridColumn>
+                                </Columns>
+                            </RadzenDataGrid>
+                        </ChildContent>
+                    </RadzenPanel>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center mt-5" hidden="@(!_isEditable)">
+            @if (string.IsNullOrEmpty(Vendor.VendorId))
+            {
+                <div class="col text-center">
+                    <RadzenButton Text="作成" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+                </div>
+            }
+            else
+            {
+                <div class="col-3">
+                    <RadzenButton Text="保存" ButtonStyle="ButtonStyle.Primary" ButtonType="ButtonType.Submit" />
+                </div>
+                @if (_isSystemAdministrator)
+                {
+                    <div class="col-3">
+                        <RadzenButton Text="削除" ButtonStyle="ButtonStyle.Danger" Click="Remove" />
+                    </div>
+                }
+            }
+        </div>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    private static Dictionary<string, string> s_AccessControls = new()
+    {
+        { "alw", "許可" },
+        { "dny", "拒否" },
+        { "inh", "未設定" },
+    };
+
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [CascadingParameter]
+    protected Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    [Parameter]
+    public string SelectedVendorId { get; set; }
+
+    [Parameter]
+    public EventCallback<string[]> OnChange { get; set; }
+
+    private VendorModel Vendor { get; set; } = new();
+
+    private List<RoleModel> RoleList = new();
+
+    private RadzenDataGrid<VendorLinkModel> _vendorLinkGrid;
+
+    private RadzenDataGrid<StaffModel> _staffGrid;
+
+    private RadzenDataGrid<VendorOpenIdCaModel> _openIdCaGrid;
+
+    private StaffModel _editTargetStaff;
+
+    private VendorOpenIdCaModel _editTargetOpenIdCa;
+
+    private List<StaffModel> removedStaffs = new();
+
+    private List<VendorLinkModel> originalVendorLinks = new();
+
+    private List<VendorLinkModel> removedVendorLinks = new();
+
+    private string originalVendorAttachFileStorageId = "";
+
+    private bool _isSystemAdministrator = false;
+
+    private bool _isEditable = false;
+
+    private bool _enabledVendorDataUseAndOffer = UnityCore.UnityContainer.Resolve<VendorDataUseAndOfferSettings>()?.Enabled ?? true;
+
+    private EditContext VendorEditContext;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnAfterInitializeAsync();
+
+        var isOperatingVendor = false;
+        if (SelectedVendorId == null)
+        {
+            Vendor = new()
+            {
+                VendorLinkList = new List<VendorLinkModel>(),
+                StaffList = new List<StaffModel>(),
+                OpenIdCaList = new List<VendorOpenIdCaModel>(),
+                AttachFileStorage = VendorService.GetAttachFileStorageList<ILoginUser>().Result,
+                IsEnable = true
+            };
+            // OpenId認証局を未設定(inh)で追加
+            CommonService.GetOpenIdCaList()
+                .Action(x => !x.IsSuccessStatusCode, async y => 
+                {
+                    await InvokeAsync(() => Layout.ToggleSpinner(false));
+                    var errorMsg = y.RawContentString.ToJson();
+                    await InvokeAsync(() => Layout.ShowMessageDialog("OpenId認証局一覧取得失敗", "OpenId認証局一覧の取得に失敗しました。", "OK",  $"{errorMsg["Detail"]}"));
+                })
+                .Action(x => x.IsSuccessStatusCode, y => {
+                    y.Result.ForEach(ca => Vendor.OpenIdCaList.Add(new VendorOpenIdCaModel()
+                            {
+                                ApplicationId = ca.ApplicationId.ToString(),
+                                ApplicationName = ca.ApplicationName,
+                                AccessControl = "inh",
+                                VendorOpenidCaId = Guid.NewGuid().ToString()
+                    }));
+                });
+        }
+        else
+        {
+            VendorService.GetVendor<ILoginUser>(SelectedVendorId)
+                .Action(x => !x.IsSuccessStatusCode, async y => 
+                {
+                    await InvokeAsync(() => Layout.ToggleSpinner(false));
+                    var errorMsg = y.RawContentString.ToJson();
+                    await InvokeAsync(() => Layout.ShowMessageDialog("ベンダー取得失敗", "ベンダーの取得に失敗しました。", "OK",  $"{errorMsg["Detail"]}"));
+                })
+                .Action(x => x.IsSuccessStatusCode, y => {
+                    Vendor = y.Result;
+                });
+
+            var vendorId = (await authenticationStateTask).User.FindFirst(AdminClaimTypes.VendorIdentifier).Value;
+            CommonService.IsOperatingVendor(vendorId)
+                         .Action(x => !x.IsSuccessStatusCode, async y =>
+                         {
+                             await InvokeAsync(() => Layout.ToggleSpinner(false));
+                             var errorMsg = y.RawContentString.ToJson();
+                             await InvokeAsync(() => Layout.ShowMessageDialog("ベンダー権限取得失敗", "ベンダー権限の取得に失敗しました。", "OK", $"{errorMsg["Detail"]}"));
+                         })
+                         .Action(x => x.IsSuccessStatusCode, y =>
+                         {
+                             isOperatingVendor = y.Result;
+                         });
+        }
+
+        VendorService.GetRoleList()
+                        .Action(x => !x.IsSuccessStatusCode, async y => 
+                        {
+                            await InvokeAsync(() => Layout.ToggleSpinner(false));
+                            var errorMsg = y.RawContentString.ToJson();
+                            await InvokeAsync(() => Layout.ShowMessageDialog("権限リスト取得失敗", "権限リストの取得に失敗しました。", "OK",  $"{errorMsg["Detail"]}"));
+                        })
+                        .Action(x => x.IsSuccessStatusCode, y => {
+                            RoleList = y.Result;
+                            if (!isOperatingVendor)
+                            {
+                                var settings = UnityCore.UnityContainer.Resolve<SystemAdminSettings>();
+                                RoleList = RoleList.Where(r => r.RoleId.ToString() != settings.SystemAdministratorRoleId).ToList();
+                            }
+                        });
+
+
+        originalVendorAttachFileStorageId = Vendor.AttachFileStorageId;
+        originalVendorLinks = new(Vendor.VendorLinkList);
+
+        VendorEditContext = new EditContext(Vendor);
+    }
+
+    #region VendorLink
+    private async Task EditVendorLink(VendorLinkModel vendorLink = null)
+    {
+        var result = await DialogService.OpenAsync<VendorLinkDialog>(
+            "リンク",
+            new Dictionary<string, object>()
+            {
+                { "VendorLink", vendorLink?.Clone() ?? new VendorLinkModel() { VendorLinkId = Guid.NewGuid().ToString(), VendorId = Vendor.VendorId, IsVisible = true } },
+                { "IsNew", vendorLink == null }
+            }
+        );
+
+        if (result != null)
+        {
+            if (vendorLink == null)
+            {
+                // 新しいリンクの場合は追加
+                Vendor.VendorLinkList.Add(result);
+            }
+            else
+            {
+                // 既存リンクの場合は更新
+                var index = Vendor.VendorLinkList.FindIndex(link => link.VendorLinkId == vendorLink.VendorLinkId);
+                Vendor.VendorLinkList[index] = result;
+            }
+            await _vendorLinkGrid.Reload();
+        }
+    }
+
+    private async Task RemoveVendorLink(VendorLinkModel vendorLink)
+    {
+        var index = Vendor.VendorLinkList.FindIndex(l => l.VendorLinkId == vendorLink.VendorLinkId);
+        if (originalVendorLinks.Any(l => l.VendorLinkId == vendorLink.VendorLinkId))
+        {
+            removedVendorLinks.Add(Vendor.VendorLinkList[index]);
+        }
+        Vendor.VendorLinkList.RemoveAt(index);
+        await _vendorLinkGrid.Reload();
+    }
+    #endregion
+
+    #region Staff
+    private void OnCreateStaff(StaffModel staff)
+    {
+    }
+
+    private void OnUpdateStaff(StaffModel staff)
+    {
+        var index = Vendor.StaffList.FindIndex(s => s.StaffId == staff.StaffId);
+        Vendor.StaffList[index] = staff;
+    }
+
+    private async Task AddStaff()
+    {
+        var settings = UnityCore.UnityContainer.Resolve<DefaultRoleSettings>();
+        var staff = new StaffModel() { StaffId = Guid.NewGuid().ToString(), VendorId = Vendor.VendorId, RoleId=settings?.DefaultRoleId, IsNewStaff = true };
+        Vendor.StaffList.Add(staff);
+        _editTargetStaff = staff.Clone();
+        await _staffGrid.InsertRow(staff);
+    }
+
+    private async Task EditStaff(StaffModel staff)
+    {
+        _editTargetStaff = staff.Clone();
+        await _staffGrid.EditRow(staff);
+    }
+
+    private async Task UpdateStaff(StaffModel staff)
+    {
+        await _staffGrid.UpdateRow(staff);
+        _editTargetStaff = null;
+    }
+
+    private async Task RemoveStaff(StaffModel staff)
+    {
+        if (staff?.StaffId != null)
+        {
+            var index = Vendor.StaffList.FindIndex(s => s.StaffId == staff.StaffId);
+            //AddStaffで追加した（未確定の）スタッフは、削除リストには入れない
+            if(!Vendor.StaffList[index].IsNewStaff)
+                removedStaffs.Add(Vendor.StaffList[index]);
+            Vendor.StaffList.RemoveAt(index);
+        }
+        await _staffGrid.Reload();
+    }
+
+    private async Task CancelEditStaff(StaffModel staff)
+    {
+        // 追加時にCancelEditRowを呼び出すとDataGridの行削除も行われてしまうのでUpdateRowして編集前(初期値)に戻す
+        _staffGrid.UpdateRow(staff);
+
+        // 編集前の状態に戻す
+        staff.Account = _editTargetStaff.Account;
+        staff.EmailAddress = _editTargetStaff.EmailAddress;
+        staff.RoleId = _editTargetStaff.RoleId;
+
+        _editTargetStaff = null;
+    }
+
+    private string GetRoleName(string roleId)
+    {
+        return RoleList.SingleOrDefault(r => r.RoleId.ToString() == roleId)?.RoleName ?? "";
+    }
+    #endregion
+
+    #region OpenIdCA
+    private void OnUpdateOpenIdCa(VendorOpenIdCaModel openIdCa)
+    {
+        var index = Vendor.OpenIdCaList.FindIndex(c => c.ApplicationId == openIdCa.ApplicationId);
+        Vendor.OpenIdCaList[index] = openIdCa;
+    }
+
+    private async Task EditOpenIdCa(VendorOpenIdCaModel openIdCa)
+    {
+        _editTargetOpenIdCa = openIdCa.Clone();
+        await _openIdCaGrid.EditRow(openIdCa);
+    }
+
+    private async Task UpdateOpenIdCa(VendorOpenIdCaModel openIdCa)
+    {
+        await _openIdCaGrid.UpdateRow(openIdCa);
+        _editTargetOpenIdCa = null;
+    }
+
+    private void CancelEditOpenIdCa(VendorOpenIdCaModel openIdCa)
+    {
+        _openIdCaGrid.CancelEditRow(openIdCa);
+
+        // 編集前の状態に戻す
+        openIdCa.AccessControl = _editTargetOpenIdCa.AccessControl;
+
+        _editTargetOpenIdCa = null;
+    }
+    #endregion
+
+    private async Task Save()
+    {
+        if (!VendorEditContext.Validate())
+            return;
+
+
+        var result = await Layout.ShowConfirmDialog($"ベンダー{(string.IsNullOrEmpty(Vendor.VendorId) ? "作成" : "保存")}", 
+                                                    $"ベンダーを{(string.IsNullOrEmpty(Vendor.VendorId) ? "作成" : "保存")}します。\nよろしいですか？");
+
+        DialogService.Close();
+
+        if (!result.HasValue || result == false)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+        var tasks = new List<Task<WebApiResponseResult>>();
+
+        if (string.IsNullOrEmpty(Vendor.VendorId))
+        {
+            var res = VendorService.RegisterVendor(Vendor);
+            if(!res.IsSuccessStatusCode)
+            {
+                await Layout.ToggleSpinner(false);
+                var errorMsg = res.ContentString.ToJson();
+                await Layout.ShowMessageDialog($"ベンダー{(string.IsNullOrEmpty(Vendor.VendorId) ? "作成" : "保存")}失敗",
+                                               $"ベンダーの{(string.IsNullOrEmpty(Vendor.VendorId) ? "作成" : "保存")}に失敗しました。", "OK", $"{errorMsg["Detail"]}");
+
+                return;
+            }
+            Vendor.VendorId = res.ContentString.ToJson()["VendorId"].ToString();
+
+            if (!string.IsNullOrEmpty(Vendor.AttachFileStorageId))
+            {
+                tasks.Add(VendorService.RegisterVendorAttachFileAsync(new VendorAttachFileModel()
+                {
+                    VendorId = Vendor.VendorId,
+                    AttachFileStorageId = Vendor.AttachFileStorageId
+                }));
+            }
+
+            if (Vendor.VendorLinkList?.Any() == true)
+            {
+                Vendor.VendorLinkList.ForEach(x => x.VendorId = Vendor.VendorId);
+                tasks.Add(VendorService.RegisterVendorLinkAsync(Vendor.VendorLinkList.Select(link => (object)link).ToList()));
+            }
+            if (Vendor.StaffList?.Any() == true)
+            {
+                Vendor.StaffList.ForEach(x => {
+                    x.VendorId = Vendor.VendorId;
+                    tasks.Add(VendorService.AddStaffAsync(x));
+                });
+            }
+            if (Vendor.OpenIdCaList?.Any() == true)
+            {
+                Vendor.OpenIdCaList.ForEach(x => x.VendorId = Vendor.VendorId);
+                tasks.Add(VendorService.RegisterVendorOpenIdCaAsync(Vendor.OpenIdCaList.Select(ca => (object)ca).ToList()));
+            }
+            Task.WaitAll(tasks.ToArray());
+            if(tasks.Any(x => !x.Result.IsSuccessStatusCode))
+            {
+                await Layout.ToggleSpinner(false);
+                var errorMsg = new JArray();
+                foreach (var task in tasks.Where(t => !t.Result.IsSuccessStatusCode))
+                {
+                    errorMsg.Add(task.Result.ContentString.ToJson());
+                }
+                await Layout.ShowMessageDialog($"ベンダー作成失敗",
+                                               $"ベンダーの作成に失敗しました。", "OK", $"{errorMsg}");
+
+                return;
+            }
+        }
+        else
+        {
+
+            tasks.Add(VendorService.UpdateVendorAsync(Vendor));
+
+            if (removedVendorLinks.Any())
+            {
+                removedVendorLinks.ForEach(x => { 
+                    tasks.Add(VendorService.RemoveVendorLinkAsync(x.VendorLinkId));
+                });
+            }
+            if (Vendor.VendorLinkList?.Any() == true)
+            {
+                Vendor.VendorLinkList.ForEach(x => x.VendorId = Vendor.VendorId);
+                tasks.Add(VendorService.RegisterVendorLinkAsync(Vendor.VendorLinkList.Select(link => (object)link).ToList()));
+            }
+            if (removedStaffs.Count != 0)
+            {
+                removedStaffs.ForEach(x => {
+                    tasks.Add(VendorService.RemoveStaffAsync(x.StaffId));
+                });
+            }
+
+            if (Vendor.StaffList?.Any() == true)
+            {
+                Vendor.StaffList.ForEach(x => {
+                    x.VendorId = Vendor.VendorId;
+                    tasks.Add(VendorService.AddStaffAsync(x));
+                });
+            }
+            if (originalVendorAttachFileStorageId != Vendor.AttachFileStorageId)
+            {
+                if (string.IsNullOrEmpty(Vendor.AttachFileStorageId))
+                {
+                    tasks.Add(VendorService.RemoveVendorAttachFileAsync(Vendor.VendorId.ToString()));
+                }
+                //upsert
+                else
+                {
+                    tasks.Add(VendorService.RegisterVendorAttachFileAsync(new VendorAttachFileModel()
+                    {
+                        VendorId = Vendor.VendorId,
+                        AttachFileStorageId = Vendor.AttachFileStorageId
+                    }));
+                }
+            }
+
+            if (Vendor.OpenIdCaList?.Any() == true)
+            {
+                Vendor.OpenIdCaList.ForEach(x => x.VendorId = Vendor.VendorId);
+                tasks.Add(VendorService.RegisterVendorOpenIdCaAsync(Vendor.OpenIdCaList.Select(ca => (object)ca).ToList()));
+            }
+            Task.WaitAll(tasks.ToArray());
+            if(tasks.Any(x => !x.Result.IsSuccessStatusCode))
+            {
+                await Layout.ToggleSpinner(false);
+                var errorMsg = new JArray();
+                foreach (var task in tasks.Where(t => !t.Result.IsSuccessStatusCode))
+                {
+                    errorMsg.Add(task.Result.ContentString.ToJson());
+                }
+                await Layout.ShowMessageDialog($"ベンダー保存失敗",
+                                               $"ベンダーの保存に失敗しました。", "OK", $"{errorMsg}");
+
+                return;
+            }
+        }
+
+        Layout.ShowNotifySuccess(message: "ベンダーの作成／保存が正常に完了しました。");
+        //ベンダーツリー更新
+        await OnChange.InvokeAsync(new[] { Vendor.VendorId });
+        await Layout.ToggleSpinner(false);
+    }
+
+    private async Task Remove()
+    {
+        var result = await Layout.ShowConfirmDialog("ベンダー削除", 
+                                                    $"ベンダー「{Vendor.VendorName}」を削除します。\nよろしいですか？");
+
+        DialogService.Close();
+
+        if (!result.HasValue || result == false)
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+
+        var res = VendorService.RemoveVendor(Vendor.VendorId);
+        if(!res.IsSuccessStatusCode)
+        {
+            await Layout.ToggleSpinner(false);
+            var errorMsg = res.ContentString.ToJson();
+            await Layout.ShowMessageDialog("ベンダー削除失敗", "ベンダーの削除が失敗しました。", "OK", $"{errorMsg["Detail"]}");
+            return;
+        }
+
+        //ベンダーツリー更新
+        Layout.ShowNotifySuccess(message: "ベンダーの削除が正常に完了しました。");
+        await OnChange.InvokeAsync();
+        await Layout.ToggleSpinner(false);
+    }
+}

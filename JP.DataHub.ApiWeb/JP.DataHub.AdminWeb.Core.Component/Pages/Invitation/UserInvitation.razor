@@ -1,0 +1,120 @@
+﻿@inherits AdminWebBasePage
+
+@using JP.DataHub.AdminWeb.Service.Interface
+@using JP.DataHub.AdminWeb.WebAPI.Models
+@using JP.DataHub.AdminWeb.WebAPI.Resources
+@using JP.DataHub.Com.Net.Http
+@using System.Net
+@using Newtonsoft.Json;
+@using Newtonsoft.Json.Linq;
+@using JP.DataHub.Com.Extensions;
+@using JP.DataHub.AdminWeb.Core.Component.Pages;
+@using JP.DataHub.AdminWeb.Core.Authentication;
+@using JP.DataHub.Com.Unity;
+@using JP.DataHub.AdminWeb.Core.Settings;
+@using Microsoft.AspNetCore.Authentication;
+@using System.Security.Claims;
+@using Unity;
+
+@attribute [Authorize(Policy = "UserInvitationWrite")]
+
+@inject ICommonAdminService CommonService
+@inject IAdminVendorService VendorService
+@inject IUserInvitationService UserInvitationService
+
+@inject DialogService DialogService
+
+<RadzenCard>
+    <EditForm Model="@SendInvitationModel" OnValidSubmit="@OnSubmit">
+        <h4>ユーザ招待</h4>
+        <ObjectGraphDataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="row">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Text="権限" />
+            </div>
+            <div class="col-8">
+                <div class="d-flex align-items-center">
+                    <RadzenDropDown Data=@RoleList Name="Role" @bind-Value=@SendInvitationModel.RoleId TextProperty="RoleName" ValueProperty="RoleId" Placeholder="招待する方に付与する権限を選択してください。" Class="w-100" />
+                </div>
+                <ValidationMessage For="@(() => SendInvitationModel.RoleId)" />
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-4 d-flex align-items-center">
+                <RadzenLabel Text="メールアドレス" />
+            </div>
+            <div class="col-8">
+                <div class="d-flex align-items-center">
+                    <RadzenTextBox Name="MailAddress" @bind-Value="SendInvitationModel.MailAddress" Placeholder="招待する方のメールアドレスを入力してください。" Class="w-100" />
+                </div>
+                <ValidationMessage For="@(() => SendInvitationModel.MailAddress)" />
+            </div>
+        </div>
+
+        <div class="row justify-content-center mt-5">
+            <div class="col text-center">
+                <RadzenButton Text="招待" ButtonType="ButtonType.Submit" ButtonStyle="ButtonStyle.Primary"></RadzenButton>
+            </div>
+        </div>
+    </EditForm>
+</RadzenCard>
+
+@code {
+    [CascadingParameter]
+    public MainLayoutBase Layout { get; set; }
+
+    [Parameter]
+    public string VendorId { get; set; }
+
+    private SendInvitationModel SendInvitationModel { get; set; } = new();
+
+    private List<RoleModel> RoleList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Layout.ToggleSpinner(true);
+        var settings = UnityCore.UnityContainer.Resolve<SystemAdminSettings>();
+        VendorService.GetRoleList()
+                        .Action(x => !x.IsSuccessStatusCode, async y =>
+                        {
+                            await InvokeAsync(() => Layout.ToggleSpinner(false));
+                            var errorMsg = y.RawContentString.ToJson();
+                            await InvokeAsync(() => Layout.ShowMessageDialog("権限リスト取得失敗", "権限リストの取得に失敗しました。", "OK", $"{errorMsg["Detail"]}"));
+                        })
+                        .Action(x => x.IsSuccessStatusCode, y =>
+                        {
+                            RoleList = y.Result;
+                            if (!IsSystemAdministrator())
+                            {
+                                // システム管理者ではない場合、システム管理者ロールは使用しない
+                                RoleList.RemoveAll(x => x.RoleId.ToString() == settings.SystemAdministratorRoleId);
+                            }
+                        });
+        await Layout.ToggleSpinner(false);
+        SendInvitationModel = new();
+        SendInvitationModel.RoleId = null;
+    }
+
+    private async Task OnSubmit()
+    {
+        var confirmResult = await Layout.ShowConfirmDialog("ユーザー招待", "ユーザー招待を行います。よろしいですか？");
+        if (confirmResult != true) 
+        {
+            return;
+        }
+
+        await Layout.ToggleSpinner(true);
+        SendInvitationModel.VendorId = Guid.Parse(VendorId);
+        var res = UserInvitationService.SendInvitation(SendInvitationModel);
+        if(!res.IsSuccessStatusCode)
+        {
+            await Layout.ToggleSpinner(false);
+            var errorMsg = res.ContentString.ToJson();
+            await Layout.ShowMessageDialog("ユーザー招待失敗", "ユーザーの招待に失敗しました。", "OK", $"{errorMsg["Detail"]}");
+            return;
+        }
+        Layout.ShowNotifySuccess(message: "ユーザーの招待が正常に完了しました。");
+        await Layout.ToggleSpinner(false);
+    }
+}

@@ -1,0 +1,332 @@
+﻿@using JP.DataHub.AdminWeb.WebAPI.Models.Api
+
+@inject DialogService DialogService
+
+<div class="data_dictionary_section">
+    <AuthorizeView Policy="@(FunctionPolicy.ApiWrite.ToString())">
+        <Authorized>
+            @{
+                // AuthorizeView自体で制御すると全項目を二重に記述する必要があるので、フラグをAuthorizeViewで制御
+                _isEditable = true;
+            }
+        </Authorized>
+        <NotAuthorized>
+            @{
+                _isEditable = false;
+            }
+        </NotAuthorized>
+    </AuthorizeView>
+    <div class="row mt-2">
+        <div class="col-4 d-flex justify-content-between">
+            <RadzenLabel Component="Tag" Text="タグ" Style="vertical-align: middle;"></RadzenLabel>
+            <RadzenButton Text="変更" Click="@((args) => EditControllerTag())" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" class="px-2 align-middle" Disabled="@(!_isEditable)"></RadzenButton>
+        </div>
+        <div class="col-8">
+            @foreach (var tag in TagListFlat)
+            {
+                @if (tag.IsActive)
+                {
+                    <div class="tag-item">
+                        <span>@tag.TagName.Trim()</span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4 d-flex justify-content-between">
+            <RadzenLabel Component="Category" Text="カテゴリ" Style="vertical-align: middle;"></RadzenLabel>
+            <RadzenButton Text="変更" Click="@((args) => EditControllerCategory())" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" class="px-2 align-middle" Disabled="@(!_isEditable)"></RadzenButton>
+        </div>
+        <div class="col-8">
+            @foreach (var category in ResourceHeader.ControllerCategoryInfomationList)
+            {
+                @if (category.IsActive)
+                {
+                    <div class="tag-item">
+                        <span>@category.CategoryName</span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4 d-flex justify-content-between">
+            <RadzenLabel Component="Field" Text="分野" Style="vertical-align: middle;"></RadzenLabel>
+            <RadzenButton Text="変更" Click="@((args) => EditControllerField())" Size="ButtonSize.Small" ButtonStyle="ButtonStyle.Secondary" class="px-2 align-middle" Disabled="@(!_isEditable)"></RadzenButton>
+        </div>
+        <div class="col-8">
+            @foreach (var field in FieldListFlat)
+            {
+                @if (field.IsActive)
+                {
+                    <div class="tag-item">
+                        <span>@field.FieldName</span>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="IsData" Text="区分"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenCheckBox TValue="bool" @bind-Value="ResourceHeader.Controller.IsData" Disabled="@(!_isEditable)"></RadzenCheckBox>
+            <RadzenLabel class="mx-2" Text="データ"></RadzenLabel>
+            <RadzenCheckBox TValue="bool" @bind-Value="ResourceHeader.Controller.IsBusinessLogic" Disabled="@(!_isEditable)"></RadzenCheckBox>
+            <RadzenLabel class="mx-2" Text="ビジネスロジック"></RadzenLabel>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="Pay" Text="使用料"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenCard>
+                <div>
+                    <RadzenRadioButtonList onclick="@OnChangeIsPay()" Name="IsPay" @bind-Value="@ResourceHeader.Controller.IsPay" TValue="bool" Disabled="@(!_isEditable)">
+                        <Items>
+                            <RadzenRadioButtonListItem Text="有料" Value="true" TValue="bool" />
+                            <RadzenRadioButtonListItem Text="無料" Value="false" TValue="bool" />
+                        </Items>
+                    </RadzenRadioButtonList>
+                </div>
+                <div>
+                    <RadzenLabel class="mx-2" Text="使用料"></RadzenLabel>
+                    <RadzenTextBox class="mx-2" @bind-Value="ResourceHeader.Controller.FeeDescription" Disabled="@(!_isEditable ? true : !ResourceHeader.Controller.IsPay)"></RadzenTextBox>
+                    <ValidationMessage For="@(() => ResourceHeader.Controller.FeeDescription)"/>
+                </div>
+            </RadzenCard>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="CreateUser" Text="作成者"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ResourceCreateUser" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.ResourceCreateUser)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="Maintainer" Text="メンテナー"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ResourceMaintainer" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.ResourceMaintainer)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="CreateDate" Text="作成日"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ResourceCreateDate" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.ResourceCreateDate)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="LatestUpdateDate" Text="最終更新日"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ResourceLatestDate" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.ResourceLatestDate)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="UpdateFrequency" Text="更新頻度"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.UpdateFrequency" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.UpdateFrequency)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="IsContact" Text="個別手続きの有無"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenRadioButtonList class="w-100" TValue="bool" @bind-Value="ResourceHeader.Controller.IsContract" Disabled="@(!_isEditable)">
+                <Items>
+                    <RadzenRadioButtonListItem Text="あり" Value="true"></RadzenRadioButtonListItem>
+                    <RadzenRadioButtonListItem Text="なし" Value="false"></RadzenRadioButtonListItem>
+                </Items>
+            </RadzenRadioButtonList>
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="Contact" Text="連絡先"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.ContactInformation" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.ContactInformation)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="ResoueceVersion" Text="バージョン"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenTextBox class="w-100" @bind-Value="ResourceHeader.Controller.Version" Disabled="@(!_isEditable)"></RadzenTextBox>
+            <ValidationMessage For="@(() => ResourceHeader.Controller.Version)" />
+        </div>
+    </div>
+    <div class="row mt-2">
+        <div class="col-4">
+            <RadzenLabel Component="AgreeDescription" Text="データ利用規約"></RadzenLabel>
+        </div>
+        <div class="col-8">
+            <RadzenCard>
+                <RadzenTextArea class="w-100" @bind-Value="ResourceHeader.Controller.AgreeDescription" Disabled="@(!_isEditable)"></RadzenTextArea>
+                <div>
+                    <RadzenCheckBox Name="ControllerIsVisibleAgreement" TValue="bool" @bind-Value="ResourceHeader.Controller.IsVisibleAgreement" Disabled="@(!_isEditable)"></RadzenCheckBox>
+                    <RadzenLabel Component="ControllerIsVisibleAgreement" Text="同意・承認を必要とする"></RadzenLabel>
+                </div>
+            </RadzenCard>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ApiResourceHeaderModel ResourceHeader { get; set; }
+
+    [Parameter]
+    public List<TagInfoModel> TagListFlat { get; set; }
+
+    [Parameter]
+    public List<ApiResourceFieldQueryModel> FieldListFlat { get; set; }
+
+    private bool _isEditable = false;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // モデル追加/編集から戻ったときにAuthorizeViewで設定した編集可否フラグが反映されないため明示的に再レンダリング
+            StateHasChanged();
+        }
+    }
+
+    public async Task EditControllerTag()
+    {
+        var result = await DialogService.OpenAsync<TagTree>(
+            "タグ", 
+            new Dictionary<string, object>()
+            {
+                { "TagInfoList", ResourceHeader.TagInfoList?.Select(x => x.Clone()).ToList() },
+                { "TagListFlat", TagListFlat?.Select(x => x.Clone()).ToList() }
+            },
+            new DialogOptions()
+            {
+                Height = "50%"
+            }
+        );
+
+        if (result != null)
+        {
+            ResourceHeader.TagInfoList = result.Info;
+            TagListFlat.Clear();
+            TagListFlat.AddRange(result.Flat);
+        }
+    }
+
+    public async Task EditControllerField()
+    {
+        var result = await DialogService.OpenAsync<FieldTree>(
+            "分野", 
+            new Dictionary<string, object>()
+            {
+                { "FiledInfoList", ResourceHeader.FieldInfoList?.Select(x => x.Clone()).ToList() },
+                { "FieldListFlat", FieldListFlat?.Select(x => x.Clone()).ToList() }
+            },
+            new DialogOptions()
+            {
+                Height = "50%"
+            }
+        );
+
+        if (result != null)
+        {
+            ResourceHeader.FieldInfoList = result.Info;
+            FieldListFlat.Clear();
+            FieldListFlat.AddRange(result.Flat);
+        }
+    }
+
+    public async Task EditControllerCategory()
+    {
+        var result = await DialogService.OpenAsync<CategoryList>(
+            "カテゴリ",
+            new Dictionary<string, object>()
+            {
+                { "CategoryInfoList", ResourceHeader.ControllerCategoryInfomationList?.Select(x => x.Clone()).ToList() }
+            },
+            new DialogOptions()
+            {
+                Height = "50%"
+            }
+        );
+
+        if (result != null)
+        {
+            ResourceHeader.ControllerCategoryInfomationList = result;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        foreach(var tag in  ResourceHeader.Controller.ControllerTagInfoList.Where(x => x.IsActive))
+        {
+            CheckTagIsActive(tag);
+        }
+
+        foreach (var fileds in ResourceHeader.Controller.ControllerFieldInfoList.Where(x => x.IsActive))
+        {
+            CheckFieldIsActive(fileds);
+        }
+    }
+
+    private void CheckTagIsActive(ApiResourceTagInfoModel tag, IEnumerable<TagInfoModel> masterTagList = null)
+    {
+        if (masterTagList == null)
+            masterTagList = ResourceHeader.TagInfoList;
+
+        foreach(var mastertag in masterTagList)
+        {
+            if (mastertag.TagId == tag.TagId)
+                mastertag.IsActive = tag.IsActive;
+            if (mastertag.Children != null && mastertag.Children.Count != 0)
+                CheckTagIsActive(tag, mastertag.Children);
+        }
+    }
+
+    private void CheckFieldIsActive(ApiResourceFieldInfoModel field, IEnumerable<ApiResourceFieldQueryModel> masterFieldList = null)
+    {
+        if (masterFieldList == null)
+            masterFieldList = ResourceHeader.FieldInfoList;
+
+        foreach(var masterfld in masterFieldList)
+        {
+            if (masterfld.FieldId == field.FieldId)
+                masterfld.IsActive = field.IsActive;
+
+            if (masterfld.Children != null && masterfld.Children.Count != 0)
+                CheckFieldIsActive(field, masterfld.Children);
+
+        }
+    }
+
+    public async Task OnChangeIsPay()
+    {
+        if (!ResourceHeader.Controller.IsPay)
+        {
+            ResourceHeader.Controller.FeeDescription = String.Empty;
+        }
+    }
+}
