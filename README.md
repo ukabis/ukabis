@@ -32,7 +32,7 @@ MITライセンスについて(原文): https://opensource.org/license/mit/
 * JP.DataHub.Com : ukabisの共通基盤処理
 * JP.DataHub.OData : ManageApiのODataに関わる処理
 * UnitTest : UnitTest(単体テスト)用の処理
-* UnityInterceptor : UnityContainer(https://github.com/unitycontainer/interception)をukabis用に改変したもの
+* UnityInterceptor : UnityContainer (https://github.com/unitycontainer/interception) をukabis用に改変したもの
 
 ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 
