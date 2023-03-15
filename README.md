@@ -16,11 +16,11 @@
 
 ### ライセンス
 本プロジェクトのソースコードは、MITライセンスで提供いたします。
-MITライセンスについて(原文): https://opensource.org/license/mit/
-上記の参考和訳: https://licenses.opensource.jp/MIT/MIT.html
+* MITライセンスについて(原文): https://opensource.org/license/mit/
+* 上記の参考和訳: https://licenses.opensource.jp/MIT/MIT.html
 
 ### ご利用にあたっての注意事項
-"ukabis"という用語は、日本において商標登録申請中となります。
+"ukabis"という用語は、日本において商標登録申請中となります。<br/>
 ソースコードのご利用者にあたっては、第三者の権利を侵害することのないようご注意ください。
 
 また、本プロジェクトのソースコードは無保証であり、ビルドや実行方法、あるいはプログラムの動作に関するサポートも行っていません。あらかじめご了承ください。
@@ -80,10 +80,11 @@ ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 * JP.DataHub.ApiWeb\JP.DataHub.NET.sln : ukabis本体のソリューション
 
 ## 本プロジェクトのビルドにあたっての留意事項
-本プロジェクトのソースコードは、OSS化にあたり一部を修正、あるいは削除しています。そのため、本プロジェクトのソースコードをビルドして実行するには、以下の対応を利用者がご自身で行う必要があります。
+本プロジェクトのソースコードは、OSS化にあたり一部を修正、あるいは削除しています。<br/>
+そのため、本プロジェクトのソースコードをビルドして実行するには、以下の対応を利用者がご自身で行う必要があります。
 
 ### Jsonのスキーマ処理の実装
-OSS化にあたり、有償ライセンス製品であるNewtonsoftの『Json.NET Schema』に依存する処理を、オリジナルのソースコードから削除しています。
+OSS化にあたり、有償ライセンス製品であるNewtonsoftの『Json.NET Schema』に依存する処理を、オリジナルのソースコードから削除しています。<br/>
 代わりに、以下のパスにインターフェースや中身が空のメソッドを定義していますので、これらを利用してスキーマ処理を実装してください。
 
 * JP.DataHub.Com\JP.DataHub.Com\JP.DataHub.Com\Json\Schema\ 配下のソース全て
@@ -91,11 +92,11 @@ OSS化にあたり、有償ライセンス製品であるNewtonsoftの『Json.NE
 * JP.DataHub.ApiWeb\JP.DataHub.ManageApi.Service\DymamicApi\JsonFormatCustomValidator.cs GetSchemaFormatList()
 
 ### 各種サービスへの接続設定
-以下のファイルを修正し、DB接続設定、管理者IDの設定、OpenIDのIDやパスワードなどを設定してください。
+以下のファイルを修正し、DB接続設定、管理者IDの設定、OpenIDのIDやパスワードなどを設定してください。<br/>
 なお、ファイル名に"{Environment}"と記載されている箇所は、DevelopmentやStaging等の、環境を表す文字列に置き換えてください。
 
 #### appsetting.json
-アプリケーション設定ファイルです。
+アプリケーション設定ファイルです。<br/>
 これらのファイルでは、主にDB接続設定や管理者ID、OpenIDのIDやパスワードの設定を行います。
 
 * JP.DataHub.ApiWeb\JP.DataHub.AdminWeb\appsettings.{Environment}.json
@@ -120,7 +121,7 @@ OSS化にあたり、有償ライセンス製品であるNewtonsoftの『Json.NE
 * JP.DataHub.Com\JP.DataHub.Com\UnitTest.JP.DataHub.Com\appsettings.json
 
 #### connectionstring.json
-DBの接続文字列に関する設定ファイルです。
+DBの接続文字列に関する設定ファイルです。<br/>
 これらのファイルでは、DB接続文字列の設定を行います。
 
 * JP.DataHub.ApiWeb\JP.DataHub.ApiWeb\connectionstring.{Environment}.json
@@ -132,7 +133,7 @@ DBの接続文字列に関する設定ファイルです。
 * UnitTest\UnitTest.JP.DataHub.ApiWeb.Infrastructure\connectionstring.json
 
 #### server.json
-サーバーの設定ファイルです。
+サーバーの設定ファイルです。<br/>
 これらのファイルでは、主にOpenIDのIDやパスワード、APIサーバー(ManageApi、DynamicWeb)の接続先URL等の設定を行います。
 
 * JP.DataHub.ApiWeb\JP.DataHub.AdminWeb\server.{Environment}.json
@@ -146,7 +147,7 @@ DBの接続文字列に関する設定ファイルです。
 * JP.DataHub.Com\JP.DataHub.Com\UnitTest.JP.DataHub.Com\server.json
 
 #### account.json
-アカウントの設定ファイルです。
+アカウントの設定ファイルです。<br/>
 これらのファイルでは、主にOpenIDのIDやパスワードの設定を行います。
 
 * JP.DataHub.Com\JP.DataHub.Com\UnitTest.JP.DataHub.Com\account.json
@@ -172,7 +173,7 @@ OCI(Oracle Cloud Infrastructure)へ接続する際に用いられる、pemファ
 * smartfoodchain_api_key_{Environment}.pem
 
 #### wallet
-Oracle Databaseへ接続する際に使用するwalletファイルを格納する場所です。
+Oracle Databaseへ接続する際に使用するwalletファイルを格納する場所です。<br/>
 OCI上で入手したwalletファイルを解凍し、中に含まれるファイルを格納してください。
 
 * JP.DataHub.ApiWeb\JP.DataHub.ApiWeb\wallet\{Environment}\
