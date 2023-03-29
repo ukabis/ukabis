@@ -1,0 +1,78 @@
+.CheckboxInput {
+    padding: 12px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    }
+    .CheckboxInput-Input {
+    margin: 0;
+    width: 0;
+    opacity: 0;
+    }
+    .CheckboxInput:hover{
+    background: rgba(0,0,0,.05) !important;
+    }
+    .CheckboxInput:hover > .CheckboxInput-DummyInput{
+    transform: scale(1.1);
+    }
+    .CheckboxInput-Input:focus + .CheckboxInput-DummyInput{
+    transform: scale(1.1);
+    }
+    .CheckboxInput-Input:checked + .CheckboxInput-DummyInput {
+    background: $color-pink;
+    }
+    .CheckboxInput-Input:checked + .CheckboxInput-DummyInput::before {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 35%;
+    height: 4px;
+    border-radius: 2px;
+    transform: translate(-6px, 5px) rotateZ(-135deg);
+    transform-origin: 2px 2px;
+    background: #FFFFFF;
+    }
+    .CheckboxInput-Input:checked + .CheckboxInput-DummyInput::after {
+    content: "";
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 70%;
+    height: 4px;
+    border-radius: 2px;
+    transform: translate(-6px, 5px) rotateZ(-45deg);
+    transform-origin: 2px 2px;
+    background: #FFFFFF;
+    }
+    .CheckboxInput-DummyInput {
+    position: relative;
+    top: 0;
+    left: 0;
+    display: block;
+    width: 32px;
+    height: 32px;
+    border: solid 2px transparent;
+    background: rgba(0, 0, 0, .15);
+    border-radius: 50%;
+    transition: all .15s linear;
+    }
+    .CheckboxInput-LabelText {
+    margin-left: 12px;
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    }
+
+
+.page-link-customize{
+    color: $color-pink !important;
+}
+.page-link.active, .active > .page-link-customize{
+    background-color: $color-pink !important;
+    border-color: $color-pink !important;
+    color: #FFFFFF !important;
+}

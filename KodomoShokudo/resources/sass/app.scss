@@ -1,0 +1,18 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Variables
+@import 'variables';
+@import 'utility';
+@import 'components';
+
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+//pages
+@import 'style';
+@import 'login';
+
+
+//vuetify
+//@import 'vuetify/dist/vuetify.min.css';

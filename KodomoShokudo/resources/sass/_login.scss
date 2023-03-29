@@ -1,0 +1,22 @@
+.login_header{
+    text-align: center;
+    margin-bottom: 20px;
+    &__title{
+        color: $color-pink;
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    &__image{
+        img{
+            max-width: 200px;
+        }
+    }
+}
+.card_login{
+    border-radius: 0;
+    border: none;
+}
+.card_login-body{
+    padding: 35px 30px;
+}
+

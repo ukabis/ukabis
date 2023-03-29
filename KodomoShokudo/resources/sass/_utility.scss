@@ -1,0 +1,73 @@
+a{
+    text-decoration: none!important;
+}
+a:active {
+    color: $color-pink;
+}
+p{
+    margin: 0;
+}
+.subp-title{
+    color: $color-pink;
+    font-weight: bold!important;
+}
+.btn-ukabis{
+    border: 1px $color-pink solid;
+    background: $color-pink;
+    color: white!important;
+    font-weight: bold;
+    padding: 7px 15px;
+    transition: .3s;
+    &:hover{
+        opacity: .7;
+    }
+}
+
+.btn-ukabis-b{
+    border: 1px #6c757d solid;
+    background: #6c757d;
+    color: white!important;
+    font-weight: bold;
+    padding: 7px 15px;
+    transition: .3s;
+    &:hover{
+        opacity: .7;
+    }
+}
+
+
+/* モーダルCSS */
+.modalArea {
+    display: none;
+    position: fixed;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.modalBg {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(30,30,30,0.7);
+}
+
+.modalWrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform:translate(-50%,-50%);
+    width: 70%;
+    max-width: 500px;
+    padding: 20px 40px;
+    background-color: #fff;
+}
+
+.closeModal {
+    position: absolute;
+    top: 0.2rem;
+    right: 1rem;
+    cursor: pointer;
+    font-size: 25px;
+}

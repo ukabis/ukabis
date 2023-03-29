@@ -33,6 +33,8 @@
 * JP.DataHub.OData : ManageApiのODataに関わる処理
 * UnitTest : UnitTest(単体テスト)用の処理
 * UnityInterceptor : UnityContainer (https://github.com/unitycontainer/interception) をukabis用に改変したもの
+* Dashboard : ダッシュボード
+* KodomoShokudo : こども食堂
 
 ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 
@@ -72,6 +74,11 @@ ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 * JP.DataHub.SystemAdminWeb  : システム管理者画面ホスト
 * JP.DataHub.SmartFoodChainAOP  : AOP機能
 * JP.DataHub.Web.Core  : 基盤共通のweb
+
+### ダッシュボードについて
+
+### こども食堂について
+
 
 ### Visual Studio用ソリューションファイルについて
 本プロジェクトで使用しているソリューションファイル(sln)は以下のとおりです。
