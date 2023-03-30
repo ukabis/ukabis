@@ -1,6 +1,6 @@
 # ukabis
 
-![logo](https://github.com/wanko3/ukabis/blob/main/logo.png)
+![logo](https://github.com/ukabis/ukabis/blob/main/logo.png)
 
 ## ukabisとは
 近年、高まる消費者の食品の鮮度や品質に対するニーズへの対応、本来食べられるのに廃棄される食品「フードロス」の削減を実現するために、フードチェーン（食の生産、加工・流通、販売・消費、資源循環、育種/品種改良）の変革が求められています。
