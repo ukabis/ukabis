@@ -33,8 +33,8 @@
 * JP.DataHub.OData : ManageApiのODataに関わる処理
 * UnitTest : UnitTest(単体テスト)用の処理
 * UnityInterceptor : UnityContainer (https://github.com/unitycontainer/interception) をukabis用に改変したもの
-* Dashboard : ダッシュボード(参考アプリケーション)
-* FoodDonation : こども食堂 提供食材登録システム(参考アプリケーション)
+* Dashboard : ダッシュボード(ukabisを利用するアプリケーション)
+* FoodDonation : こども食堂 提供食材登録システム(ukabisを利用するアプリケーション)
 
 ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 
