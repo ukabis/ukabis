@@ -33,8 +33,8 @@
 * JP.DataHub.OData : ManageApiのODataに関わる処理
 * UnitTest : UnitTest(単体テスト)用の処理
 * UnityInterceptor : UnityContainer (https://github.com/unitycontainer/interception) をukabis用に改変したもの
-* Dashboard : ダッシュボード
-* KodomoShokudo : こども食堂
+* Dashboard : ダッシュボード(参考アプリケーション)
+* FoodDonation : こども食堂 提供食材登録システム(参考アプリケーション)
 
 ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 
@@ -76,14 +76,16 @@ ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 * JP.DataHub.Web.Core  : 基盤共通のweb
 
 ### ダッシュボードについて
+ukabisを利用するアプリケーションです。<br/>
 ukabisのデータベースへ蓄積した農作物のトレーサビリティに関するデータの閲覧や、<br/>
-ukabisを利用する事業社、および所属するスタッフや事業所の情報登録・編集、グループの登録・編集等を行うアプリケーションです。<br/>
+ukabisを利用する事業社、および所属するスタッフや事業所の情報登録・編集、グループの登録・編集等を行うアプリケーションです。
 Oracle APEX (Application Express)で実装されています。<br/>
-ご利用の場合は、本プロジェクトに含まれているSQLファイルをOracle APEX上でインポートしてください。<br/>
-なお、本SQLファイルには画面デザインに関するデータは含まれていませんので、あらかじめご了承ください。
+ご利用の場合は、本プロジェクトに含まれているSQLファイルをOracle APEX上でインポートしてください。
 
-### こども食堂について
-
+### こども食堂 提供食材登録システムについて
+ukabisを利用するアプリケーションです。<br/>
+事業者が提供する食材と、その食材を希望するこども食堂とのマッチングを行うことを目的とし、<br/>
+提供する食材情報の登録・編集、閲覧等を行うことができます。
 
 ### Visual Studio用ソリューションファイルについて
 本プロジェクトで使用しているソリューションファイル(sln)は以下のとおりです。
