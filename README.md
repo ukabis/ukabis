@@ -35,8 +35,8 @@
 * UnityInterceptor : UnityContainer (https://github.com/unitycontainer/interception) をukabis用に改変したもの
 * Dashboard : ダッシュボード(ukabisを利用するアプリケーション)
 * FoodDonation : こども食堂 提供食材登録システム(ukabisを利用するアプリケーション)
-* JAS : JASパッケージ(参考アプリケーション)
-* SDGs : 自治体認証(参考アプリケーション)
+* JAS : JAS統合パッケージ(ukabisを利用するアプリケーション)
+* SDGs : 自治体SDGs認証システム(ukabisを利用するアプリケーション)
 
 ukabis本体(JP.DataHub.ApiWeb)の構成は以下のとおりです。
 
@@ -90,9 +90,16 @@ ukabisを利用するアプリケーションです。<br/>
 提供する食材情報の登録・編集、閲覧等を行うことができます。<br/>
 主にPHPで実装されており、動作させるにはApache等のWebサーバが必要です。
 
-### JASパッケージについて
+### JAS統合パッケージについて
+ukabisを利用するアプリケーションです。<br/>
+センサーの紐付け、個体識別番号の発行、入出荷、センサーデータのアップロード、JAS格付、JASラベル印刷など、<br/>
+JAS認定にかかわる各種機能を統合するアプリケーションです。<br/>
+主にTypeScriptとVue.jsで実装されています。
 
-### 自治体認証について
+### 自治体SDGs認証システムについて
+ukabisを利用するアプリケーションです。<br/>
+生産者や飲食店向けのSDGs認証制度に関する申請や認証などを行うアプリケーションです。<br/>
+主にPHPで実装されており、動作させるにはApache等のWebサーバが必要です。
 
 ### Visual Studio用ソリューションファイルについて
 本プロジェクトで使用しているソリューションファイル(sln)は以下のとおりです。
