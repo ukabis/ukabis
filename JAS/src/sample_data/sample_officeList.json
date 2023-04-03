@@ -1,0 +1,9 @@
+[
+    {"officeId": "A_Office01", "officeName": "事業所A1", "companyId": "C001"},
+    {"officeId": "A_Office02", "officeName": "事業所A2", "companyId": "C001"},
+    {"officeId": "B_Office03", "officeName": "事業所B1", "companyId": "C002"},
+    {"officeId": "C_Office04", "officeName": "事業所C1", "companyId": "C003"},
+    {"officeId": "C_Office05", "officeName": "事業所C2", "companyId": "C003"},
+    {"officeId": "C_Office06", "officeName": "事業所C3", "companyId": "C003"},
+    {"officeId": "C_Office07", "officeName": "事業所C4", "companyId": "C003"}
+]

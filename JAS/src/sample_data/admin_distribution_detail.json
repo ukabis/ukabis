@@ -1,0 +1,32 @@
+{
+    "resident_name": "海野 太郎",
+    "resident_address": "静岡県●●市▲▲区○○町1-1-1",
+    "resident_contact": "050-1111-1111",
+    "resident_information": "G-GAP認証、HACCP、有機JAS、特別栽培農産物 等",
+    "business_name": "静岡メロン⽣産者の会",
+    "business_address": "静岡県●●市▲▲区○○町1-1-1",
+    "business_contact": "050-1111-1111",
+    "business_information": "G-GAP認証、HACCP、有機JAS、特別栽培農産物 等",
+    "distribution_process": [
+        {
+            "company_name_label": "⽣産・出荷者（事業会社名）",
+            "shipment_date": "出荷：〇⽉〇⽇〇時"
+        },
+        {
+            "company_name_label": "卸売・仲卸（事業会社名）",
+            "shipment_date": "⼊荷：〇⽉〇⽇〇時   出荷：〇⽉〇⽇〇時"
+        },
+        {
+            "company_name_label": "卸売・仲卸（事業会社名）",
+            "shipment_date": "⼊荷：〇⽉〇⽇〇時   出荷：〇⽉〇⽇〇時"
+        },
+        {
+            "company_name_label": "配送センター（事業会社名）",
+            "shipment_date": "⼊荷：〇⽉〇⽇〇時   出荷：〇⽉〇⽇〇時"
+        },
+        {
+            "company_name_label": "⼩売（事業会社名）",
+            "shipment_date": "⼊荷：〇⽉〇⽇〇時"
+        }
+    ]
+}

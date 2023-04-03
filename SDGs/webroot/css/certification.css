@@ -1,0 +1,106 @@
+body, html {
+    margin: 0;
+    padding: 0;
+}
+body {
+    text-align: center;
+}
+p {
+    margin: 0 !important;
+}
+table td,
+table th {
+    text-align: left;
+}
+.col6 {
+    width:50%;float:left;
+}
+.col12 {
+    width:100%;float:left;
+}
+.container {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    vertical-align: middle;
+    padding: 10px 0;
+    margin: 0;
+}
+.logo {
+    margin-top: 20px;
+}
+.office_info {
+    font-size: 40px;
+    text-align: left;
+    margin: 40px 10px;
+    padding: 0 35px;
+}
+.office_info table {
+    font-size: 22px !important;
+    font-weight: bold !important;
+}
+.office_info table td {
+    padding-left: 20px !important;
+    line-break: anywhere !important;
+}
+.assignment {
+    margin: 30px 10px;
+    padding: 0 65px 0 35px;
+    font-size: 19px;
+    text-align: left;
+    line-height: 2rem;
+}
+.result {
+    margin: 20px;
+    padding: 0 60px 0 30px;
+}
+.result .result_title {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+.result .result_content {
+    display: block;
+}
+.result .scoring {
+    width: 80%;
+    float: left;
+    margin: 20px 0;
+}
+.scoring table {
+    padding: 0 10px;
+    margin: 0 auto;
+}
+.scoring table th {
+    font-size: 18px;
+    padding-right: 10px;
+}
+.scoring table td{
+    font-size: 20px;
+}
+.result .rank {
+    padding: 10px 0;
+    font-weight: bold;
+    font-size: 28px;
+}
+.result .mark {
+    margin-top: -5px;
+}
+.result .mark img {
+    width: 90%;
+}
+.business_info {
+    margin: 20px;
+    padding: 0 35px;
+    font-size: 19px;
+    text-align: left;
+    line-height: 2rem;
+}
+.signal {
+    margin: 20px;
+    padding: 0 20px;
+    font-size: 19px;
+    text-align: right;
+    line-height: 2rem;
+}
+
+

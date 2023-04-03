@@ -1,0 +1,7 @@
+{
+    "upperLimitAllowableImpacts": "1.0",
+    "acceleration": "9.80665",
+    "allowableShocks": "2",
+    "packagingConditions": "すき間に緩衝材を利用",
+    "useSensor": ""
+}

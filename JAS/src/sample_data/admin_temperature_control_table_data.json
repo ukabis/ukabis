@@ -1,0 +1,11 @@
+{
+    "appropriateTemperatureRangeMin": "0",
+    "appropriateTemperatureRangeMax": "10",
+    "permissibleTemperatureRange1Min": "10",
+    "permissibleTemperatureRange1Max": "30",
+    "allowableIntegratedTime1": "3",
+    "permissibleTemperatureRange2Min": "-5",
+    "permissibleTemperatureRange2Max": "0",
+    "allowableIntegratedTime2": "3",
+    "useSensor": ""
+}

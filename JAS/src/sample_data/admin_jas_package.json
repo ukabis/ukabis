@@ -1,0 +1,22 @@
+{
+    "cropCode": [
+            ["cropCode1", "農作物コード1"],
+            ["cropCode2", "農作物コード2"],
+            ["cropCode3", "農作物コード3"]
+    ],
+    "typeCode": [
+            ["typeCode1", "種類コード1"],
+            ["typeCode2", "種類コード2"],
+            ["typeCode3", "種類コード3"]
+    ],
+    "varietyCode": [
+            ["varietyCode1", "品種コード1"],
+            ["varietyCode2", "品種コード2"],
+            ["varietyCode3", "品種コード3"]
+    ],
+    "lineageCode": [
+            ["lineageCode1", "系統コード1"],
+            ["lineageCode2", "系統コード2"],
+            ["lineageCode3", "系統コード3"]
+    ]
+}

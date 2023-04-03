@@ -1,0 +1,9 @@
+{
+    "groupName": "静岡県メロン生産者の会",
+    "groupRepresentative": "△△会社 飯田純一",
+    "systemUser": "海野 太郎",
+    "distributionResponsible": ["△△会社 飯田純一", "▲▲会社 三田次郎", "○○会社 飯田純一"],
+    "distributionChargeList": ["△△会社 飯田純一", "▲▲会社 三田次郎", "○○会社 飯田純一", "●●会社 三田次郎", "□□会社 飯田純一", "■■会社 三田次郎"],
+    "ratingResponsible": ["■■会社 三田次郎"],
+    "ratingChargeList":["■■会社 三田次郎", "△△会社 飯田純"]
+}

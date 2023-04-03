@@ -1,0 +1,47 @@
+[
+    {
+        "CompanyId": "C001",
+        "IsPublic": true,
+        "MailAddress": "",
+        "Offices": ["A_Office01"],
+        "Roles": [],
+        "StaffId": "staff01",
+        "StaffName": "田中太郎"
+    },
+    {
+        "CompanyId": "C001",
+        "IsPublic": true,
+        "MailAddress": "",
+        "Offices": ["A_Office01", "A_Office02"],
+        "Roles": [],
+        "StaffId": "staff02",
+        "StaffName": "山田花子"
+    },
+    {
+        "CompanyId": "C003",
+        "IsPublic": true,
+        "MailAddress": "",
+        "Offices": ["C_Office04"],
+        "Roles": [],
+        "StaffId": "staff03",
+        "StaffName": "鈴木一郎"
+    },
+    {
+        "CompanyId": "C002",
+        "IsPublic": true,
+        "MailAddress": "",
+        "Offices": ["B_Office03"],
+        "Roles": [],
+        "StaffId": "staff04",
+        "StaffName": "佐藤真美"
+    },
+    {
+        "CompanyId": "C003",
+        "IsPublic": true,
+        "MailAddress": "",
+        "Offices": ["C_Office04", "C_Office05", "C_Office06", "C_Office07"],
+        "Roles": [],
+        "StaffId": "staff05",
+        "StaffName": "小林健太"
+    }
+]
