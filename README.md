@@ -88,18 +88,18 @@ Oracle APEX (Application Express)で実装されています。<br/>
 ukabisを利用するアプリケーションです。<br/>
 事業者が提供する食材と、その食材を希望するこども食堂とのマッチングを行うことを目的とし、<br/>
 提供する食材情報の登録・編集、閲覧等を行うことができます。<br/>
-主にPHPで実装されており、動作させるにはApache等のWebサーバが必要です。
+PHPで実装されており、動作させるにはApache等のWebサーバが必要です。
 
 ### JAS統合パッケージについて
 ukabisを利用するアプリケーションです。<br/>
 センサーの紐付け、個体識別番号の発行、入出荷、センサーデータのアップロード、JAS格付、<br/>
 JASラベル印刷など、JAS認定にかかわる各種機能を統合するアプリケーションです。<br/>
-主にTypeScriptとVue.jsで実装されています。
+TypeScriptとVue.jsで実装されています。
 
 ### 自治体SDGs認証システムについて
 ukabisを利用するアプリケーションです。<br/>
 生産者や飲食店向けのSDGs認証制度に関する申請や認証などを行うアプリケーションです。<br/>
-主にPHPで実装されており、動作させるにはApache等のWebサーバが必要です。
+PHPで実装されており、動作させるにはApache等のWebサーバが必要です。
 
 ### Visual Studio用ソリューションファイルについて
 本プロジェクトで使用しているソリューションファイル(sln)は以下のとおりです。
@@ -125,7 +125,7 @@ OSS化にあたり、有償ライセンス製品であるNewtonsoftの『Json.NE
 
 #### appsetting.json
 アプリケーション設定ファイルです。<br/>
-これらのファイルでは、主にDB接続設定や管理者ID、OpenIDのIDやパスワードの設定を行います。
+これらのファイルでは、DB接続設定や管理者ID、OpenIDのIDやパスワードの設定を行います。
 
 * JP.DataHub.ApiWeb\JP.DataHub.AdminWeb\appsettings.{Environment}.json
 * JP.DataHub.ApiWeb\JP.DataHub.SystemAdminWeb\appsettings.{Environment}.json
@@ -162,7 +162,7 @@ DBの接続文字列に関する設定ファイルです。<br/>
 
 #### server.json
 サーバーの設定ファイルです。<br/>
-これらのファイルでは、主にOpenIDのIDやパスワード、APIサーバー(ManageApi、DynamicWeb)の接続先URL等の設定を行います。
+これらのファイルでは、OpenIDのIDやパスワード、APIサーバー(ManageApi、DynamicWeb)の接続先URL等の設定を行います。
 
 * JP.DataHub.ApiWeb\JP.DataHub.AdminWeb\server.{Environment}.json
 * JP.DataHub.ApiWeb\JP.DataHub.SystemAdminWeb\server.{Environment}.json
@@ -176,7 +176,7 @@ DBの接続文字列に関する設定ファイルです。<br/>
 
 #### account.json
 アカウントの設定ファイルです。<br/>
-これらのファイルでは、主にOpenIDのIDやパスワードの設定を行います。
+これらのファイルでは、OpenIDのIDやパスワードの設定を行います。
 
 * JP.DataHub.Com\JP.DataHub.Com\UnitTest.JP.DataHub.Com\account.json
 * JP.DataHub.ApiWeb\JP.DataHub.AdminWeb\account.DevelopAzure.json
